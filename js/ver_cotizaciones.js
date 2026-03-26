@@ -58,10 +58,31 @@ $(document).ready(function () {
                     let razonSoc = cot.razon_social ? cot.razon_social : 'Sin Empresa';
                     let badgeColor = 'bg-soft-primary text-primary'; // Por defecto Guardada
                     let estatusTexto = cot.estatus ? cot.estatus : 'Guardada';
-
+                    if (estatusTexto === 'Ganada (sin dirección registrada)') badgeColor = 'bg-soft-warning text-warning';
                     if (estatusTexto === 'Ganada') badgeColor = 'bg-soft-success text-success';
                     if (estatusTexto === 'Perdida') badgeColor = 'bg-soft-danger text-danger';
-                    
+
+
+                    let btnCompletarVenta = '';
+                    if (estatusTexto === 'Ganada (sin dirección registrada)') {
+                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md bg-soft-warning border border-warning" style="animation: pulse 2s infinite;">
+                                                <abbr title="¡Faltan Direcciones! Haz clic para completar la venta" style="text-decoration:none;">
+                                                    <i class="feather-map-pin text-warning"></i>
+                                                </abbr>
+                                             </a>`;
+                    }
+
+                    let btnEliminar = '';
+                    let cotizacionCerrada = (estatusTexto === 'Ganada' || estatusTexto === 'Perdida');
+
+                    // Si no está cerrada, O si el usuario es Admin, mostramos el botón de basura
+                    if (!cotizacionCerrada || USER_PERFIL === 'admin') {
+                        btnEliminar = `<a href="#" class="avatar-text avatar-md btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2 text-danger"></i></abbr></a>`;
+                    } else {
+                        // Si está cerrada y NO es admin, mostramos un candado inactivo
+                        btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md" style="opacity: 0.4; cursor: not-allowed;"><abbr title="Bloqueado: Solo administradores pueden eliminarla" style="text-decoration:none;"><i class="feather-lock text-muted"></i></abbr></a>`;
+                    }
+
                     let tr = `
                         <tr>
                             <td>
@@ -79,9 +100,10 @@ $(document).ready(function () {
                             <td><span class="badge ${badgeColor}">${estatusTexto}</span></td>
                             <td class="text-center">
                                 <div class="hstack gap-2 justify-content-center">
+                                    ${btnCompletarVenta}
                                     <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md"><abbr title="Imprimir" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>
                                     <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folio}"><abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>
-                                    <a href="#" class="avatar-text avatar-md btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2 text-danger"></i></abbr></a>
+                                    ${btnEliminar}
                                 </div>
                             </td>
                         </tr>
@@ -97,7 +119,16 @@ $(document).ready(function () {
                         lengthChange: false,
                         ordering: false,
                         searching: false,
-                        info: true
+                        info: true, 
+                        dom: "<'table-responsive'tr>" +
+                             "<'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
+
+                        drawCallback: function () {
+                            // Le agregamos 'pagination-sm' para hacer los botones más pequeños
+                            // y 'mb-0' para quitar cualquier margen inferior sobrante
+                            $('.dataTables_paginate > .pagination').addClass('pagination-sm mb-0');
+                            
+                        }
                     });
                 }
             },
@@ -182,22 +213,6 @@ $(document).ready(function () {
                 // ¡LÓGICA DEL CLIENTE - Ocultamos y bloqueamos campos para proteger la cotización
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
 
-                    /* $('#tipo_precio').closest('.col-md-6').hide();
-                    $('#edit_select_solicitante').closest('.col-md-6').removeClass('col-md-6').addClass('col-md-12');
-
-                    $('#fila_estatus_lan').hide();
-
-                    // ¡Dejamos libre la división! Solo bloqueamos a la Empresa
-                    $selEmp.prop('disabled', true);
-
-                    if ($('#hidden_edit_empresa').length === 0) {
-                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
-                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
-                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_estatus" name="estatus" value="${cot.estatus ? cot.estatus : 'Guardada'}">`);
-                    } else {
-                        $('#hidden_edit_empresa').val(cot.Empresa_id);
-                        $('#hidden_edit_precio').val(cot.tipo_precio);
-                    } */
                     // A. Ocultar Status y Tipo de Precio
                     $colPrecio.hide();
                     $colEstatus.hide();
@@ -350,8 +365,14 @@ $(document).ready(function () {
                 if (res.status === 'success') {
                     $('#modalEditarCotizacion').modal('hide');
                     $('.modal-backdrop').remove();
-                    cargarTablaPrincipal();
-                    alert(res.message);
+
+                    let newestatus = $('#edit_estatus').val();
+                    if (newestatus === 'Ganada (sin dirección registrada)') {
+                        window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val();
+                    } else {
+                        cargarTablaPrincipal();
+                        alert(res.message);
+                    }
                 } else alert("Error: " + res.message);
             }
         });

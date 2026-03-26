@@ -15,15 +15,34 @@ if (!isset($_SESSION['id_user_admin'])) {
 try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // ==========================================
+    // GET: Obtener lista de productos
+    // ==========================================
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         echo json_encode(obtenerProduct($pdo));
         exit;
     }
 
+    // ==========================================
+    // POST: Crear, Editar o Eliminar
+    // ==========================================
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'] ?? '';
 
         if ($action === 'crear' || $action === 'editar') {
+            
+            $descripcion_evaluar = trim($_POST['descripcion_product'] ?? '');
+            $clave_evaluar = trim($_POST['clave_product'] ?? '');
+            $id_evaluar = ($action === 'editar') ? (int)$_POST['id_product'] : 0;
+
+            // Verificamos en la BD usando la función que agregaste en funciones_db.php
+            $error_duplicado = verificarProductoExistente($pdo, $descripcion_evaluar, $clave_evaluar, $id_evaluar);
+            if ($error_duplicado !== false) {
+                // Si existe, detenemos todo el proceso y enviamos el error al JS
+                echo json_encode(['status' => 'error', 'message' => $error_duplicado]);
+                exit;
+            }
+            
             $foto_product = '';
             if (isset($_FILES['foto_product']) && $_FILES['foto_product']['error'] === UPLOAD_ERR_OK) {
                 $ext = strtolower(pathinfo($_FILES['foto_product']['name'], PATHINFO_EXTENSION));
@@ -52,8 +71,8 @@ try {
             }
 
             $datos = [
-                'descripcion_product' => trim($_POST['descripcion_product'] ?? ''),
-                'clave_product'       => trim($_POST['clave_product'] ?? ''),
+                'descripcion_product' => $descripcion_evaluar,
+                'clave_product'       => $clave_evaluar,
                 'precio_farmacia'     => (float)($_POST['precio_farmacia'] ?? 0),
                 'precio_publico'      => (float)($_POST['precio_publico'] ?? 0),
                 'estatus'             => ($action === 'crear') ? 'Y' : (isset($_POST['estatus']) ? 'Y' : 'N'),
@@ -61,14 +80,17 @@ try {
             ];
 
             if ($action === 'editar') {
-                $datos['id_product'] = (int)$_POST['id_product'];
+                $datos['id_product'] = $id_evaluar;
                 actualizarProduct($pdo, $datos);
-                echo json_encode(['status' => 'success', 'message' => 'Producto actualizado correctamente']);
+                echo json_encode(['status' => 'success', 'message' => 'Producto actualizado correctamente.']);
             } else {
                 insertarProduct($pdo, $datos);
-                echo json_encode(['status' => 'success', 'message' => 'Producto agregado correctamente']);
+                echo json_encode(['status' => 'success', 'message' => 'Producto agregado correctamente.']);
             }
+            
         } elseif ($action === 'eliminar') {
+            
+            // --- ELIMINAR PRODUCTO ---
             $id = (int)$_POST['id_product'];
             $resultado = eliminarProduct($pdo, $id);
             
@@ -77,6 +99,7 @@ try {
             } else {
                 echo json_encode(['status' => 'success', 'message' => 'Producto eliminado permanentemente de la base de datos.']);
             }
+            
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Acción no válida']);
         }
@@ -85,3 +108,4 @@ try {
     http_response_code(500);
     echo json_encode(['error' => 'Error interno del servidor: ' . $e->getMessage()]);
 }
+?>

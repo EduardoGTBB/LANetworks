@@ -40,7 +40,16 @@ try {
         $action = $_POST['action'] ?? '';
 
         if ($action === 'crear' || $action === 'editar') {
-            
+            $correo_evaluar = trim($_POST['correo'] ?? '');
+            $id_evaluar = ($action === 'editar') ? (int)($_POST['id_usuario'] ?? 0) : 0;
+
+            // Verificamos si el correo ya existe en la BD
+            $error_duplicado = verificarUsuarioClienteExistente($pdo, $correo_evaluar, $id_evaluar);
+            if ($error_duplicado !== false) {
+                // Si existe, detenemos el proceso y mandamos el error al JS
+                echo json_encode(['status' => 'error', 'message' => $error_duplicado]);
+                exit;
+            }
             $foto_perfil = '';
             if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] === UPLOAD_ERR_OK) {
                 $ext = strtolower(pathinfo($_FILES['foto_perfil']['name'], PATHINFO_EXTENSION));

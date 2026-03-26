@@ -26,6 +26,20 @@ try {
         $action = $_POST['action'] ?? '';
 
         if ($action === 'crear' || $action === 'editar') {
+
+            $nombre_evaluar = trim($_POST['nombre_empresa'] ?? '');
+            $razon_evaluar  = mb_strtoupper(trim($_POST['razon_social'] ?? ''), 'UTF-8');
+            $rfc_evaluar    = mb_strtoupper(trim($_POST['rfc'] ?? ''), 'UTF-8');
+            $id_evaluar     = ($action === 'editar') ? (int)($_POST['id_empresa'] ?? 0) : 0;
+
+            // Verificamos si la empresa ya existe en la BD
+            $error_duplicado = verificarEmpresaExistente($pdo, $nombre_evaluar, $razon_evaluar, $rfc_evaluar, $id_evaluar);
+            if ($error_duplicado !== false) {
+                // Si existe, detenemos el proceso y mandamos el error al JS
+                echo json_encode(['status' => 'error', 'message' => $error_duplicado]);
+                exit;
+            }
+
             $datos = [
                 'nombre_empresa' => trim($_POST['nombre_empresa'] ?? ''),
                 'razon_social'   => mb_strtoupper(trim($_POST['razon_social'] ?? ''), 'UTF-8'),

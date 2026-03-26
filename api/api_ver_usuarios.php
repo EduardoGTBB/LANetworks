@@ -26,6 +26,16 @@ try {
         $action = $_POST['action'] ?? '';
 
         if ($action === 'crear' || $action === 'editar') {
+            $usuario_lan_evaluar = trim($_POST['usuario_lan'] ?? '');
+            $id_evaluar = ($action === 'editar') ? (int)($_POST['id_user_admin'] ?? 0) : 0;
+
+            $error_duplicado = CUsuarioAdminExistente($pdo, $usuario_lan_evaluar, $id_evaluar);
+            if ($error_duplicado !== false) {
+                // Si existe, detenemos el guardado y avisamos al Javascript
+                echo json_encode(['status' => 'error', 'message' => $error_duplicado]);
+                exit;
+            }
+
             $password_plana = trim($_POST['password'] ?? '');
             
             $foto_perfil = '';

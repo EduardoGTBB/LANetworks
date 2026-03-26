@@ -127,29 +127,29 @@
                                 </div>
                             </div>
                             <div class="card-body custom-card-action p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0" id="tableMisCotizaciones">
-                                        <thead>
-                                            <tr>
-                                                <th>Folio #</th>
-                                                <th>Fecha</th>
-                                                <th>Cliente</th>
-                                                <th>Importe</th>
-                                                <th>Estatus</th>
-                                                <th class="text-center">Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tabla-cotizaciones">
-                                            <tr>
-                                                <td>
-                                                    <div class="hstack gap-3">
-                                                        <div class="spinner-border text-primary mt-3" role="status">
-                                                            <span class="visually-hidden">Cargando...</span>
-                                                        </div>
-                                                        <p class="mt-2">Cargando cotizaciones...</p>
+
+                                <table class="table table-hover mb-0 w-100" id="tableMisCotizaciones">
+                                    <thead>
+                                        <tr>
+                                            <th>Folio #</th>
+                                            <th>Fecha</th>
+                                            <th>Cliente</th>
+                                            <th>Importe</th>
+                                            <th>Estatus</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-cotizaciones">
+                                        <tr>
+                                            <td>
+                                                <div class="hstack gap-3">
+                                                    <div class="spinner-border text-primary mt-3" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
                                                     </div>
-                                                </td>
-                                                <!--<td>
+                                                    <p class="mt-2">Cargando cotizaciones...</p>
+                                                </div>
+                                            </td>
+                                            <!--<td>
                                                     03/02/2026
                                                 </td>
                                                 <td>
@@ -172,10 +172,10 @@
                                                         </a>
                                                     </div>
                                                 </td> -->
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
                             </div>
                         </div>
                     </div>
@@ -239,6 +239,7 @@
                             <label class="form-label">Estatus de la cotización <span class="text-danger">*</span></label>
                             <select class="form-control" name="estatus" id="edit_estatus" data-select2-selector="status" required>
                                 <option value="Guardada">Guardada (En proceso)</option>
+                                <option value="Ganada (sin dirección registrada)">Ganada (sin dirección registrada)</option>
                                 <option value="Ganada">Ganada (Aprobada)</option>
                                 <option value="Perdida">Perdida (Rechazada)</option>
                             </select>
@@ -854,6 +855,7 @@
 
     <script>
         const ES_CLIENTE_PORTAL = <?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
+        const USER_PERFIL = "<?php echo $_SESSION['perfil'] ?? 'cliente'; ?>";
     </script>
     <script src="js/ver_cotizaciones.js"></script>
 </body>

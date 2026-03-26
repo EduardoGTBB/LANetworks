@@ -457,6 +457,55 @@ function eliminarEmpresa(PDO $pdo, int $id_empresa): string
     }
 }
 
+// |Candado evitar empresas suplicadas
+function verificarEmpresaExistente(PDO $pdo, string $nombre_empresa, string $razon_social, string $rfc, int $id_empresa = 0): string|false 
+{
+    // Limpiamos y convertimos a mayúsculas para una comparación exacta y sin importar si escribieron en minúsculas
+    $nombre_empresa = mb_strtoupper(trim($nombre_empresa), 'UTF-8');
+    $razon_social = mb_strtoupper(trim($razon_social), 'UTF-8');
+    $rfc = mb_strtoupper(trim($rfc), 'UTF-8');
+
+    // Buscamos coincidencias de Nombre Comercial, Razón Social o RFC
+    $sql = "SELECT id_empresa, nombre_empresa, razon_social, rfc 
+            FROM empresa 
+            WHERE (UPPER(nombre_empresa) = :nombre OR razon_social = :razon OR rfc = :rfc)";
+    
+    // Si estamos editando ($id_empresa > 0), excluimos a la propia empresa de la búsqueda
+    if ($id_empresa > 0) {
+        $sql .= " AND id_empresa != :id";
+    }
+
+    $stmt = $pdo->prepare($sql);
+    
+    $params = [
+        ':nombre' => $nombre_empresa, 
+        ':razon' => $razon_social, 
+        ':rfc' => $rfc
+    ];
+    
+    if ($id_empresa > 0) {
+        $params[':id'] = $id_empresa;
+    }
+
+    $stmt->execute($params);
+    $existe = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($existe) {
+        // Identificamos exactamente qué campo causó el conflicto
+        if (mb_strtoupper($existe['nombre_empresa'], 'UTF-8') === $nombre_empresa) {
+            return 'El NOMBRE COMERCIAL ingresado ya se encuentra registrado en otra empresa.';
+        }
+        if (mb_strtoupper($existe['razon_social'], 'UTF-8') === $razon_social) {
+            return 'La RAZÓN SOCIAL ingresada ya se encuentra registrada en otra empresa.';
+        }
+        if (mb_strtoupper($existe['rfc'], 'UTF-8') === $rfc) {
+            return 'El RFC ingresado ya se encuentra registrado en otra empresa.';
+        }
+    }
+    
+    return false; // No hay duplicados
+}
+
 /*  
 & ======================================================
 &        FIN: FUNCIONES CLIENTES|EMPRESAS
@@ -575,6 +624,39 @@ function eliminarUsuario(PDO $pdo, int $id_usuario): string
     }
 }
 
+// |Candado evitar usuarios clientes/usuarios repetidos
+function verificarUsuarioClienteExistente(PDO $pdo, string $correo, int $id_usuario = 0): string|false 
+{
+    $correo = trim($correo);
+
+    // Buscamos si ese correo ya existe en la tabla de clientes
+    $sql = "SELECT id_usuario, correo 
+            FROM usuarios 
+            WHERE correo = :correo";
+    
+    // Si estamos editando ($id_usuario > 0), excluimos al propio usuario de la búsqueda
+    if ($id_usuario > 0) {
+        $sql .= " AND id_usuario != :id";
+    }
+
+    $stmt = $pdo->prepare($sql);
+    
+    $params = [':correo' => $correo];
+    if ($id_usuario > 0) {
+        $params[':id'] = $id_usuario;
+    }
+
+    $stmt->execute($params);
+    $existe = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($existe) {
+        return 'El Correo Electrónico ingresado ya se encuentra registrado para otro cliente en el sistema. Intenta con otro.';
+    }
+    
+    return false; // No hay duplicados
+}
+
+
 /*  
 & ======================================================
 &        FIN: FUNCIONES CLIENTES|USUARIOS
@@ -667,6 +749,45 @@ function eliminarProduct(PDO $pdo, int $id_product): string
         $stmt->execute([':id' => $id_product]);
         return 'eliminado';
     }
+}
+
+// |Candado productos duplicados
+function verificarProductoExistente(PDO $pdo, string $descripcion, string $clave, int $id_product = 0): string|false 
+{
+    // Limpiamos los datos y pasamos a mayúsculas para que la búsqueda sea exacta
+    $descripcion = mb_strtoupper(trim($descripcion), 'UTF-8');
+    $clave = trim($clave);
+
+    // Buscamos coincidencias de nombre o clave
+    $sql = "SELECT id_product, descripcion_product, clave_product 
+            FROM productos 
+            WHERE (descripcion_product = :desc OR clave_product = :clave)";
+    
+    // Si estamos editando ($id_product > 0), excluimos al propio producto de la búsqueda
+    if ($id_product > 0) {
+        $sql .= " AND id_product != :id";
+    }
+
+    $stmt = $pdo->prepare($sql);
+    
+    $params = [':desc' => $descripcion, ':clave' => $clave];
+    if ($id_product > 0) {
+        $params[':id'] = $id_product;
+    }
+
+    $stmt->execute($params);
+    $existe = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($existe) {
+        if (mb_strtoupper($existe['descripcion_product'], 'UTF-8') === $descripcion) {
+            return 'El NOMBRE del producto ya existe en la base de datos.';
+        }
+        if (mb_strtoupper($existe['clave_product'], 'UTF-8') === mb_strtoupper($clave, 'UTF-8')) {
+            return 'La CLAVE del producto ya existe en la base de datos.';
+        }
+    }
+    
+    return false; // No hay duplicados
 }
 
 /*  
@@ -813,6 +934,40 @@ function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
     $stmt->execute($params); 
     !return true;*/
 }
+
+// |Candado para evitar registros duplicados
+function CUsuarioAdminExistente(PDO $pdo, string $usuario_lan, int $id_user_admin = 0): string|false 
+{
+    $usuario_lan = trim($usuario_lan);
+
+    // Buscamos si ese correo/usuario ya existe en la tabla
+    $sql = "SELECT id_user_admin, usuario_lan 
+            FROM usuarios_admin 
+            WHERE usuario_lan = :usr";
+    
+    // Si estamos editando ($id_user_admin > 0), excluimos al propio usuario de la búsqueda
+    if ($id_user_admin > 0) {
+        $sql .= " AND id_user_admin != :id";
+    }
+
+    $stmt = $pdo->prepare($sql);
+    
+    $params = [':usr' => $usuario_lan];
+    if ($id_user_admin > 0) {
+        $params[':id'] = $id_user_admin;
+    }
+
+    $stmt->execute($params);
+    $existe = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($existe) {
+        return 'El Usuario (email) ingresado ya se encuentra registrado en el sistema. Intenta con otro.';
+    }
+    
+    return false; // No hay duplicados
+}
+
+
 /*  
 & ======================================================
 &        FIN: FUNCIONES EMPLEADOS_LAN
@@ -847,3 +1002,58 @@ function obtenerUsuarioEmpresaporCorreo(PDO $pdo, string $correo)
 &        FIN: FUNCIONES LOGIN CLIENTES 
 & ======================================================- 
 & */
+
+// -----------------------------------------------------
+
+/*   
+& ======================================================
+&        INICIO: FUNCIONES DOMICILIOS
+& ======================================================- 
+& */
+
+// |Domicilio de empresa ligada
+function obtenerDomicilioPorCotizacion(PDO $pdo, int $id_cotizacion){
+    $sql = "SELECT d.* FROM domicilio_empresa d 
+            JOIN cotizacion c ON d.Empresa_id = c.Empresa_id 
+            WHERE c.id_cotizacion = :id";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':id' => $id_cotizacion]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+// |Guardar las direccioens ligadas
+function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, array $envio): bool {
+    try {
+        $pdo->beginTransaction();
+
+        // 1. Insertar Fiscal
+        $stmtF = $pdo->prepare("INSERT INTO domicilio_fiscal (Cotizacion_id, calle_numero_fiscal, colonia_fiscal, localidad_fiscal, cp_fiscal, municipio_fiscal, estado_fiscal) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmtF->execute([$id_cot, $fiscal['calle'], $fiscal['colonia'], $fiscal['localidad'], $fiscal['cp'], $fiscal['municipio'], $fiscal['estado']]);
+
+        // 2. Insertar Certificado
+        $stmtC = $pdo->prepare("INSERT INTO domicilio_cert_calib (Cotizacion_id, calle_numero_cert, colonia_cert, localidad_cert, cp_cert, municipio_cert, estado) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmtC->execute([$id_cot, $cert['calle'], $cert['colonia'], $cert['localidad'], $cert['cp'], $cert['municipio'], $cert['estado']]);
+
+        // 3. Insertar Envío
+        $stmtE = $pdo->prepare("INSERT INTO domicilio_envio (Cotizacion_id, calle_numero_envio, colonia_envio, localidad_envio, cp_envio, municipio_envio, estado_envio) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmtE->execute([$id_cot, $envio['calle'], $envio['colonia'], $envio['localidad'], $envio['cp'], $envio['municipio'], $envio['estado']]);
+
+        // 4. Cambiar estatus definitivo a Ganada
+        $stmtCot = $pdo->prepare("UPDATE cotizacion SET estatus = 'Ganada' WHERE id_cotizacion = ?");
+        $stmtCot->execute([$id_cot]);
+
+        $pdo->commit();
+        return true;
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+/*  
+& ======================================================
+&        FIN: FUNCIONES DOMICILIOS
+& ======================================================- 
+& */
+
+

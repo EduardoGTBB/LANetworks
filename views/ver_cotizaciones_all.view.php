@@ -127,36 +127,36 @@
                                 </div>
                             </div>
                             <div class="card-body custom-card-action p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0" id="tableAllCotizaciones">
-                                        <thead>
-                                            <tr>
-                                                <th>Folio #</th>
-                                                <th>Fecha</th>
-                                                <th>Cliente</th>
-                                                <th>Importe</th>
-                                                <th>Estatus</th>
-                                                <th class="text-center">Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tabla-cotizaciones">
-                                            <tr>
-                                                <td>
-                                                    <div class="hstack gap-3">
-                                                        <!--<div class="avatar-image avatar-lg rounded">
+
+                                <table class="table table-hover mb-0 w-100" id="tableAllCotizaciones">
+                                    <thead>
+                                        <tr>
+                                            <th>Folio #</th>
+                                            <th>Fecha</th>
+                                            <th>Cliente</th>
+                                            <th>Importe</th>
+                                            <th>Estatus</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-cotizaciones">
+                                        <tr>
+                                            <td>
+                                                <div class="hstack gap-3">
+                                                    <!--<div class="avatar-image avatar-lg rounded">
                                                                 <img class="img-fluid" src="assets/images/gallery/icono_cot.jpg" alt="">
                                                         </div>
                                                         <div>
                                                             <a href="javascript:void(0);" class="d-block">01</a>
                                                             !--<span class="fs-12 text-muted">Electronics </span>--
                                                         </div> -->
-                                                        <div class="spinner-border text-primary mt-3" role="status">
-                                                            <span class="visually-hidden">Cargando...</span>
-                                                        </div>
-                                                        <p class="mt-2">Cargando cotizaciones...</p>
+                                                    <div class="spinner-border text-primary mt-3" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
                                                     </div>
-                                                </td>
-                                                <!--<td>
+                                                    <p class="mt-2">Cargando cotizaciones...</p>
+                                                </div>
+                                            </td>
+                                            <!--<td>
                                                     03/02/2026
                                                 </td>
                                                 <td>
@@ -179,10 +179,10 @@
                                                         </a>
                                                     </div>
                                                 </td> -->
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
                             </div>
                         </div>
                     </div>
@@ -221,8 +221,8 @@
 
                         <div class="col-md-6 mb-4">
                             <label class="form-label">Cliente <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_select_empresa" name="Empresa_id" 
-                            data-select2-selector="status" required>
+                            <select class="form-control" id="edit_select_empresa" name="Empresa_id"
+                                data-select2-selector="status" required>
                                 <option value="">Cargando clientes...</option>
                             </select>
                         </div>
@@ -246,6 +246,7 @@
                             <label class="form-label">Estatus de la cotización <span class="text-danger">*</span></label>
                             <select class="form-control" name="estatus" id="edit_estatus" data-select2-selector="status" required>
                                 <option value="Guardada">Guardada (En proceso)</option>
+                                <option value="Ganada (sin dirección registrada)">Ganada (sin dirección registrada)</option>
                                 <option value="Ganada">Ganada (Aprobada)</option>
                                 <option value="Perdida">Perdida (Rechazada)</option>
                             </select>

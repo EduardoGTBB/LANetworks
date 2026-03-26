@@ -48,8 +48,18 @@ $(document).ready(function() {
                     // Lógica dinámica del estatus en la tabla
                     let badgeColor = 'bg-soft-primary text-primary';
                     let estatusTexto = cot.estatus ? cot.estatus : 'Guardada';
+                    if (estatusTexto === 'Ganada (sin dirección registrada)') badgeColor = 'bg-soft-warning text-warning';
                     if (estatusTexto === 'Ganada') badgeColor = 'bg-soft-success text-success';
                     if (estatusTexto === 'Perdida') badgeColor = 'bg-soft-danger text-danger';
+
+                    let btnCompletarVenta = '';
+                    if (estatusTexto === 'Ganada (sin dirección registrada)') {
+                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md bg-soft-warning border border-warning" style="animation: pulse 2s infinite;">
+                                                <abbr title="¡Faltan Direcciones! Haz clic para completar la venta" style="text-decoration:none;">
+                                                    <i class="feather-map-pin text-warning"></i>
+                                                </abbr>
+                                             </a>`;
+                    }
 
                     let tr = `
                         <tr>
@@ -69,6 +79,7 @@ $(document).ready(function() {
                             <td><span class="badge ${badgeColor}">${estatusTexto}</span></td>
                             <td class="text-center">
                                 <div class="hstack gap-2 justify-content-center">
+                                    ${btnCompletarVenta}
                                     <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md"><abbr title="Imprimir" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>
                                     <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folio}"><abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>
                                     <a href="#" class="avatar-text avatar-md btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2 text-danger"></i></abbr></a>
@@ -87,7 +98,15 @@ $(document).ready(function() {
                         lengthChange: false, 
                         ordering: false, 
                         searching: false, 
-                        info: true 
+                        info: true,
+                        dom: "<'table-responsive'tr>" +
+                             "<'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
+                        drawCallback: function () {
+                            // Le agregamos 'pagination-sm' para hacer los botones más pequeños
+                            // y 'mb-0' para quitar cualquier margen inferior sobrante
+                            $('.dataTables_paginate > .pagination').addClass('pagination-sm mb-0');
+                            
+                        }
                     }); 
                 }
             },
@@ -238,8 +257,16 @@ $(document).ready(function() {
             url: 'api/api_ver_cotizaciones.php', type: 'POST', data: $(this).serialize(),
             success: function(res) {
                 if(res.status === 'success') {
-                    $('#modalEditarCotizacion').modal('hide'); $('.modal-backdrop').remove();
-                    cargarTablaPrincipal(); alert(res.message);
+                    $('#modalEditarCotizacion').modal('hide'); 
+                    $('.modal-backdrop').remove();
+                    
+                    let newestatus = $('#edit_estatus').val();
+                    if (newestatus === 'Ganada (sin dirección registrada)') {
+                        window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val();
+                    } else {
+                        cargarTablaPrincipal(); 
+                        alert(res.message);
+                    }
                 } else alert("Error: " + res.message);
             }
         });
