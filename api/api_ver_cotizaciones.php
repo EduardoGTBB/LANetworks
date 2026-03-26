@@ -35,7 +35,13 @@ try {
                 $admin_id = (int)$_SESSION['id_user_admin'];
                 echo json_encode(obtenerCotizaciones($pdo, $admin_id));
             }
-        } elseif ($action === 'get_cotizacion') {
+        } elseif($action === 'leer_todas'){
+            if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin') {
+                echo json_encode(obtenerTodasLasCotizaciones($pdo));
+            } else {
+                echo json_encode([]); // Si se cuela un operativo, mandamos vacío
+            }
+        }elseif ($action === 'get_cotizacion') {
             // Buscamos al padre y a los hijos para rellenar el modal
             $id = (int)($_GET['id'] ?? 0);
             $cotizacion = editarCotizacionporID($pdo, $id);
@@ -59,6 +65,15 @@ try {
 
             if ($id_cotizacion === 0 || $empresa_id === 0 || $usuario_id === 0) {
                 echo json_encode(['status' => 'error', 'message' => 'Faltan datos obligatorios.']);
+                exit;
+            }
+
+            $cotizacion_actual = editarCotizacionporID($pdo, $id_cotizacion);
+            if ($cotizacion_actual && in_array($cotizacion_actual['estatus'], ['Ganada', 'Perdida'])) {
+                echo json_encode([
+                    'status' => 'error', 
+                    'message' => 'Operación denegada. Las cotizaciones marcadas como Ganadas o Perdidas no pueden ser modificadas.'
+                ]);
                 exit;
             }
 
@@ -87,7 +102,8 @@ try {
                 'precio_iva'    => (float)($_POST['total_amount'] ?? 0),
                 'division'      => trim($_POST['division'] ?? ''),
                 'tipo_precio'   => trim($_POST['tipo_precio'] ?? ''),
-                'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 16)
+                'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 16),
+                'estatus'       => trim($_POST['estatus'] ?? 'Guardada')
             ];
 
             updateCotizacion($pdo, $id_cotizacion, $datosCotizacion, $detalles);

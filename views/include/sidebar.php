@@ -5,10 +5,13 @@
         'mp_ver_cotiz' => 'Desactivado',
         'mp_ver_clientes' => 'Desactivado',
         'mp_ver_productos' => 'Desactivado',
-        'mp_ver_usuarios' => 'Desactivado'
+        'mp_ver_usuarios' => 'Desactivado',
+        'mp_ver_all_cotiz' => 'Desactivado',
+        'mp_ver_reportes' => 'Desactivado'
     ];
 
     $es_cliente = isset($_SESSION['id_usuario_cliente']);
+    $es_admin_maestro = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin');
 
     if ($es_cliente) {
         // Si es cliente, forzamos que SOLO vea el cotizador
@@ -25,8 +28,13 @@
                 $resultado = $stmt_permisos->fetch(PDO::FETCH_ASSOC);
                 
                 if ($resultado) {
-                    $permisos = $resultado;
+                    // $permisos = $resultado;
+                    $permisos = array_merge($permisos, $resultado);
                 }
+                
+                $permisos['mp_ver_all_cotiz'] = $es_admin_maestro ? 'Activado' : 'Desactivado';
+                $permisos['mp_ver_reportes'] = $es_admin_maestro ? 'Activado' : 'Desactivado';
+                
             }
         } catch (Exception $e) {
             error_log("Error permisos: " . $e->getMessage());
@@ -69,6 +77,10 @@
                         <?php if($permisos['mp_ver_cotiz'] === 'Activado'): ?>
                         <li class="nxl-item"><a class="nxl-link" href="ver_cotizaciones.php">Mis cotizaciones</a></li>
                         <?php endif; ?>
+
+                        <?php if($permisos['mp_ver_all_cotiz'] === 'Activado'): ?>
+                        <li class="nxl-item"><a class="nxl-link" href="ver_cotizaciones_all.php">Todas las cotizaciones</a></li>
+                        <?php endif; ?>
                     </ul>
                 </li>
                 <?php endif; ?>
@@ -105,7 +117,7 @@
                         <span class="nxl-mtext">Reportes</span><span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
                     </a>
                     <ul class="nxl-submenu">
-                        <li class="nxl-item"><a class="nxl-link" href="prueba.php">Sales Report</a></li>
+                        <li class="nxl-item"><a class="nxl-link" href="#">Sales Report</a></li>
                         <li class="nxl-item"><a class="nxl-link" href="#">Leads Report</a></li>
                         <li class="nxl-item"><a class="nxl-link" href="#">Project Report</a></li>
                         <li class="nxl-item"><a class="nxl-link" href="#">Timesheets Report</a></li>

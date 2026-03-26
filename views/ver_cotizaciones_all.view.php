@@ -15,7 +15,7 @@
                     </div>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
-                        <li class="breadcrumb-item">Mis cotizaciones</li>
+                        <li class="breadcrumb-item">Todas las cotizaciones</li>
                     </ul>
                 </div>
                 <div class="page-header-right ms-auto">
@@ -128,7 +128,7 @@
                             </div>
                             <div class="card-body custom-card-action p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-hover mb-0" id="tableMisCotizaciones">
+                                    <table class="table table-hover mb-0" id="tableAllCotizaciones">
                                         <thead>
                                             <tr>
                                                 <th>Folio #</th>
@@ -143,6 +143,13 @@
                                             <tr>
                                                 <td>
                                                     <div class="hstack gap-3">
+                                                        <!--<div class="avatar-image avatar-lg rounded">
+                                                                <img class="img-fluid" src="assets/images/gallery/icono_cot.jpg" alt="">
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="d-block">01</a>
+                                                            !--<span class="fs-12 text-muted">Electronics </span>--
+                                                        </div> -->
                                                         <div class="spinner-border text-primary mt-3" role="status">
                                                             <span class="visually-hidden">Cargando...</span>
                                                         </div>
@@ -214,8 +221,8 @@
 
                         <div class="col-md-6 mb-4">
                             <label class="form-label">Cliente <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_select_empresa" name="Empresa_id"
-                                data-select2-selector="status" required>
+                            <select class="form-control" id="edit_select_empresa" name="Empresa_id" 
+                            data-select2-selector="status" required>
                                 <option value="">Cargando clientes...</option>
                             </select>
                         </div>
@@ -235,7 +242,7 @@
                                 <option value="Público">Público</option>
                             </select>
                         </div>
-                        <div class="col-md-4 mb-4" id="fila_estatus_lan">
+                        <div class="col-md-4 mb-4">
                             <label class="form-label">Estatus de la cotización <span class="text-danger">*</span></label>
                             <select class="form-control" name="estatus" id="edit_estatus" data-select2-selector="status" required>
                                 <option value="Guardada">Guardada (En proceso)</option>
@@ -243,7 +250,6 @@
                                 <option value="Perdida">Perdida (Rechazada)</option>
                             </select>
                         </div>
-
                     </div>
 
                     <hr class="mt-0 mb-3">
@@ -851,11 +857,11 @@
     <!--! BEGIN: Theme Customizer  !-->
     <script src="assets/js/theme-customizer-init.min.js"></script>
     <!--! END: Theme Customizer !-->
+    <script src="js/ver_cotizaciones_all.js"></script>
 
-    <script>
-        const ES_CLIENTE_PORTAL = <?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
-    </script>
-    <script src="js/ver_cotizaciones.js"></script>
+    <!-- <script>
+        const ES_CLIENTE_PORTAL = ?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
+    </script> -->
 </body>
 
 </html>

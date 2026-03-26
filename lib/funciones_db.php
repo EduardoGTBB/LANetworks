@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*   
@@ -7,7 +8,8 @@ declare(strict_types=1);
 & ======================================================- 
 & */
 // |Obtener usuario para el Login (Validación)
-function obtenerUsuarioPorLan(PDO $pdo, string $usuario_lan){
+function obtenerUsuarioPorLan(PDO $pdo, string $usuario_lan)
+{
     // Aquí agregamos foto_perfil a la consulta
     $sql = "SELECT id_user_admin, admin_nombre, admin_apell_pat, perfil, usuario_lan, password, foto_perfil 
             FROM usuarios_admin 
@@ -15,7 +17,7 @@ function obtenerUsuarioPorLan(PDO $pdo, string $usuario_lan){
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':usuario' => $usuario_lan]);
-    
+
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 /*  
@@ -33,7 +35,8 @@ function obtenerUsuarioPorLan(PDO $pdo, string $usuario_lan){
 & */
 
 // |Obtener clientes por empresa
-function obtenerUsuariosporEmpresa(PDO $pdo, int $empresa_id): array{
+function obtenerUsuariosporEmpresa(PDO $pdo, int $empresa_id): array
+{
     $sql = "SELECT id_usuario, nombre, apellido_pat, apellido_mat 
             FROM usuarios 
             WHERE Empresa_id = :empresa_id AND activo='true'";
@@ -45,7 +48,8 @@ function obtenerUsuariosporEmpresa(PDO $pdo, int $empresa_id): array{
 }
 
 // |Obtener los clientes
-function obtenerClientes(PDO $pdo): array{
+function obtenerClientes(PDO $pdo): array
+{
     $sql = "SELECT id_empresa, razon_social 
             FROM empresa 
             WHERE estatus= 'Y' ";
@@ -56,7 +60,8 @@ function obtenerClientes(PDO $pdo): array{
 }
 
 // |Obtener los productos
-function obtenerProduct(PDO $pdo): array{
+function obtenerProduct(PDO $pdo): array
+{
     $sql = "SELECT id_product,descripcion_product, clave_product, precio_farmacia, precio_publico, foto_product, estatus 
             FROM productos
             ORDER BY descripcion_product ASC";
@@ -67,7 +72,8 @@ function obtenerProduct(PDO $pdo): array{
 }
 
 // |Guardar la nueva cotización
-function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): string|false{
+function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): string|false
+{
     try {
         $pdo->beginTransaction();
 
@@ -126,14 +132,15 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
 
 /*   
 & ======================================================
-&        INICIO: FUNCION MIS COTIZACIONES
+&        INICIO: FUNCION COTIZACIONES
 & ====================================================== 
 & */
-
+// ------%Ver_cotizaciones_por_Usuario/Cliente------
 // |Obtener las cotizaciones por Usuario Logeado
-function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array{
-    $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva AS gran_total, 
-                   e.razon_social, u.nombre, u.apellido_pat 
+function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
+{
+    $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva 
+            AS gran_total, e.razon_social, u.nombre, u.apellido_pat, c.estatus
             FROM cotizacion c
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
@@ -146,9 +153,10 @@ function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array{
 }
 
 // |Obtener las cotizaciones por cliente
-function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array{
-    $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva AS gran_total, 
-                   e.razon_social, u.nombre, u.apellido_pat 
+function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
+{
+    $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva 
+            AS gran_total,  e.razon_social, u.nombre, u.apellido_pat, c.estatus
             FROM cotizacion c
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
@@ -161,7 +169,8 @@ function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array{
 }
 
 // |Borrar cotizacion
-function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool{
+function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
+{
     try {
         //$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -189,8 +198,9 @@ function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool{
 
 // |Editar cotizacion
 // &Obtenemos la cotizacion especifica ID (Padre)
-function editarCotizacionporID(PDO $pdo, int $id_cotizacion){
-    $sql = "SELECT id_cotizacion, Empresa_id, Usuario_admin_id, Usuario_empresa_id, fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division 
+function editarCotizacionporID(PDO $pdo, int $id_cotizacion)
+{
+    $sql = "SELECT id_cotizacion, Empresa_id, Usuario_admin_id, Usuario_empresa_id, fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, estatus 
             FROM cotizacion
             WHERE id_cotizacion = :id";
 
@@ -201,7 +211,8 @@ function editarCotizacionporID(PDO $pdo, int $id_cotizacion){
 
 // |Obtener los productos de la cotizacion
 // &Obtenemos los detalles de la cotizzacion(hijos)
-function obtenerdetallesCotizacionID(PDO $pdo, int $id_cotizacion){
+function obtenerdetallesCotizacionID(PDO $pdo, int $id_cotizacion)
+{
     $sql = "SELECT id_detalle_cot, Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido 
             FROM detalle_cotizacion
             WHERE Cotizacion_id = :id";
@@ -212,7 +223,8 @@ function obtenerdetallesCotizacionID(PDO $pdo, int $id_cotizacion){
 }
 
 // |Actualizar la Cotizacion
-function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, array $detalles): bool{
+function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, array $detalles): bool
+{
     try {
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->beginTransaction();
@@ -225,19 +237,21 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
                        precio_iva = :precio_iva, 
                        division = :division,
                        tipo_precio = :tipo_precio,
-                       porcentaje_iva = :porcentaje_iva 
+                       porcentaje_iva = :porcentaje_iva,
+                       estatus = :estatus
                    WHERE id_cotizacion = :id_cot";
 
         $stmtCot = $pdo->prepare($sqlCot);
         $stmtCot->execute([
-            ':empresa_id'    => $datosCotizacion['empresa_id'],
-            ':usuario_id'    => $datosCotizacion['usuario_id'],
-            ':importe_total' => $datosCotizacion['importe_total'],
-            ':precio_iva'    => $datosCotizacion['precio_iva'],
+            ':empresa_id'     => $datosCotizacion['empresa_id'],
+            ':usuario_id'     => $datosCotizacion['usuario_id'],
+            ':importe_total'  => $datosCotizacion['importe_total'],
+            ':precio_iva'     => $datosCotizacion['precio_iva'],
             ':porcentaje_iva' => $datosCotizacion['porcentaje_iva'],
-            ':tipo_precio'   => $datosCotizacion['tipo_precio'],
-            ':division'      => $datosCotizacion['division'],
-            ':id_cot'        => $id_cotizacion
+            ':tipo_precio'    => $datosCotizacion['tipo_precio'],
+            ':division'       => $datosCotizacion['division'],
+            ':estatus'        => $datosCotizacion['estatus'],
+            ':id_cot'         => $id_cotizacion
         ]);
 
         // 2. Borramos los hijos viejos (Limpieza)
@@ -269,10 +283,31 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
         throw new Exception("Error al actualizar: " . $e->getMessage());
     }
 }
+// ------%Fin_Ver_cotizaciones_por_Usuario/Cliente------
 
+
+// ------%Inicio_Ver_todas_las_Cotizaciones_Users_Admin------
+function obtenerTodasLasCotizaciones(PDO $pdo): array
+{
+    $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva AS gran_total, 
+                   e.razon_social, 
+                   u.nombre, u.apellido_pat, u.apellido_mat, /* <-- AGREGADO AQUI */
+                   ua.admin_nombre, ua.admin_apell_pat, 
+                   c.estatus
+            FROM cotizacion c
+            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
+            LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
+            LEFT JOIN usuarios_admin ua ON c.Usuario_admin_id = ua.id_user_admin
+            ORDER BY c.id_cotizacion DESC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+// ------%Fin_Ver_todas_las_Cotizaciones_Users_Admin------
 /*  
 & ======================================================
-&        FIN: FUNCIONES MIS COTIZACIONES
+&        FIN: FUNCIONES COTIZACIONES
 & ====================================================== 
 & */
 
@@ -285,7 +320,8 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
 & */
 
 // |Obtener todas las empresas
-function obtenerAllempresas(PDO $pdo): array{
+function obtenerAllempresas(PDO $pdo): array
+{
     $sql = "SELECT e.id_empresa, e.nombre_empresa, e.razon_social, e.rfc, e.telefono, e.correo, e.estatus, d.calle_numero ,d.colonia, d.localidad, d.codigo_postal, d.municipio, d.estado, d.pais  
             FROM empresa e
             LEFT JOIN domicilio_empresa d ON e.id_empresa = d.Empresa_id
@@ -296,7 +332,8 @@ function obtenerAllempresas(PDO $pdo): array{
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function insertarEmpresa(PDO $pdo, array $datos): bool{
+function insertarEmpresa(PDO $pdo, array $datos): bool
+{
     try {
         $pdo->beginTransaction();
         $sqlEMP = "INSERT INTO empresa (nombre_empresa, razon_social, rfc, telefono, correo, estatus) 
@@ -335,7 +372,8 @@ function insertarEmpresa(PDO $pdo, array $datos): bool{
     }
 }
 
-function actualizarEmpresa(PDO $pdo, array $datos): bool{
+function actualizarEmpresa(PDO $pdo, array $datos): bool
+{
     try {
         $pdo->beginTransaction();
 
@@ -381,7 +419,8 @@ function actualizarEmpresa(PDO $pdo, array $datos): bool{
     }
 }
 
-function eliminarEmpresa(PDO $pdo, int $id_empresa): string{
+function eliminarEmpresa(PDO $pdo, int $id_empresa): string
+{
     /* $sql = "DELETE FROM empresa WHERE id_empresa = :id";
     $stmt = $pdo->prepare($sql);
     return $stmt->execute([':id' => $id_empresa]); */
@@ -397,7 +436,7 @@ function eliminarEmpresa(PDO $pdo, int $id_empresa): string{
         throw new Exception("Error al eliminar cliente: " . $e->getMessage());
     } */
 
-   // 1. Verificamos si la empresa tiene usuarios enlazados
+    // 1. Verificamos si la empresa tiene usuarios enlazados
     $sql_check = "SELECT COUNT(id_usuario) FROM usuarios WHERE Empresa_id = :id";
     $stmt_check = $pdo->prepare($sql_check);
     $stmt_check->execute([':id' => $id_empresa]);
@@ -433,7 +472,8 @@ function eliminarEmpresa(PDO $pdo, int $id_empresa): string{
 & */
 
 // |Obtenemos todos los usuarios 
-function obtenerAllusers(PDO $pdo): array{
+function obtenerAllusers(PDO $pdo): array
+{
     $sql = "SELECT u.id_usuario, u.foto_perfil, u.correo, u.nombre, u.apellido_pat, u.apellido_mat, u.Empresa_id, u.activo, e.razon_social
             FROM usuarios u 
             INNER JOIN empresa e ON u.Empresa_id = e.id_empresa
@@ -445,7 +485,8 @@ function obtenerAllusers(PDO $pdo): array{
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function insertarUsuario(PDO $pdo, array $datos): bool{
+function insertarUsuario(PDO $pdo, array $datos): bool
+{
     $foto = !empty($datos['foto_perfil']) ? $datos['foto_perfil'] : 'user.png';
     $sql = "INSERT INTO usuarios (foto_perfil, usuario_password, correo, nombre, apellido_pat, apellido_mat, Empresa_id, activo) 
             VALUES (:foto, :u_password, :correo, :u_name, :ape_pat, :ape_mat, :Empresa_id, :activo)";
@@ -463,7 +504,8 @@ function insertarUsuario(PDO $pdo, array $datos): bool{
     ]);
 }
 
-function actualizarUsuario(PDO $pdo, array $datos): bool{
+function actualizarUsuario(PDO $pdo, array $datos): bool
+{
 
     $fotoSql = !empty($datos['foto_perfil']) ? ", foto_perfil = :foto" : "";
 
@@ -493,13 +535,16 @@ function actualizarUsuario(PDO $pdo, array $datos): bool{
         ':id'           => $datos['id_usuario']
     ]);
 
-    if (!empty($datos['foto_perfil'])) { $params[':foto'] = $datos['foto_perfil']; }
+    if (!empty($datos['foto_perfil'])) {
+        $params[':foto'] = $datos['foto_perfil'];
+    }
 
     return $stmt->execute($params);
 }
 
 // |Eliminar usuario con candado
-function eliminarUsuario(PDO $pdo, int $id_usuario): string{
+function eliminarUsuario(PDO $pdo, int $id_usuario): string
+{
 
     /* $sql = "UPDATE usuarios SET activo = 'false' WHERE id_usuario = :id";
     $stmt = $pdo->prepare($sql);
@@ -544,12 +589,13 @@ function eliminarUsuario(PDO $pdo, int $id_usuario): string{
 & ======================================================- 
 & */
 
-function insertarProduct(PDO $pdo, array $datos): bool{
+function insertarProduct(PDO $pdo, array $datos): bool
+{
 
     $foto = !empty($datos['foto_product']) ? $datos['foto_product'] : 'producto.png';
     // Convertimos a mayúsculas
     $descripcion = mb_strtoupper($datos['descripcion_product'], 'UTF-8');
-    
+
     $sql = "INSERT INTO productos (descripcion_product, clave_product, precio_farmacia, precio_publico, foto_product, estatus) 
             VALUES (:descripcion, :c_product, :f_product ,:p_product, :foto, :estatus)";
     $stmt = $pdo->prepare($sql);
@@ -563,8 +609,9 @@ function insertarProduct(PDO $pdo, array $datos): bool{
     ]);
 }
 
-function actualizarProduct(PDO $pdo, array $datos): bool{
-   // Preparamos el fragmento de la foto
+function actualizarProduct(PDO $pdo, array $datos): bool
+{
+    // Preparamos el fragmento de la foto
     $fotoSql = !empty($datos['foto_product']) ? ", foto_product = :foto" : "";
     $descripcion = mb_strtoupper($datos['descripcion_product'], 'UTF-8');
 
@@ -582,19 +629,22 @@ function actualizarProduct(PDO $pdo, array $datos): bool{
         ':estatus'         => $datos['estatus'],
         ':id_product'      => $datos['id_product']
     ];
-    if (!empty($datos['foto_product'])) { $params[':foto'] = $datos['foto_product']; }
+    if (!empty($datos['foto_product'])) {
+        $params[':foto'] = $datos['foto_product'];
+    }
 
     $stmt->execute($params);
     return true;
 }
 
-function eliminarProduct(PDO $pdo, int $id_product): string{
+function eliminarProduct(PDO $pdo, int $id_product): string
+{
 
     /* $sql = "UPDATE usuarios SET activo = 'false' WHERE id_usuario = :id";
     $stmt = $pdo->prepare($sql);
     return $stmt->execute([':id' => $id_usuario]); */
     // Cambiamos el UPDATE por un DELETE FROM definitivo
-   /*  $sql = "DELETE FROM productos WHERE id_product = :id";
+    /*  $sql = "DELETE FROM productos WHERE id_product = :id";
     $stmt = $pdo->prepare($sql);
     return $stmt->execute([':id' => $id_product]); */
 
@@ -617,7 +667,6 @@ function eliminarProduct(PDO $pdo, int $id_product): string{
         $stmt->execute([':id' => $id_product]);
         return 'eliminado';
     }
-
 }
 
 /*  
@@ -635,7 +684,8 @@ function eliminarProduct(PDO $pdo, int $id_product): string{
 & */
 
 // |Obtener los usuarios Admin
-function obtenerusuarios(PDO $pdo, int $id_user_admin): array{
+function obtenerusuarios(PDO $pdo, int $id_user_admin): array
+{
     // Traemos el ID, el nombre, correo(Usuario) y su estatus
     $sql = "SELECT id_user_admin, usuario_lan, admin_nombre, admin_apell_pat, perfil, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios, estatus
             FROM usuarios_admin
@@ -647,7 +697,8 @@ function obtenerusuarios(PDO $pdo, int $id_user_admin): array{
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 // |Insertar nuevo usuario Admin
-function insertarUsuarioAdmin(PDO $pdo, array $datos): bool{
+function insertarUsuarioAdmin(PDO $pdo, array $datos): bool
+{
     $foto = !empty($datos['foto_perfil']) ? $datos['foto_perfil'] : 'user.png';
     $sql = "INSERT INTO usuarios_admin (usuario_lan, password, admin_nombre, admin_apell_pat, perfil, estatus, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios) 
             VALUES (:usr, :pass, :nom, :ape, :perfil, :est , :foto, :p1, :p2, :p3, :p4, :p5)";
@@ -670,7 +721,8 @@ function insertarUsuarioAdmin(PDO $pdo, array $datos): bool{
 }
 
 // |Actualizar usuario Admin
-function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool{
+function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
+{
     if (!empty($datos['foto_perfil'])) {
         $stmtFoto = $pdo->prepare("SELECT foto_perfil FROM usuarios_admin WHERE id_user_admin = :id");
         $stmtFoto->execute([':id' => $datos['id_user_admin']]);
@@ -776,14 +828,15 @@ function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool{
 & */
 
 // |Obtener los clientes(Empresa) para login
-function obtenerUsuarioEmpresaporCorreo (PDO $pdo, string $correo){
+function obtenerUsuarioEmpresaporCorreo(PDO $pdo, string $correo)
+{
     $sql = "SELECT id_usuario, nombre, apellido_pat, Empresa_id, correo, usuario_password, foto_perfil
             FROM usuarios
             WHERE correo = :correo AND activo = 'true'";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':correo' => $correo]);
-    
+
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
@@ -794,4 +847,3 @@ function obtenerUsuarioEmpresaporCorreo (PDO $pdo, string $correo){
 &        FIN: FUNCIONES LOGIN CLIENTES 
 & ======================================================- 
 & */
-?>

@@ -76,6 +76,47 @@ $(document).ready(function () {
 
     cargarTablaAdmin();
 
+    $(document).ready(function () {
+        // 1. Destruimos cualquier instancia previa que la plantilla haya creado por error
+        if ($('.select-permisos').hasClass("select2-hidden-accessible")) {
+            $('.select-permisos').select2('destroy');
+        }
+
+        // 2. Función de formato para colores e iconos
+        function formatState(state) {
+            if (!state.id) { return state.text; }
+
+            var $el = $(state.element);
+            var icon = $el.data('icon');
+            var color = $el.data('color');
+
+            var $state = $('<span class="d-flex align-items-center justify-content-start w-100"></span>');
+
+            if (icon) {
+                // Añadimos el icono. Asumo que usas Feather Icons basado en tu HTML
+                $state.append('<i class="' + icon + ' me-2"></i>');
+            }
+
+            $state.append('<span>' + state.text + '</span>');
+
+            if (color) {
+                $state.addClass(color);
+            }
+
+            return $state;
+        }
+
+        // 3. Inicializamos de forma segura dentro del modal
+        $('.select-permisos').select2({
+            // CRÍTICO: Apuntamos al modal-content en lugar del ID general del modal
+            dropdownParent: $('#modalUsersA .modal-content'),
+            templateResult: formatState,
+            templateSelection: formatState,
+            minimumResultsForSearch: Infinity,
+            width: '100%' // Asegura que no se colapse visualmente
+        });
+    });
+
     $('.show-pass, .show-pass2').click(function () {
         let input = $(this).siblings('input.password');
         let icon = $(this).find('i');

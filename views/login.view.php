@@ -4,12 +4,12 @@
     <!--! ================================================================ !-->
     <!--! [Start] Main Content !-->
     <!--! ================================================================ !-->
-    <main class="auth-cover-wrapper">
-        <div class="auth-cover-content-inner">
-            <div class="auth-cover-content-wrapper">
-                <div class="auth-img">
+    <main class="auth-cover-wrapper" style="background-color: #fff;">
+        <div class="auth-cover-content-inner" style="height:100vh; overflow: hidden">
+            <div class="auth-cover-content-wrapper" style="height:100%; overflow:hidden;">
+                <div class="auth-img" style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: center;">
                     <!-- <img src="assets/images/auth/auth-cover-login-bg.svg" alt="" class="img-fluid"> -->
-                    <img src="assets/images/auth/auth-cover-login.svg" alt="" class="img-fluid">
+                    <img src="assets/images/auth/auth-cover-login-bg.png" alt="" class="img-fluid" style="max-width: 90%; height: 90%; object-fit: cover; object-position: center;">
                 </div>
             </div>
         </div>

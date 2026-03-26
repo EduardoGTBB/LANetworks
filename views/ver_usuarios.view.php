@@ -277,11 +277,11 @@
                                         </div>
                                         <input class="file-upload" type="file" name="foto_perfil" accept="image/*"> -->
                                         <img src="assets/images/avatar/user.png" id="preview_foto" class="upload-pic img-fluid rounded h-100 w-100" alt="Perfil">
-                                        
+
                                         <div class="position-absolute start-0 top-0  h-100 w-100 d-flex align-items-center justify-content-center c-pointer upload-button" onclick="document.getElementById('input_foto').click()">
                                             <i class="feather feather-camera" aria-hidden="true"></i>
                                         </div>
-                                        
+
                                         <input class="file-upload d-none" type="file" name="foto_perfil" id="input_foto" accept="image/*">
                                     </div>
                                     <div class="d-flex flex-column gap-1">
@@ -379,7 +379,7 @@
                             </ul>
                         </div>
 
-                        
+
                         <div id="bloque_estatus">
                             <hr>
                             <div class="col-lg-8">
@@ -418,10 +418,10 @@
                                             </td>
                                             <td class="text-end">
                                                 <div class="form-group select-wd-lg">
-                                                    <select class="form-control" data-select2-selector="icon" name="mp_cotizador" required>
+                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_cotizador" required>
                                                         <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left">Desactivado</option>
+                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                        <option value="Desactivado" data-icon="feather-toggle-left" data-color="text-danger">Desactivado</option>
                                                     </select>
                                                 </div>
                                             </td>
@@ -438,10 +438,11 @@
                                             </td>
                                             <td class="text-end">
                                                 <div class="form-group select-wd-lg">
-                                                    <select class="form-control" data-select2-selector="icon" name="mp_ver_cotiz" required>
+                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_cotiz" required>
                                                         <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left">Desactivado</option>
+                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                        <option value="Desactivado" data-icon="feather-toggle-left"
+                                                        data-color="text-danger">Desactivado</option>
                                                     </select>
                                                 </div>
                                             </td>
@@ -458,10 +459,11 @@
                                             </td>
                                             <td class="text-end">
                                                 <div class="form-group select-wd-lg">
-                                                    <select class="form-control" data-select2-selector="icon" name="mp_ver_clientes" required>
+                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_clientes" required>
                                                         <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left">Desactivado</option>
+                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                        <option value="Desactivado" data-icon="feather-toggle-left"
+                                                        data-color="text-danger">Desactivado</option>
                                                     </select>
                                                 </div>
                                             </td>
@@ -478,10 +480,11 @@
                                             </td>
                                             <td class="text-end">
                                                 <div class="form-group select-wd-lg">
-                                                    <select class="form-control" data-select2-selector="icon" name="mp_ver_productos" required>
+                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_productos" required>
                                                         <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left">Desactivado</option>
+                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                        <option value="Desactivado" data-icon="feather-toggle-left"
+                                                        data-color="text-danger">Desactivado</option>
                                                     </select>
                                                 </div>
                                             </td>
@@ -498,10 +501,11 @@
                                             </td>
                                             <td class="text-end">
                                                 <div class="form-group select-wd-lg">
-                                                    <select class="form-control" data-select2-selector="icon" name="mp_ver_reportes" required>
+                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_reportes" required>
                                                         <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left">Desactivado</option>
+                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                        <option value="Desactivado" data-icon="feather-toggle-left"
+                                                        data-color="text-danger">Desactivado</option>
                                                     </select>
                                                 </div>
                                             </td>
@@ -518,10 +522,11 @@
                                             </td>
                                             <td class="text-end">
                                                 <div class="form-group select-wd-lg">
-                                                    <select class="form-control" data-select2-selector="icon" name="mp_ver_usuarios" required>
+                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_usuarios" required>
                                                         <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left">Desactivado</option>
+                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                        <option value="Desactivado" data-icon="feather-toggle-left"
+                                                        data-color="text-danger">Desactivado</option>
                                                     </select>
                                                 </div>
                                             </td>

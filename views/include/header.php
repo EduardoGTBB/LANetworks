@@ -1435,7 +1435,7 @@
             <!--! [Start] Header Right !-->
             <div class="header-right ms-auto">
                 <div class="d-flex align-items-center">
-                    <div class="dropdown nxl-h-item nxl-header-search">
+                    <!-- <div class="dropdown nxl-h-item nxl-header-search">
                         <a href="javascript:void(0);" class="nxl-head-link me-0" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                             <i class="feather-search"></i>
                         </a>
@@ -1634,10 +1634,10 @@
                                     </div>
                                 </div>
                                 <div class="dropdown-divider mt-3 mb-0"></div>
-                                <a href="javascript:void(0);" class="p-3 fs-10 fw-bold text-uppercase text-center d-block">Loar More</a> -->
+                                <a href="javascript:void(0);" class="p-3 fs-10 fw-bold text-uppercase text-center d-block">Loar More</a> --
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                     <!-- <div class="dropdown nxl-h-item nxl-header-language d-none d-sm-flex">
                         <a href="javascript:void(0);" class="nxl-head-link me-0 nxl-language-link" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                             <img src="assets/vendors/img/flags/4x3/us.svg" alt="" class="img-fluid wd-20" />
