@@ -239,7 +239,6 @@
                             <label class="form-label">Estatus de la cotización <span class="text-danger">*</span></label>
                             <select class="form-control" name="estatus" id="edit_estatus" data-select2-selector="status" required>
                                 <option value="Guardada">Guardada (En proceso)</option>
-                                <option value="Ganada (sin dirección registrada)">Ganada (sin dirección registrada)</option>
                                 <option value="Ganada">Ganada (Aprobada)</option>
                                 <option value="Perdida">Perdida (Rechazada)</option>
                             </select>

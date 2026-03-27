@@ -644,6 +644,7 @@
     <!--! BEGIN: Theme Customizer  !-->
     <script src="assets/js/theme-customizer-init.min.js"></script>
     <!--! END: Theme Customizer !-->
+    <script src="assets/js/main.js"></script>
 </body>
 
 </html>

@@ -1,8 +1,8 @@
 <?php include('views/include/head.php'); ?>
 
 <body>
-    <?php include('views/include/sidebar.php');
-    include('views/include/header.php'); ?>
+    <?php include('views/include/sidebar.php');?>
+    <?php include('views/include/header.php');?>
     <main class="nxl-container">
         <div class="nxl-content">
             <div class="page-header">
@@ -97,11 +97,9 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="d-flex justify-content-center mt-4 mb-5 w-100">
-                            <button type="submit" class="btn btn-lg btn-primary">Completar Venta</button>
-                        </div>
+                    <div class="d-flex justify-content-center align-items-center gap-4 mt-4 mb-5 w-100">
+                        <a href="ver_cotizaciones.php" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a>
+                        <button type="submit" class="btn btn-lg btn-primary px-5 text-uppercase fw-bold">Completar Venta</button>
                     </div>
                 </form>
             </div>

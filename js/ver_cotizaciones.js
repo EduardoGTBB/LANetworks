@@ -198,8 +198,13 @@ $(document).ready(function () {
                 $selEmp.empty().append('<option value="">Selecciona un cliente...</option>');
                 windowEmpresas.forEach(emp => { $selEmp.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`); });
                 $selEmp.val(cot.Empresa_id).select2({ dropdownParent: $('#modalEditarCotizacion') });
-                $('#edit_estatus').val(cot.estatus ? cot.estatus : 'Guardada').trigger('change');
-
+                
+                let estatusBD = cot.estatus ? cot.estatus : 'Guardada';
+                if (estatusBD === 'Ganada (sin dirección registrada)') {
+                    estatusBD = 'Ganada';
+                }
+                /* $('#edit_estatus').val(cot.estatus ? cot.estatus : 'Guardada').trigger('change');*/
+                $('#edit_estatus').val(estatusBD).trigger('change');
 
                 let $colSolicitante = $('#edit_select_solicitante').closest('div[class^="col-"]');
                 let $colPrecio = $('#tipo_precio').closest('div[class^="col-"]');
@@ -357,17 +362,29 @@ $(document).ready(function () {
     $('#formEditarCotizacion').on('submit', function (e) {
         e.preventDefault();
         calcEdit();
+        
+        // Obtenemos los datos del formulario como un arreglo para poder modificarlos antes de enviarlos
+        let formData = $(this).serializeArray();
+        let uiEstatus = $('#edit_estatus').val();
+
+        // Si el usuario eligió "Ganada", le decimos a la base de datos que la deje en pausa
+        if (uiEstatus === 'Ganada') {
+            let estatusIndex = formData.findIndex(item => item.name === 'estatus');
+            if (estatusIndex !== -1) {
+                formData[estatusIndex].value = 'Ganada (sin dirección registrada)';
+            }
+        }
         $.ajax({
             url: 'api/api_ver_cotizaciones.php',
             type: 'POST',
-            data: $(this).serialize(),
+            data: $.param(formData), // Convertimos el arreglo de vuelta a texto para mandarlo
             success: function (res) {
                 if (res.status === 'success') {
                     $('#modalEditarCotizacion').modal('hide');
                     $('.modal-backdrop').remove();
 
-                    let newestatus = $('#edit_estatus').val();
-                    if (newestatus === 'Ganada (sin dirección registrada)') {
+                    // Si eligieron Ganada, ¡Redirigimos inmediatamente!
+                    if (uiEstatus === 'Ganada') {
                         window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val();
                     } else {
                         cargarTablaPrincipal();
