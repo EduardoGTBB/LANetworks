@@ -9,3 +9,4 @@ if (!isset($_SESSION['id_user_admin']) && !isset($_SESSION['id_usuario_cliente']
 
 
 require 'views/ver_cotizaciones.view.php';
+?>

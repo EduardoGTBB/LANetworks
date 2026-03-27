@@ -8,3 +8,4 @@ if (!isset($_SESSION['id_user_admin']) || $_SESSION['perfil'] !== 'admin' ) {
 }
 
 require 'views/ver_cotizaciones_all.view.php';
+?>
