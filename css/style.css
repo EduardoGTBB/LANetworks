@@ -1,0 +1,72 @@
+/* 1. El contenedor padre ahora controla la posición en la pantalla */
+#back-top {
+    position: fixed;
+    right: 30px;
+    bottom: 20px;
+    z-index: 99999;
+    display: flex;
+    align-items: center; 
+}
+
+/* 2. El diseño del botón verde */
+#back-top > a {
+    background-color: #25D366;
+    color: #fff !important;
+    height: 70px;
+    width: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+#back-top > a i {
+    font-size: 45px !important;
+}
+
+#back-top > a:hover {
+    background-color: #1ebe57;
+    transform: scale(1.1);
+    color: #fff !important;
+}
+
+/* 3. El diseño del Globo de Mensaje (Tooltip) */
+.whatsapp-tooltip {
+    position: absolute;
+    right: 75px;
+    background-color: #fff;
+    color: #333;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    white-space: nowrap;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(15px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.whatsapp-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -6px;
+    transform: translateY(-50%);
+    border-width: 6px 0 6px 6px;
+    border-style: solid;
+    border-color: transparent transparent transparent #fff;
+}
+
+#back-top:hover .whatsapp-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
