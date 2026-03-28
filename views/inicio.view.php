@@ -99,10 +99,11 @@
                                 <div class="d-flex align-items-start justify-content-between mb-4">
                                     <div class="d-flex gap-4 align-items-center">
                                         <div class="avatar-text avatar-lg bg-gray-200">
-                                            <i class="feather-dollar-sign"></i>
+                                            <!-- <i class="feather-dollar-sign"></i> -->
+                                            <i class="feather-box"></i>
                                         </div>
                                         <div>
-                                            <div class="fs-4 fw-bold text-dark"><span class="counter">45</span></div>
+                                            <div class="fs-4 fw-bold text-dark"><span id="dash_total">0</span></div>
                                             <h3 class="fs-13 fw-semibold text-truncate-1-line">Cotizaciones</h3>
                                         </div>
                                     </div>
@@ -114,12 +115,12 @@
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Total cotizaciones </a>
                                         <div class="w-100 text-end">
-                                            <span class="fs-12 text-dark">45</span>
-                                            <!--<span class="fs-11 text-muted">(56%)</span>-->
+                                            <span class="fs-12 text-dark" id="dash_total_sub">0</span>
+                                            <span class="fs-11 text-muted" id="dash_total_per">(100%)</span>
                                         </div>
                                     </div>
                                     <div class="progress mt-2 ht-3">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 56%"></div>
+                                        <div class="progress-bar bg-primary" id="dash_total_bar" role="progressbar" style="width: 100%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -136,7 +137,7 @@
                                             <i class="feather-cast"></i>
                                         </div>
                                         <div>
-                                            <div class="fs-4 fw-bold text-dark"><span class="counter">13</span></div>
+                                            <div class="fs-4 fw-bold text-dark"><span id="dash_pendientes">0</span></div>
                                             <h3 class="fs-13 fw-semibold text-truncate-1-line">Pendientes</h3>
                                         </div>
                                     </div>
@@ -148,12 +149,12 @@
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Cotizaciones</a>
                                         <div class="w-100 text-end">
-                                            <span class="fs-12 text-dark">13</span>
-                                            <!--<span class="fs-11 text-muted">(63%)</span>-->
+                                            <span class="fs-12 text-dark" id="dash_pendientes_sub">0</span>
+                                            <span class="fs-11 text-muted" id="dash_pendientes_per">(0%)</span>
                                         </div>
                                     </div>
                                     <div class="progress mt-2 ht-3">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 63%"></div>
+                                        <div class="progress-bar bg-warning" id="dash_pendientes_bar" role="progressbar" style="width: 0%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -170,8 +171,8 @@
                                             <i class="feather-briefcase"></i>
                                         </div>
                                         <div>
-                                            <div class="fs-4 fw-bold text-dark"><span class="counter">10</span></div>
-                                            <h3 class="fs-13 fw-semibold text-truncate-1-line">Por aprobar</h3>
+                                            <div class="fs-4 fw-bold text-dark"><span id="dash_ganadas">0</span></div>
+                                            <h3 class="fs-13 fw-semibold text-truncate-1-line">Ganadas</h3>
                                         </div>
                                     </div>
                                     <a href="javascript:void(0);" class="">
@@ -182,12 +183,12 @@
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Cotizaciones</a>
                                         <div class="w-100 text-end">
-                                            <span class="fs-12 text-dark">10</span>
-                                            <!--<span class="fs-11 text-muted">(78%)</span>-->
+                                            <span class="fs-12 text-dark" id="dash_ganadas_sub">0</span>
+                                            <span class="fs-11 text-muted" id="dash_ganadas_per">(0%)</span>
                                         </div>
                                     </div>
                                     <div class="progress mt-2 ht-3">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 78%"></div>
+                                        <div class="progress-bar bg-success" id="dash_ganadas_bar" role="progressbar" style="width: 0%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -204,7 +205,7 @@
                                             <i class="feather-activity"></i>
                                         </div>
                                         <div>
-                                            <div class="fs-4 fw-bold text-dark"><span class="counter">$23,000</span></div>
+                                            <div class="fs-4 fw-bold text-dark"><span id="dash_monto">$0.00</span></div>
                                             <h3 class="fs-13 fw-semibold text-truncate-1-line">Monto Total</h3>
                                         </div>
                                     </div>
@@ -216,12 +217,12 @@
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line"> Cotizaciones del mes </a>
                                         <div class="w-50 text-end">
-                                            <!--<span class="fs-12 text-dark">$23,000</span>-->
-                                            <span class="fs-11 text-muted">5</span>
+                                            <span class="fs-12 text-dark" id="dash_monto_sub">$0.000</span>
+                                            <span class="fs-11 text-muted" id="dash_monto_per">(100%)</span>
                                         </div>
                                     </div>
                                     <div class="progress mt-2 ht-3">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 46%"></div>
+                                        <div class="progress-bar bg-danger" id="dash_monto_bar" role="progressbar" style="width: 100%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -270,37 +271,38 @@
                                 <div class="row g-4">
                                     <div class="col-lg-3">
                                         <div class="p-3 border border-dashed rounded">
-                                            <div class="fs-12 text-muted mb-1">Awaiting</div>
-                                            <h6 class="fw-bold text-dark">$5,486</h6>
+                                            <div class="fs-12 text-muted mb-1">Pendientes</div>
+                                            <h6 class="fw-bold text-dark" id="dash_chart_pendientes">$0.00</h6>
                                             <div class="progress mt-2 ht-3">
-                                                <div class="progress-bar bg-primary" role="progressbar" style="width: 81%"></div>
+                                                <div class="progress-bar bg-primary" id="dash_chart_pendientes_bar" role="progressbar" style="width: 0%"></div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-lg-3">
                                         <div class="p-3 border border-dashed rounded">
-                                            <div class="fs-12 text-muted mb-1">Completed</div>
-                                            <h6 class="fw-bold text-dark">$9,275</h6>
+                                            <div class="fs-12 text-muted mb-1">Ganadas</div>
+                                            <h6 class="fw-bold text-dark" id="dash_chart_ganadas">$0.00</h6>
                                             <div class="progress mt-2 ht-3">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 82%"></div>
+                                                <div class="progress-bar bg-success" id="dash_chart_ganadas_bar"role="progressbar" style="width: 0%"></div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-lg-3">
                                         <div class="p-3 border border-dashed rounded">
-                                            <div class="fs-12 text-muted mb-1">Rejected</div>
-                                            <h6 class="fw-bold text-dark">$3,868</h6>
+                                            <div class="fs-12 text-muted mb-1">Perdidas</div>
+                                            <h6 class="fw-bold text-dark" id="dash_chart_perdidas_">$0.00</h6>
                                             <div class="progress mt-2 ht-3">
-                                                <div class="progress-bar bg-danger" role="progressbar" style="width: 68%"></div>
+                                                <div class="progress-bar bg-success" id="dash_chart_perdidas_bar" role="progressbar" style="width: 0%"></div>
                                             </div>
                                         </div>
                                     </div>
+                                    
                                     <div class="col-lg-3">
                                         <div class="p-3 border border-dashed rounded">
-                                            <div class="fs-12 text-muted mb-1">Revenue</div>
-                                            <h6 class="fw-bold text-dark">$50,668</h6>
+                                            <div class="fs-12 text-muted mb-1">Totales</div>
+                                            <h6 class="fw-bold text-dark" id="dash_chart_total">$0.00</h6>
                                             <div class="progress mt-2 ht-3">
-                                                <div class="progress-bar bg-dark" role="progressbar" style="width: 75%"></div>
+                                                <div class="progress-bar bg-dark" role="progressbar" style="width: 0%"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -314,16 +316,17 @@
                         <div class="card stretch stretch-full overflow-hidden">
                             <div class="bg-primary text-white">
                                 <div class="p-4">
-                                    <span class="badge bg-light text-primary text-dark float-end">12%</span>
+                                    <span class="badge bg-light text-primary text-dark float-end" id="dash_mes_porcentaje">0%</span>
                                     <div class="text-start">
-                                        <h4 class="text-reset">5</h4>
+                                        <h4 class="text-reset" id="dash_mes_actual">0</h4>
                                         <p class="text-reset m-0">Cotizaciones del mes</p>
                                     </div>
                                 </div>
                                 <div id="total-sales-color-graph"></div>
                             </div>
-                            <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between">
+                            <div class="card-body" id="dash_lista_recientes">
+                                <div class="text-center text-muted py-4">Cargando datos...</div>
+                                <!-- <div class="d-flex align-items-center justify-content-between">
                                     <div class="hstack gap-3">
                                         <div class="avatar-image avatar-lg p-2 rounded">
                                             <img class="img-fluid" src="assets/images/brand/shopify.png" alt="" />
@@ -369,7 +372,7 @@
                                         <div class="fw-bold text-dark">$1250</div>
                                         <div class="fs-12 text-end">26/02/2026</div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                             <a href="ver_cotizaciones.php" class="card-footer fs-11 fw-bold text-uppercase text-center py-4">Ver cotizaciones</a>
                         </div>
@@ -644,7 +647,7 @@
     <!--! BEGIN: Theme Customizer  !-->
     <script src="assets/js/theme-customizer-init.min.js"></script>
     <!--! END: Theme Customizer !-->
-    <script src="assets/js/main.js"></script>
+    <script src="js/inicio.js"></script>
 </body>
 
 </html>

@@ -1056,4 +1056,113 @@ function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, arra
 & ======================================================- 
 & */
 
+/*   
+& ======================================================
+&        INICIO: FUNCIONES INICIO
+& ======================================================- 
+& */
+
+// |Estadisticas de inicio
+function obtenerEstadisticasDashboard(PDO $pdo, int $id_cliente, int $id_admin, string $perfil) {
+    $where = "1=1";
+    $params = [];
+    
+    // Filtro por roles
+    if ($id_cliente > 0) {
+        // Es un cliente del portal
+        $where = "Usuario_empresa_id = :id_cliente";
+        $params[':id_cliente'] = $id_cliente;
+    } elseif ($perfil !== 'admin' && $id_admin > 0) {
+        // Es un operativo (LAN)
+        $where = "Usuario_admin_id = :id_admin";
+        $params[':id_admin'] = $id_admin;
+    }
+    // Si es admin, $where se queda como "1=1" y trae todo
+
+    $sql = "SELECT 
+                COUNT(id_cotizacion) as total_cotizaciones,
+                COALESCE(SUM(CASE WHEN estatus = 'Guardada' THEN 1 ELSE 0 END), 0) as pendientes,
+                COALESCE(SUM(CASE WHEN estatus LIKE 'Ganada%' THEN 1 ELSE 0 END), 0) as ganadas,
+                COALESCE(SUM(CASE WHEN estatus = 'Perdida' THEN 1 ELSE 0 END), 0) as perdidas,
+                
+                COALESCE(SUM(CASE WHEN estatus LIKE 'Ganada%' THEN precio_iva ELSE 0 END), 0) as monto_total,
+                COALESCE(SUM(CASE WHEN estatus = 'Guardada' THEN precio_iva ELSE 0 END), 0) as monto_pendientes,
+                COALESCE(SUM(CASE WHEN estatus = 'Perdida' THEN precio_iva ELSE 0 END), 0) as monto_perdidas,
+                COALESCE(SUM(precio_iva), 0) as monto_total_general,
+                
+                COALESCE(SUM(CASE WHEN MONTH(fecha_cot) = MONTH(CURRENT_DATE()) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE()) THEN 1 ELSE 0 END), 0) as cots_mes_actual,
+                COALESCE(SUM(CASE WHEN MONTH(fecha_cot) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH) THEN 1 ELSE 0 END), 0) as cots_mes_pasado
+                
+            FROM cotizacion 
+            WHERE $where";
+            
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function obtenerGraficaCotizaciones(PDO $pdo, int $id_cliente, int $id_admin, string $perfil) {
+    $where = "1=1";
+    $params = [];
+    
+    if ($id_cliente > 0) {
+        $where = "Usuario_empresa_id = :id_cliente";
+        $params[':id_cliente'] = $id_cliente;
+    } elseif ($perfil !== 'admin' && $id_admin > 0) {
+        $where = "Usuario_admin_id = :id_admin";
+        $params[':id_admin'] = $id_admin;
+    }
+
+    // Agrupamos el importe (precio_iva) por mes usando MySQL
+    /* $sql = "SELECT DATE_FORMAT(fecha_cot, '%b %Y') as mes_texto, 
+                   DATE_FORMAT(fecha_cot, '%Y-%m') as mes, 
+                   SUM(precio_iva) as total
+            FROM cotizacion
+            WHERE $where AND fecha_cot >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
+            GROUP BY mes, mes_texto
+            ORDER BY mes ASC"; */
+
+
+    $sql = "SELECT CONCAT('Semana ', WEEK(fecha_cot, 1)) as mes_texto, 
+                   YEARWEEK(fecha_cot, 1) as semana, 
+                   SUM(precio_iva) as total
+            FROM cotizacion
+            WHERE $where AND fecha_cot >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 WEEK)
+            GROUP BY semana, mes_texto
+            ORDER BY semana ASC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function obtenerCotizacionesRecientes(PDO $pdo, int $id_cliente, int $id_admin, string $perfil) {
+    $where = "1=1";
+    $params = [];
+    
+    if ($id_cliente > 0) {
+        $where = "c.Usuario_empresa_id = :id_cliente";
+        $params[':id_cliente'] = $id_cliente;
+    } elseif ($perfil !== 'admin' && $id_admin > 0) {
+        $where = "c.Usuario_admin_id = :id_admin";
+        $params[':id_admin'] = $id_admin;
+    }
+
+    $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva, c.estatus, e.razon_social 
+            FROM cotizacion c
+            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
+            WHERE $where
+            ORDER BY c.id_cotizacion DESC 
+            LIMIT 3";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/*  
+& ======================================================
+&        FIN: FUNCIONES INICIO
+& ======================================================- 
+& */
 
