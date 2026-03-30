@@ -17,6 +17,7 @@
         // Si es cliente, forzamos que SOLO vea el cotizador
         $permisos['mp_cotizador'] = 'Activado';
         $permisos['mp_ver_cotiz'] = 'Activado';
+        $ver_whatsapp = 'Activado';
     } else {
         // Si es administrador/operativo de LAN, leemos sus permisos reales de la BD
         try {
@@ -34,6 +35,7 @@
                 
                 $permisos['mp_ver_all_cotiz'] = $es_admin_maestro ? 'Activado' : 'Desactivado';
                 $permisos['mp_ver_reportes'] = $es_admin_maestro ? 'Activado' : 'Desactivado';
+                $ver_whatsapp = 'Desactivado';
                 
             }
         } catch (Exception $e) {

@@ -217,7 +217,7 @@
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line"> Cotizaciones del mes </a>
                                         <div class="w-50 text-end">
-                                            <span class="fs-12 text-dark" id="dash_monto_sub">$0.000</span>
+                                            <span class="fs-12 text-dark" id="dash_monto_sub">$0.00</span>
                                             <span class="fs-11 text-muted" id="dash_monto_per">(100%)</span>
                                         </div>
                                     </div>
@@ -290,9 +290,9 @@
                                     <div class="col-lg-3">
                                         <div class="p-3 border border-dashed rounded">
                                             <div class="fs-12 text-muted mb-1">Perdidas</div>
-                                            <h6 class="fw-bold text-dark" id="dash_chart_perdidas_">$0.00</h6>
+                                            <h6 class="fw-bold text-dark" id="dash_chart_perdidas">$0.00</h6>
                                             <div class="progress mt-2 ht-3">
-                                                <div class="progress-bar bg-success" id="dash_chart_perdidas_bar" role="progressbar" style="width: 0%"></div>
+                                                <div class="progress-bar bg-danger" id="dash_chart_perdidas_bar" role="progressbar" style="width: 0%"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -302,7 +302,7 @@
                                             <div class="fs-12 text-muted mb-1">Totales</div>
                                             <h6 class="fw-bold text-dark" id="dash_chart_total">$0.00</h6>
                                             <div class="progress mt-2 ht-3">
-                                                <div class="progress-bar bg-dark" role="progressbar" style="width: 0%"></div>
+                                                <div class="progress-bar bg-dark" id="dash_chart_total_bar" role="progressbar" style="width: 100%"></div>
                                             </div>
                                         </div>
                                     </div>

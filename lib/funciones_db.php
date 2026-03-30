@@ -1091,7 +1091,8 @@ function obtenerEstadisticasDashboard(PDO $pdo, int $id_cliente, int $id_admin, 
                 COALESCE(SUM(precio_iva), 0) as monto_total_general,
                 
                 COALESCE(SUM(CASE WHEN MONTH(fecha_cot) = MONTH(CURRENT_DATE()) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE()) THEN 1 ELSE 0 END), 0) as cots_mes_actual,
-                COALESCE(SUM(CASE WHEN MONTH(fecha_cot) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH) THEN 1 ELSE 0 END), 0) as cots_mes_pasado
+                COALESCE(SUM(CASE WHEN MONTH(fecha_cot) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH) THEN 1 ELSE 0 END), 0) as cots_mes_pasado, 
+                COALESCE(SUM(CASE WHEN estatus LIKE 'Ganada%' AND MONTH(fecha_cot) = MONTH(CURRENT_DATE()) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE()) THEN precio_iva ELSE 0 END), 0) as monto_mes_actual
                 
             FROM cotizacion 
             WHERE $where";
