@@ -40,7 +40,7 @@ try {
     // ==========================================
     // METODO POST: Guardar la Cotización
     // ==========================================
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'crear') {
         
         $empresa_id = (int)($_POST['Empresa_id'] ?? 0);
         $usuario_id = (int)($_POST['Usuario_id'] ?? 0);
@@ -58,6 +58,7 @@ try {
         }
 
         $id_user_admin = isset($_SESSION['id_user_admin']) ? (int)$_SESSION['id_user_admin'] : null;
+        $es_cliente = isset($_SESSION['id_usuario_cliente']);
 
         // Datos principales
         $datosCotizacion = [
@@ -67,11 +68,13 @@ try {
             'usuario_id'    => $usuario_id,
             'fecha_cot'     => $_POST['fecha_cot'] ?? date('Y-m-d'),
             'importe_total' => (float)($_POST['sub_total'] ?? 0),
-            'comentarios'   => '',
+            'comentarios'   => trim($_POST['comentarios'] ?? ''),
             'precio_iva'    => (float)($_POST['total_amount'] ?? 0),
             'porcentaje_iva'=> (float)($_POST['porcentaje_iva'] ?? 0),
             'tipo_precio'   => $tipo_precio,
-            'division'      => $division
+            'division'      => $division,
+            'estatus'        => $es_cliente ? 'Por aprobar' : 'Guardado'
+            
         ];
 
         // Procesar productos
@@ -98,7 +101,7 @@ try {
         }
 
         $nuevo_folio = saveCotizacion($pdo, $datosCotizacion, $detalles);
-        echo json_encode(['status' => 'success', 'message' => "La cotización #$nuevo_folio se guardó correctamente."]);
+        echo json_encode(['status' => 'success', 'message' => "La cotización #$nuevo_folio se guardó correctamente.", 'id_cotizacion' => $nuevo_folio]);
     }
 
 } catch (Exception $e) {

@@ -56,24 +56,34 @@ $(document).ready(function () {
                     let apellidoSol = cot.apellido_pat ? cot.apellido_pat : '';
                     let solicitante = `${nombreSol} ${apellidoSol}`.trim();
                     let razonSoc = cot.razon_social ? cot.razon_social : 'Sin Empresa';
+                    
                     let badgeColor = 'bg-soft-primary text-primary'; // Por defecto Guardada
-                    let estatusTexto = cot.estatus ? cot.estatus : 'Guardada';
-                    if (estatusTexto === 'Ganada (sin dirección registrada)') badgeColor = 'bg-soft-warning text-warning';
-                    if (estatusTexto === 'Ganada') badgeColor = 'bg-soft-success text-success';
-                    if (estatusTexto === 'Perdida') badgeColor = 'bg-soft-danger text-danger';
-
+                    let estatusTexto = cot.estatus ? cot.estatus : 'Guardado';
+                    
+                    if (estatusTexto === 'Autorizada (sin dirección)') badgeColor = 'bg-soft-warning text-warning';
+                    if (estatusTexto === 'Autorizada (información completa)') badgeColor = 'bg-soft-success text-success';
+                    if (estatusTexto === 'No autorizada') badgeColor = 'bg-soft-danger text-danger';
 
                     let btnCompletarVenta = '';
-                    if (estatusTexto === 'Ganada (sin dirección registrada)') {
-                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md bg-soft-warning border border-warning" style="animation: pulse 2s infinite;">
+                    if (estatusTexto === 'Autorizada (sin dirección)' || estatusTexto === 'Por aprobar') {
+                        let colorIcon = estatusTexto === 'Por aprobar' ? 'text-primary' : 'text-warning';
+                        let latido = estatusTexto === 'Autorizada (sin dirección)' ? 'style="animation: pulse 2s infinite;"' : '';
+
+                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md         bg-soft-light border">
+                                            <abbr title="Gestionar Direcciones" style="text-decoration:none;">
+                                                <i class="feather-map-pin ${colorIcon}"></i>
+                                            </abbr>
+                                        </a>`;
+                    }
+
+                    /* `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md bg-soft-warning border border-warning" style="animation: pulse 2s infinite;">
                                                 <abbr title="¡Faltan Direcciones! Haz clic para completar la venta" style="text-decoration:none;">
                                                     <i class="feather-map-pin text-warning"></i>
                                                 </abbr>
-                                             </a>`;
-                    }
-
+                                             </a>` */
                     let btnEliminar = '';
-                    let cotizacionCerrada = (estatusTexto === 'Ganada' || estatusTexto === 'Perdida');
+                    // let cotizacionCerrada = (estatusTexto === 'Autorizada (sin dirección)' || estatusTexto === 'No autorizada');
+                    let cotizacionCerrada = (estatusTexto === 'Autorizada (información completa)' || estatusTexto === 'No autorizada');
 
                     // Si no está cerrada, O si el usuario es Admin, mostramos el botón de basura
                     if (!cotizacionCerrada || USER_PERFIL === 'admin') {
@@ -119,15 +129,15 @@ $(document).ready(function () {
                         lengthChange: false,
                         ordering: false,
                         searching: false,
-                        info: true, 
+                        info: true,
                         dom: "<'table-responsive'tr>" +
-                             "<'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
+                            "<'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
 
                         drawCallback: function () {
                             // Le agregamos 'pagination-sm' para hacer los botones más pequeños
                             // y 'mb-0' para quitar cualquier margen inferior sobrante
                             $('.dataTables_paginate > .pagination').addClass('pagination-sm mb-0');
-                            
+
                         }
                     });
                 }
@@ -182,7 +192,7 @@ $(document).ready(function () {
                 let cot = res.cotizacion;
                 let dets = res.detalles;
 
-                let isReadOnly = (cot.estatus === 'Ganada' || cot.estatus === 'Perdida');
+                let isReadOnly = (cot.estatus === 'Autorizada (información completa)' || cot.estatus === 'No autorizada');
                 $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', false);
                 $('#edit_add_row').show();
                 $('#formEditarCotizacion button[type="submit"]').show();
@@ -198,10 +208,10 @@ $(document).ready(function () {
                 $selEmp.empty().append('<option value="">Selecciona un cliente...</option>');
                 windowEmpresas.forEach(emp => { $selEmp.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`); });
                 $selEmp.val(cot.Empresa_id).select2({ dropdownParent: $('#modalEditarCotizacion') });
-                
-                let estatusBD = cot.estatus ? cot.estatus : 'Guardada';
-                if (estatusBD === 'Ganada (sin dirección registrada)') {
-                    estatusBD = 'Ganada';
+
+                let estatusBD = cot.estatus ? cot.estatus : 'Guardado';
+                if (estatusBD === 'Autorizada (sin dirección)') {
+                    estatusBD = 'Autorizada (información completa)';
                 }
                 /* $('#edit_estatus').val(cot.estatus ? cot.estatus : 'Guardada').trigger('change');*/
                 $('#edit_estatus').val(estatusBD).trigger('change');
@@ -232,11 +242,11 @@ $(document).ready(function () {
                     if ($('#hidden_edit_empresa').length === 0) {
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
-                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_estatus" name="estatus" value="${cot.estatus ? cot.estatus : 'Guardada'}">`);
+                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_estatus" name="estatus" value="${cot.estatus ? cot.estatus : 'Guardado'}">`);
                     } else {
                         $('#hidden_edit_empresa').val(cot.Empresa_id);
                         $('#hidden_edit_precio').val(cot.tipo_precio);
-                        $('#hidden_edit_estatus').val(cot.estatus ? cot.estatus : 'Guardada');
+                        $('#hidden_edit_estatus').val(cot.estatus ? cot.estatus : 'Guardado');
                     }
                 } /* else {
                     $('#fila_estatus_lan').show();
@@ -362,16 +372,20 @@ $(document).ready(function () {
     $('#formEditarCotizacion').on('submit', function (e) {
         e.preventDefault();
         calcEdit();
-        
+
+        let btnSubmit = $(this).find('button[type="submit"]');
+        let textoOriginal = btnSubmit.text();
+        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...');
+
         // Obtenemos los datos del formulario como un arreglo para poder modificarlos antes de enviarlos
         let formData = $(this).serializeArray();
         let uiEstatus = $('#edit_estatus').val();
 
         // Si el usuario eligió "Ganada", le decimos a la base de datos que la deje en pausa
-        if (uiEstatus === 'Ganada') {
+        if (uiEstatus === 'Autorizada (información completa)') {
             let estatusIndex = formData.findIndex(item => item.name === 'estatus');
             if (estatusIndex !== -1) {
-                formData[estatusIndex].value = 'Ganada (sin dirección registrada)';
+                formData[estatusIndex].value = 'Autorizada (sin dirección)';
             }
         }
         $.ajax({
@@ -384,7 +398,7 @@ $(document).ready(function () {
                     $('.modal-backdrop').remove();
 
                     // Si eligieron Ganada, ¡Redirigimos inmediatamente!
-                    if (uiEstatus === 'Ganada') {
+                    if (uiEstatus === 'Autorizada (información completa)') {
                         window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val();
                     } else {
                         cargarTablaPrincipal();

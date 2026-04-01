@@ -1022,9 +1022,14 @@ function obtenerDomicilioPorCotizacion(PDO $pdo, int $id_cotizacion){
 }
 
 // |Guardar las direccioens ligadas
-function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, array $envio): bool {
+function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, array $envio, bool $es_cliente = false): bool {
     try {
         $pdo->beginTransaction();
+
+        // 0. Borrar las direcciones anteriores si existían (para evitar duplicados al editar)
+        $pdo->prepare("DELETE FROM domicilio_fiscal WHERE Cotizacion_id = ?")->execute([$id_cot]);
+        $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE Cotizacion_id = ?")->execute([$id_cot]);
+        $pdo->prepare("DELETE FROM domicilio_envio WHERE Cotizacion_id = ?")->execute([$id_cot]);
 
         // 1. Insertar Fiscal
         $stmtF = $pdo->prepare("INSERT INTO domicilio_fiscal (Cotizacion_id, calle_numero_fiscal, colonia_fiscal, localidad_fiscal, cp_fiscal, municipio_fiscal, estado_fiscal) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -1038,9 +1043,11 @@ function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, arra
         $stmtE = $pdo->prepare("INSERT INTO domicilio_envio (Cotizacion_id, calle_numero_envio, colonia_envio, localidad_envio, cp_envio, municipio_envio, estado_envio) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmtE->execute([$id_cot, $envio['calle'], $envio['colonia'], $envio['localidad'], $envio['cp'], $envio['municipio'], $envio['estado']]);
 
-        // 4. Cambiar estatus definitivo a Ganada
-        $stmtCot = $pdo->prepare("UPDATE cotizacion SET estatus = 'Ganada' WHERE id_cotizacion = ?");
-        $stmtCot->execute([$id_cot]);
+        // 4. Cambiar estatus definitivo SOLO si el que guarda es un empleado de LAN
+        if (!$es_cliente) {
+            $stmtCot = $pdo->prepare("UPDATE cotizacion SET estatus = 'Autorizada (información completa)' WHERE id_cotizacion = ?");
+            $stmtCot->execute([$id_cot]);
+        }
 
         $pdo->commit();
         return true;
@@ -1048,6 +1055,24 @@ function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, arra
         $pdo->rollBack();
         throw $e;
     }
+}
+
+function obtenerDireccionesCotizacion(PDO $pdo, int $id_cotizacion) {
+    $data = [];
+    
+    $stmtF = $pdo->prepare("SELECT * FROM domicilio_fiscal WHERE Cotizacion_id = ?");
+    $stmtF->execute([$id_cotizacion]);
+    $data['fiscal'] = $stmtF->fetch(PDO::FETCH_ASSOC);
+
+    $stmtC = $pdo->prepare("SELECT * FROM domicilio_cert_calib WHERE Cotizacion_id = ?");
+    $stmtC->execute([$id_cotizacion]);
+    $data['cert'] = $stmtC->fetch(PDO::FETCH_ASSOC);
+
+    $stmtE = $pdo->prepare("SELECT * FROM domicilio_envio WHERE Cotizacion_id = ?");
+    $stmtE->execute([$id_cotizacion]);
+    $data['envio'] = $stmtE->fetch(PDO::FETCH_ASSOC);
+
+    return $data;
 }
 
 /*  
@@ -1081,19 +1106,19 @@ function obtenerEstadisticasDashboard(PDO $pdo, int $id_cliente, int $id_admin, 
 
     $sql = "SELECT 
                 COUNT(id_cotizacion) as total_cotizaciones,
-                COALESCE(SUM(CASE WHEN estatus = 'Guardada' THEN 1 ELSE 0 END), 0) as pendientes,
-                COALESCE(SUM(CASE WHEN estatus LIKE 'Ganada%' THEN 1 ELSE 0 END), 0) as ganadas,
-                COALESCE(SUM(CASE WHEN estatus = 'Perdida' THEN 1 ELSE 0 END), 0) as perdidas,
+                COALESCE(SUM(CASE WHEN estatus IN ('Guardado', 'Por aprobar') THEN 1 ELSE 0 END), 0) as pendientes,
+                COALESCE(SUM(CASE WHEN estatus LIKE 'Autorizada%' THEN 1 ELSE 0 END), 0) as ganadas,
+                COALESCE(SUM(CASE WHEN estatus = 'No autorizada' THEN 1 ELSE 0 END), 0) as perdidas,
                 
-                COALESCE(SUM(CASE WHEN estatus LIKE 'Ganada%' THEN precio_iva ELSE 0 END), 0) as monto_total,
-                COALESCE(SUM(CASE WHEN estatus = 'Guardada' THEN precio_iva ELSE 0 END), 0) as monto_pendientes,
-                COALESCE(SUM(CASE WHEN estatus = 'Perdida' THEN precio_iva ELSE 0 END), 0) as monto_perdidas,
+                COALESCE(SUM(CASE WHEN estatus LIKE 'Autorizada%' THEN precio_iva ELSE 0 END), 0) as monto_total,
+                COALESCE(SUM(CASE WHEN estatus IN ('Guardado', 'Por aprobar') THEN precio_iva ELSE 0 END), 0) as monto_pendientes,
+                COALESCE(SUM(CASE WHEN estatus = 'No autorizada' THEN precio_iva ELSE 0 END), 0) as monto_perdidas,
                 COALESCE(SUM(precio_iva), 0) as monto_total_general,
                 
+                /* Estadísticas del mes */
                 COALESCE(SUM(CASE WHEN MONTH(fecha_cot) = MONTH(CURRENT_DATE()) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE()) THEN 1 ELSE 0 END), 0) as cots_mes_actual,
-                COALESCE(SUM(CASE WHEN MONTH(fecha_cot) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH) THEN 1 ELSE 0 END), 0) as cots_mes_pasado, 
-                COALESCE(SUM(CASE WHEN estatus LIKE 'Ganada%' AND MONTH(fecha_cot) = MONTH(CURRENT_DATE()) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE()) THEN precio_iva ELSE 0 END), 0) as monto_mes_actual
-                
+                COALESCE(SUM(CASE WHEN MONTH(fecha_cot) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH) THEN 1 ELSE 0 END), 0) as cots_mes_pasado,
+                COALESCE(SUM(CASE WHEN estatus LIKE 'Autorizada%' AND MONTH(fecha_cot) = MONTH(CURRENT_DATE()) AND YEAR(fecha_cot) = YEAR(CURRENT_DATE()) THEN precio_iva ELSE 0 END), 0) as monto_mes_actual
             FROM cotizacion 
             WHERE $where";
             

@@ -70,7 +70,7 @@ try {
             }
 
             $cotizacion_actual = editarCotizacionporID($pdo, $id_cotizacion);
-            if ($cotizacion_actual && in_array($cotizacion_actual['estatus'], ['Ganada', 'Perdida'])) {
+            if ($cotizacion_actual && in_array($cotizacion_actual['estatus'], ['Autorizada (información completa)', 'No autorizada'])) {
                 echo json_encode([
                     'status' => 'error',
                     'message' => 'Operación denegada. Las cotizaciones marcadas como Ganadas o Perdidas no pueden ser modificadas.'

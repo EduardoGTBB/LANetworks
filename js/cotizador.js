@@ -204,23 +204,34 @@ $(document).ready(function() {
     $('#nueva_cotizacion').on('submit', function(e) {
         e.preventDefault(); 
         calc(); 
+
+        let btnSubmit = $(this).find('button[type="submit"]');
+        let textoOriginal = btnSubmit.text();
+        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
+
         let formData = $(this).serialize();
 
         $.ajax({
             url: 'api/api_cotizador.php',
             type: 'POST',
-            data: formData,
+            data: formData + '&action=crear',
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
-                    alert(response.message);
-                    window.location.href = "ver_cotizaciones.php";
+                    if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
+                        window.location.href = 'finalizar_venta.php?id=' + response.id_cotizacion;
+                    } else {
+                        alert(response.message);
+                        window.location.href = 'ver_cotizaciones.php';
+                    }
                 } else {
                     alert("Error: " + response.message);
+                    btnSubmit.prop('disabled', false).text(textoOriginal);
                 }
             },
             error: function(xhr) {
-                alert("Hubo un error de conexión al guardar. Revisa la consola.");
+                alert("Ocurrió un error al guardar. Intenta nuevamente.");
+                btnSubmit.prop('disabled', false).text(textoOriginal);
             }
         });
     });

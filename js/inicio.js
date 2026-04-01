@@ -245,8 +245,8 @@ $(document).ready(function () {
                             let bgSoft = 'bg-soft-primary';
                             let iconName = 'feather-file-text';
 
-                            if (estatus.includes('Ganada')) { iconColor = 'text-success'; bgSoft = 'bg-soft-success'; iconName = 'feather-check-circle'; }
-                            if (estatus === 'Perdida') { iconColor = 'text-danger'; bgSoft = 'bg-soft-danger'; iconName = 'feather-x-circle'; }
+                            if (estatus.includes('Autorizada')) { iconColor = 'text-success'; bgSoft = 'bg-soft-success'; iconName = 'feather-check-circle'; }
+                            if (estatus === 'No autorizada') { iconColor = 'text-danger'; bgSoft = 'bg-soft-danger'; iconName = 'feather-x-circle'; }
 
                             let htmlRow = `
                                 <div class="d-flex align-items-center justify-content-between mb-3">

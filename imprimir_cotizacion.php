@@ -1,4 +1,5 @@
 <?php
+
 /**
  * controlador: imprimir_cotizacion.php
  * Formato: LA NETWORKS & SMART TECHNOLOGIES - Optimizado para Bootstrap 5
@@ -8,13 +9,15 @@ session_start();
 require 'api/config.php';
 require 'lib/utilidades.php';
 
-if (!isset($_SESSION['id_user_admin']) && !isset($_SESSION['id_usuario_cliente'])){
+if (!isset($_SESSION['id_user_admin']) && !isset($_SESSION['id_usuario_cliente'])) {
     header('Location: index.php');
     exit;
 }
 
 $id_cot = obtener_id_get('id');
-if (!$id_cot) { exit("ID Inválido"); }
+if (!$id_cot) {
+    exit("ID Inválido");
+}
 
 // 1. Datos Generales - Manteniendo tu lógica PDO original
 $sql = "SELECT c.*, e.*, dem.calle_numero, dem.colonia, dem.localidad, dem.codigo_postal, dem.municipio, dem.estado, CONCAT(usu.nombre, ' ', usu.apellido_pat, ' ', usu.apellido_mat) as cliente, CONCAT(u.admin_nombre, ' ', u.admin_apell_pat) as vendedor
@@ -29,7 +32,9 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute([$id_cot]);
 $cot = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$cot) { exit("Cotización no encontrada"); }
+if (!$cot) {
+    exit("Cotización no encontrada");
+}
 
 // 2. Detalles de la cotización - Manteniendo tu lógica PDO original
 $sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product
@@ -47,54 +52,79 @@ $serie = "COTLAN";
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cotización <?php echo $serie . " " . $folio; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    
+
     <style>
         /* Estilos personalizados para la impresión compacta de WMS */
-        body { 
-            font-family: 'Arial', sans-serif; 
-            font-size: 11px; /* Tipografía pequeña para cotizaciones formales */
-            color: #000; 
-            background: #fff; 
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 11px;
+            /* Tipografía pequeña para cotizaciones formales */
+            color: #000;
+            background: #fff;
         }
-        
+
         /* Ajustes específicos para las tablas de Bootstrap en impresión */
         .table {
-            border-color: #000; /* Forzar bordes negros */
+            border-color: #000;
+            /* Forzar bordes negros */
             font-size: 11px;
         }
+
         .table thead th {
-            background-color: #f2f2f2 !important; /* Color de cabecera compatible con impresión */
+            background-color: #f2f2f2 !important;
+            /* Color de cabecera compatible con impresión */
             color: #000;
             border-bottom-width: 2px;
             text-transform: uppercase;
             font-size: 10px;
         }
-        
+
         /* Caja de notas con diseño de borde */
-        .notes-box { 
-            border: 1px solid #000; 
-            padding: 10px; 
+        .notes-box {
+            border: 1px solid #000;
+            padding: 10px;
             font-weight: bold;
         }
-        
+
         /* Color rojo para serie y folio en cabecera */
-        .doc-info span { color: red; font-weight: bold; }
-        
+        .doc-info span {
+            color: red;
+            font-weight: bold;
+        }
+
         /* Definición de la clase no-print para ocultar elementos en PDF/Impresora */
         @media print {
-            .no-print { display: none !important; }
-            body { padding: 0; margin: 0; }
-            .container { width: 100% !important; max-width: 100% !important; padding: 0; margin: 0; }
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .container {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0;
+                margin: 0;
+            }
+
             /* Asegurar que Bootstrap muestre bordes en impresión */
-            .table-bordered th, .table-bordered td { border: 1px solid #000 !important; }
+            .table-bordered th,
+            .table-bordered td {
+                border: 1px solid #000 !important;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="container pt-4">
@@ -106,12 +136,12 @@ $serie = "COTLAN";
             </div>
         </div>
 
-        <?php if($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+        <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
             <div class="row align-items-center mb-3">
                 <div class="col-2 text-start">
                     <img src="assets/images/logo-lan.png" alt="Logo LAN" class="img-fluid" style="max-height: 100px;">
                 </div>
-                
+
                 <div class="col-9 text-center">
                     <h4 class="fw-bold m-0" style="font-size: 18px; color:#00a3f0;">LA NETWORKS & SMART TECHNOLOGIES, SA DE CV</h4>
                     <p class="fst-italic m-0 small" style="font-size: 10px;">Lab's and LAN's Systems for your Networks...</p>
@@ -127,7 +157,7 @@ $serie = "COTLAN";
                 <div class="col-2 text-start">
                     <img src="assets/images/LAN_Analitica.png" alt="Logo LAN" class="img-fluid" style="max-height: 100px;">
                 </div>
-                
+
                 <div class="col-9 text-center">
                     <h4 class="fw-bold m-0" style="font-size: 18px; color:#00a3f0;">LA NETWORKS ANALITICAL, SA DE CV</h4>
                     <p class="fst-italic m-0 small" style="font-size: 10px;">Analitical for a better life...</p>
@@ -143,29 +173,32 @@ $serie = "COTLAN";
         <div class="row mb-4">
             <div class="col-6">
                 <p class="m-0" style="font-size:16px;"><strong>COTIZACIÓN</strong></p>
-                <p class="m-0"><strong>Serie:</strong> <span><?php echo $serie; ?></span>  <?php if($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?> <strong>Folio:</strong> <?php else: ?> <strong>No.</strong> <?php endif; ?> <span><?php echo $folio; ?></span></p>
+                <p class="m-0"><strong>Serie:</strong> <span><?php echo $serie; ?></span> <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?> <strong>Folio:</strong> <?php else: ?> <strong>No.</strong> <?php endif; ?> <span><?php echo $folio; ?></span></p>
                 <p class="m-0"><strong>Fecha de elaboración:</strong> <?php echo date('d/m/Y', strtotime($cot['fecha_cot'])); ?></p>
                 <p class="m-0"><strong>Moneda:</strong> Pesos</p>
             </div>
             <div class="col-6 text-end">
-                <?php if($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
-                    <p class="m-0"><strong>PLAZA:</strong> Sin especificar<?php //echo htmlspecialchars($cot['municipio']); ?> <?php //echo htmlspecialchars($cot['vendedor']); ?></p>
+                <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+                    <p class="m-0"><strong>PLAZA:</strong> Sin especificar<?php //echo htmlspecialchars($cot['municipio']); 
+                                                                            ?> <?php //echo htmlspecialchars($cot['vendedor']); 
+                                                                                ?></p>
                 <?php else: ?>
                     <p class="m-0"><strong>Atención a:</strong> <?php echo $cot['cliente']; ?></p>
                     <p class="m-0"><strong>PLAZA:</strong> Sin especificar</p>
-                <?php endif; ?>   
+                <?php endif; ?>
             </div>
         </div>
 
         <div class="row mb-4">
             <div class="col-12 small" style="line-height: 1.5; font-size: 10px;">
-                <!--<p class="m-0"><strong>PLAZA:</strong> PACHUCA, <?php //echo htmlspecialchars($cot['vendedor']); ?></p>-->
+                <!--<p class="m-0"><strong>PLAZA:</strong> PACHUCA, <?php //echo htmlspecialchars($cot['vendedor']); 
+                                                                    ?></p>-->
                 <p class="m-0"><strong>Razón Social:</strong> <?php echo htmlspecialchars($cot['razon_social'] ?? $cot['nombre_empresa']); ?></p>
                 <p class="m-0">
-                    <strong>Dirección:</strong> 
+                    <strong>Dirección:</strong>
                     Calle: <?php echo htmlspecialchars($cot['calle_numero']); ?>,
-                    Col. <?php echo htmlspecialchars($cot['colonia']); ?>, 
-                    CP: <?php echo htmlspecialchars($cot['codigo_postal']); ?>, 
+                    Col. <?php echo htmlspecialchars($cot['colonia']); ?>,
+                    CP: <?php echo htmlspecialchars($cot['codigo_postal']); ?>,
                     <?php echo htmlspecialchars($cot['municipio'] . ', ' . $cot['estado']); ?>
                 </p>
                 <p class="m-0"><strong>R.F.C.</strong> <?php echo htmlspecialchars($cot['rfc']); ?></p>
@@ -185,14 +218,14 @@ $serie = "COTLAN";
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach($detalles as $d): ?>
-                        <tr>
-                            <td class="text-center"><?php echo $d['cantidad']; ?></td>
-                            <td class="text-center"><?php echo htmlspecialchars($d['clave_product']); ?></td>
-                            <td class="text-start px-2"><?php echo htmlspecialchars($d['descripcion_product']); ?></td>
-                            <td class="text-end px-2"><?php echo number_format($d['precio_unitario'], 2); ?></td>
-                            <td class="text-end px-2"><?php echo number_format($d['precio_extendido'], 2); ?></td>
-                        </tr>
+                        <?php foreach ($detalles as $d): ?>
+                            <tr>
+                                <td class="text-center"><?php echo $d['cantidad']; ?></td>
+                                <td class="text-center"><?php echo htmlspecialchars($d['clave_product']); ?></td>
+                                <td class="text-start px-2"><?php echo htmlspecialchars($d['descripcion_product']); ?></td>
+                                <td class="text-end px-2"><?php echo number_format($d['precio_unitario'], 2); ?></td>
+                                <td class="text-end px-2"><?php echo number_format($d['precio_extendido'], 2); ?></td>
+                            </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -200,16 +233,21 @@ $serie = "COTLAN";
         </div>
 
         <div class="row mt-4 align-items-center">
-            <div class="col-6">
-                <?php if($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+            <div class="col-6 mt-2">
+                <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
                     <div class="notes-box text-center small rounded">
                         CON EL FIN DE BRINDARLE ATENCION OPORTUNA<br>
                         FAVOR DE ENVIAR LOS DOMICILIOS, PARA ELABORACION<br>
                         DE CERTIFICADOS Y DE ENVIO DE EQUIPOS
                     </div>
                 <?php endif; ?>
+
+                <?php if (!empty($cot['comentarios'])): ?>
+                    <div class="small mb-4 text-uppercase" style="font-size: 11px; line-height: 1.4;">
+                        <?php echo nl2br(htmlspecialchars($cot['comentarios'])); ?>
+                    </div>
+                <?php endif; ?>
             </div>
-            
             <div class="col-6">
                 <table class="table table-bordered table-striped float-end table-sm mb-0" style="width: 70%">
                     <tbody>
@@ -232,15 +270,27 @@ $serie = "COTLAN";
 
         <div class="row mt-1 mb-4">
             <div class="col-12 fw-bold small text-uppercase text-end">
-                <?php 
-                    // Sumamos subtotal + IVA para obtener el Total real (caso normal) Para este caso, la base de datos guarda el total con iva en el campo precio_iva
-                    $total_cotizacion = $cot['precio_iva'];
-                    echo NumeroALetras::convertir($total_cotizacion); 
+                <?php
+                // Sumamos subtotal + IVA para obtener el Total real (caso normal) Para este caso, la base de datos guarda el total con iva en el campo precio_iva
+                $total_cotizacion = $cot['precio_iva'];
+                echo NumeroALetras::convertir($total_cotizacion);
                 ?>
             </div>
         </div>
 
-        <?php if($cot['division'] == 'LA NETWORKS ANALITICAL'): ?>
+        <div class="row">
+            <div class="col-12">
+                <div class="mt-2">
+                    <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+                        <img src="assets/images/pdf/LAN-TECHNOLOGIES.jpeg" alt="SAC TECNOLOGIES" class="img-fluid" style="max-width: 320px;">
+                    <?php else: ?>
+                        <img src="assets/images/pdf/LAN-ANALITICAL.jpeg" alt="SAC ANALITICAL" class="img-fluid" style="max-width: 320px;">
+                    <?php endif; ?>
+                </div>
+            </div><!--  -->
+        </div>
+
+        <?php if ($cot['division'] == 'LA NETWORKS ANALITICAL'): ?>
             <div class="row mt-5 mb-4">
                 <div class="col-12 text-center" style="font-size: 12px; font-weight: bold;">
                     Atentamente
@@ -255,7 +305,7 @@ $serie = "COTLAN";
 
         <footer class="row mt-5 pt-3 border-top border-secondary footer-system text-center small">
             <div class="col-12" style="font-size: 9px; font-weight: bold;">
-                <?php if($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+                <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
                     Sistema Automatizado de Cotizaciones (SAC)<br>
                     LA Networks & Smart Technologies S.A. de C.V.
                 <?php else: ?>
@@ -268,8 +318,11 @@ $serie = "COTLAN";
     </div>
 
     <script>
-        window.onload = function() { window.print(); }
+        window.onload = function() {
+            window.print();
+        }
     </script>
 
 </body>
+
 </html>

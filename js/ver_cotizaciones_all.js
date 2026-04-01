@@ -41,25 +41,32 @@ $(document).ready(function() {
                     let apellidoSol = cot.apellido_pat ? cot.apellido_pat : '';
                     let solicitante = `${nombreSol} ${apellidoSol}`.trim();
                     
-                    // Identificamos quién hizo la cotización
                     let creador = cot.admin_nombre ? `${cot.admin_nombre} ${cot.admin_apell_pat}` : 'Portal B2B (Cliente)';
                     let colorCreador = cot.admin_nombre ? 'text-primary' : 'text-danger';
 
-                    // Lógica dinámica del estatus en la tabla
+                    // --- NUEVOS ESTATUS ---
                     let badgeColor = 'bg-soft-primary text-primary';
-                    let estatusTexto = cot.estatus ? cot.estatus : 'Guardada';
-                    if (estatusTexto === 'Ganada (sin dirección registrada)') badgeColor = 'bg-soft-warning text-warning';
-                    if (estatusTexto === 'Ganada') badgeColor = 'bg-soft-success text-success';
-                    if (estatusTexto === 'Perdida') badgeColor = 'bg-soft-danger text-danger';
+                    let estatusTexto = cot.estatus ? cot.estatus : 'Guardado';
+                    
+                    if (estatusTexto === 'Autorizada (sin dirección)') badgeColor = 'bg-soft-warning text-warning';
+                    if (estatusTexto === 'Autorizada (información completa)') badgeColor = 'bg-soft-success text-success';
+                    if (estatusTexto === 'No autorizada') badgeColor = 'bg-soft-danger text-danger';
 
-                    let btnCompletarVenta = '';
-                    if (estatusTexto === 'Ganada (sin dirección registrada)') {
-                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md bg-soft-warning border border-warning" style="animation: pulse 2s infinite;">
-                                                <abbr title="¡Faltan Direcciones! Haz clic para completar la venta" style="text-decoration:none;">
-                                                    <i class="feather-map-pin text-warning"></i>
+                    // --- BOTÓN DE DIRECCIONES ---
+                    let btnDirecciones = '';
+                    if (estatusTexto === 'Autorizada (sin dirección)' || estatusTexto === 'Por aprobar') {
+                        let iconColor = estatusTexto === 'Por aprobar' ? 'text-primary' : 'text-warning';
+                        let latido = estatusTexto === 'Autorizada (sin dirección)' ? 'style="animation: pulse 2s infinite;"' : '';
+                        
+                        btnDirecciones = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md bg-soft-light border border-light" ${latido}>
+                                                <abbr title="Gestionar Direcciones" style="text-decoration:none;">
+                                                    <i class="feather-map-pin ${iconColor}"></i>
                                                 </abbr>
                                              </a>`;
                     }
+
+                    // Botón Eliminar: Como este módulo es de ADMINS, siempre pueden eliminar, pero marcamos visualmente
+                    let btnEliminar = `<a href="#" class="avatar-text avatar-md btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2 text-danger"></i></abbr></a>`;
 
                     let tr = `
                         <tr>
@@ -79,10 +86,10 @@ $(document).ready(function() {
                             <td><span class="badge ${badgeColor}">${estatusTexto}</span></td>
                             <td class="text-center">
                                 <div class="hstack gap-2 justify-content-center">
-                                    ${btnCompletarVenta}
+                                    ${btnDirecciones}
                                     <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md"><abbr title="Imprimir" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>
                                     <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folio}"><abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>
-                                    <a href="#" class="avatar-text avatar-md btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2 text-danger"></i></abbr></a>
+                                    ${btnEliminar}
                                 </div>
                             </td>
                         </tr>
@@ -93,19 +100,10 @@ $(document).ready(function() {
                 if ($.fn.DataTable) { 
                     $tabla.DataTable({ 
                         language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }, 
-                        destroy: true, 
-                        pageLength: 8, 
-                        lengthChange: false, 
-                        ordering: false, 
-                        searching: false, 
-                        info: true,
-                        dom: "<'table-responsive'tr>" +
-                             "<'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
+                        destroy: true, pageLength: 8, lengthChange: false, ordering: false, searching: false, info: true,
+                        dom: "<'table-responsive'tr><'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
                         drawCallback: function () {
-                            // Le agregamos 'pagination-sm' para hacer los botones más pequeños
-                            // y 'mb-0' para quitar cualquier margen inferior sobrante
                             $('.dataTables_paginate > .pagination').addClass('pagination-sm mb-0');
-                            
                         }
                     }); 
                 }
@@ -142,10 +140,9 @@ $(document).ready(function() {
             success: function(res) {
                 let cot = res.cotizacion; let dets = res.detalles;
                 
-                // 1. DETERMINAR SI ESTÁ CERRADA (Ganada o Perdida)
-                let isReadOnly = (cot.estatus === 'Ganada' || cot.estatus === 'Perdida');
+                // 1. BLOQUEO: Si ya está terminada (Completa o No Autorizada)
+                let isReadOnly = (cot.estatus === 'Autorizada (información completa)' || cot.estatus === 'No autorizada');
 
-                // 2. RESET GLOBAL DEL MODAL (Desbloquear todo antes de rellenar)
                 $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', false);
                 $('#edit_add_row').show();
                 $('#formEditarCotizacion button[type="submit"]').show();
@@ -153,17 +150,20 @@ $(document).ready(function() {
                 $('#edit_id_cotizacion').val(cot.id_cotizacion);
                 $('#division').val(cot.division).trigger('change');
                 $('#tipo_precio').val(cot.tipo_precio).trigger('change');
-                $('#edit_estatus').val(cot.estatus ? cot.estatus : 'Guardada').trigger('change');
                 $('#edit_tax').val(cot.porcentaje_iva); 
                 $('#edit_sub_total').val(cot.importe_total);
                 $('#edit_total_amount').val(cot.precio_iva);
+
+                // Mapear Estatus al Modal (Esconder la de "sin dirección")
+                let estatusBD = cot.estatus ? cot.estatus : 'Guardado';
+                if (estatusBD === 'Autorizada (sin dirección)') { estatusBD = 'Autorizada (información completa)'; }
+                $('#edit_estatus').val(estatusBD).trigger('change');
 
                 let $selEmp = $('#edit_select_empresa');
                 $selEmp.empty().append('<option value="">Selecciona un cliente...</option>');
                 windowEmpresas.forEach(emp => { $selEmp.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`); });
                 $selEmp.val(cot.Empresa_id).select2({ dropdownParent: $('#modalEditarCotizacion') });
 
-                // Mandamos isReadOnly para bloquear el select de solicitante si es necesario
                 cargarSolicitantes(cot.Empresa_id, cot.Usuario_empresa_id, isReadOnly);
 
                 let $tbody = $('#edit_tbody_productos');
@@ -175,12 +175,11 @@ $(document).ready(function() {
 
                 $('.select-prod-modal').select2({ dropdownParent: $('#modalEditarCotizacion') });
                 
-                // 3. APLICAR BLOQUEO TOTAL SI ES SOLO LECTURA
                 if (isReadOnly) {
                     $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', true);
                     $('#edit_add_row').hide();
-                    $('.btn-eliminar-fila-unica').hide(); // Ocultamos los íconos de basura
-                    $('#formEditarCotizacion button[type="submit"]').hide(); // Ocultar botón guardar
+                    $('.btn-eliminar-fila-unica').hide(); 
+                    $('#formEditarCotizacion button[type="submit"]').hide(); 
                 }
 
                 $('#modalEditarCotizacion').modal('show');
@@ -188,7 +187,6 @@ $(document).ready(function() {
         });
     });
 
-    // Se agrega parámetro isReadOnly
     function cargarSolicitantes(id_empresa, preseleccion = null, isReadOnly = false) {
         $.ajax({
             url: 'api/api_cotizador.php?action=get_usuarios&empresa_id=' + id_empresa,
@@ -200,7 +198,6 @@ $(document).ready(function() {
                 if(preseleccion) $selSol.val(preseleccion);
                 $selSol.select2({ dropdownParent: $('#modalEditarCotizacion') });
                 
-                // Si la cotización está bloqueada (Ganada/Perdida), bloqueamos el select
                 if (isReadOnly) {
                     $selSol.prop('disabled', true);
                     if ($('#hidden_edit_usuario').length === 0) {
@@ -251,23 +248,50 @@ $(document).ready(function() {
         $("#edit_total_amount").val((sub + (sub * tax / 100)).toFixed(2));
     }
 
+    // ==========================================
+    // GUARDAR CAMBIOS (CANDADO DE DOBLE CLIC)
+    // ==========================================
     $('#formEditarCotizacion').on('submit', function(e) {
-        e.preventDefault(); calcEdit();
+        e.preventDefault(); 
+        calcEdit();
+        
+        let btnSubmit = $(this).find('button[type="submit"]');
+        let textoOriginal = btnSubmit.text();
+        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...');
+
+        let formData = $(this).serializeArray();
+        let uiEstatus = $('#edit_estatus').val();
+
+        // Si elige "Autorizada (información completa)", pausamos para pedir direcciones
+        if (uiEstatus === 'Autorizada (información completa)') {
+            let estatusIndex = formData.findIndex(item => item.name === 'estatus');
+            if (estatusIndex !== -1) {
+                formData[estatusIndex].value = 'Autorizada (sin dirección)';
+            }
+        }
+
         $.ajax({
-            url: 'api/api_ver_cotizaciones.php', type: 'POST', data: $(this).serialize(),
+            url: 'api/api_ver_cotizaciones.php', type: 'POST', data: $.param(formData),
             success: function(res) {
                 if(res.status === 'success') {
                     $('#modalEditarCotizacion').modal('hide'); 
                     $('.modal-backdrop').remove();
                     
-                    let newestatus = $('#edit_estatus').val();
-                    if (newestatus === 'Ganada (sin dirección registrada)') {
+                    if (uiEstatus === 'Autorizada (información completa)') {
                         window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val();
                     } else {
                         cargarTablaPrincipal(); 
                         alert(res.message);
+                        btnSubmit.prop('disabled', false).text(textoOriginal);
                     }
-                } else alert("Error: " + res.message);
+                } else { 
+                    alert("Error: " + res.message); 
+                    btnSubmit.prop('disabled', false).text(textoOriginal);
+                }
+            },
+            error: function () {
+                alert("Error de conexión al servidor.");
+                btnSubmit.prop('disabled', false).text(textoOriginal);
             }
         });
     });

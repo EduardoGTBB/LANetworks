@@ -17,37 +17,51 @@
                     <input type="hidden" name="id_cotizacion" id="id_cotizacion" value="<?php echo $id_cotizacion; ?>">
 
                     <div class="row">
-                        <div class="col-lg-4">
+                        <div class="col-lg-12">
                             <div class="card">
                                 <div class="card-header bg-primary text-white">
-                                    <h5 class="mb-0 text-white">1. Dirección Fiscal</h5>
+                                    <h5 class="mb-0 text-white">Dirección Fiscal</h5>
                                 </div>
                                 <div class="card-body">
-                                    <small class="text-muted d-block mb-3">
-                                        Si los datos son diferentes puede cambiarlos.
-                                        <small class="text-muted d-block">Datos originales de la empresa.</small>
-                                    </small>
-
-                                    <span>Calle y Número:</span>
-                                    <input type="text" class="form-control mb-2 f-input" name="f_calle" required>
-                                    <span>Colonia:</span>
-                                    <input type="text" class="form-control mb-2 f-input" name="f_colonia" required>
-                                    <span>Localidad:</span>
-                                    <input type="text" class="form-control mb-2 f-input" name="f_localidad" required>
-                                    <span>Municipio:</span>
-                                    <input type="text" class="form-control mb-2 f-input" name="f_municipio" required>
-                                    <span>Estado:</span>
-                                    <input type="text" class="form-control mb-2 f-input" name="f_estado" required>
-                                    <span>Codigo Postal:</span>
-                                    <input type="text" class="form-control mb-2 f-input" name="f_cp" required>
+                                    <div class="row">
+                                        <div class="col-12 col-sm-6 col-lg-6">
+                                            <span>Calle y Número:</span>
+                                            <input type="text" class="form-control mb-2 f-input" name="f_calle" required readonly>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-lg-6">
+                                            <span>Colonia:</span>
+                                            <input type="text" class="form-control mb-2 f-input" name="f_colonia" required readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 col-sm-6 col-lg-6">
+                                            <span>Localidad:</span>
+                                            <input type="text" class="form-control mb-2 f-input" name="f_localidad" required readonly>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-lg-6">
+                                            <span>Municipio:</span>
+                                            <input type="text" class="form-control mb-2 f-input" name="f_municipio" required readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 col-sm-6 col-lg-6">
+                                            <span>Estado:</span>
+                                            <input type="text" class="form-control mb-2 f-input" name="f_estado" required readonly>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-lg-6">
+                                            <span>Codigo Postal:</span>
+                                            <input type="text" class="form-control mb-2 f-input" name="f_cp" required readonly>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-lg-4">
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
                             <div class="card">
                                 <div class="card-header bg-warning text-dark">
-                                    <h5 class="mb-0 text-dark">2. Dir. Certificado</h5>
+                                    <h5 class="mb-0 text-dark">Dirección Certificado</h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="form-check mb-3">
@@ -70,10 +84,10 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-4">
+                        <div class="col-lg-6">
                             <div class="card">
                                 <div class="card-header bg-success text-white">
-                                    <h5 class="mb-0 text-white">3. Dirección de Envío</h5>
+                                    <h5 class="mb-0 text-white">Dirección de Envío</h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="form-check mb-3">
@@ -99,7 +113,7 @@
                     </div>
                     <div class="d-flex justify-content-center align-items-center gap-4 mt-4 mb-5 w-100">
                         <a href="ver_cotizaciones.php" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a>
-                        <button type="submit" class="btn btn-lg btn-primary px-5 text-uppercase fw-bold">Completar Venta</button>
+                        <button type="submit" class="btn btn-lg btn-primary px-5 text-uppercase fw-bold">Guardar</button>
                     </div>
                 </form>
             </div>

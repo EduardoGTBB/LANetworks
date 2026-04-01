@@ -238,9 +238,10 @@
                         <div class="col-md-4 mb-4" id="fila_estatus_lan">
                             <label class="form-label">Estatus de la cotización <span class="text-danger">*</span></label>
                             <select class="form-control" name="estatus" id="edit_estatus" data-select2-selector="status" required>
-                                <option value="Guardada">Guardada (En proceso)</option>
-                                <option value="Ganada">Ganada (Aprobada)</option>
-                                <option value="Perdida">Perdida (Rechazada)</option>
+                                <option value="Guardado">Guardado (En proceso)</option>
+                                <option value="Por aprobar">Por aprobar (Revisión)</option>
+                                <option value="Autorizada (información completa)">Autorizada (Aprobada)</option>
+                                <option value="No autorizada">No autorizada (Rechazada)</option>
                             </select>
                         </div>
 

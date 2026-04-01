@@ -196,6 +196,13 @@
                                         </div>
                                     </div>
                                     <div class="row mb-4 d-flex justify-content-end">
+                                        <div class="col-lg-8 mt-2">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Notas / Observaciones adicionales:</label>
+                                                <textarea name="comentarios" id="comentarios" class="form-control" rows="4" placeholder="Ej. ENTREGA INMEDIATA. DURABILIDAD DE LA BATERIA 4 AÑOS..."></textarea>
+                                                <small class="text-muted">Estas notas aparecerán en el PDF de la cotización.</small>
+                                            </div>
+                                        </div>
                                         <div class="col-lg-4 mt-2">
                                             <!--<div class="mb-4">
                                                 <h5 class="fw-bold">Total cotización:</h5>
