@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-/*   
-& ======================================================
-&        INICIO: DATOS LOGIN
-& ======================================================- 
-& */
-// |Obtener usuario para el Login (Validación)
+// >>> ==================================
+// >>>       INICIO: LOGIN
+// >>> ================================== 
+// | Usuarios LAN
+// [fn] Obtener usuario para el Login (Validación)
 function obtenerUsuarioPorLan(PDO $pdo, string $usuario_lan)
 {
     // Aquí agregamos foto_perfil a la consulta
@@ -20,21 +19,31 @@ function obtenerUsuarioPorLan(PDO $pdo, string $usuario_lan)
 
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
-/*  
-& ======================================================
-&        FIN: DATOS LOGIN 
-& ======================================================- 
-& */
+
+// | Usuarios Cliente
+// [fn] Obtener los clientes(Empresa) para login
+function obtenerUsuarioEmpresaporCorreo(PDO $pdo, string $correo)
+{
+    $sql = "SELECT id_usuario, nombre, apellido_pat, Empresa_id, correo, usuario_password, foto_perfil
+            FROM usuarios
+            WHERE correo = :correo AND activo = 'true'";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':correo' => $correo]);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+// >>> ==================================
+// >>>       FIN: LOGIN
+// >>> ================================== 
 
 // -----------------------------------------------------
 
-/*   
-& ======================================================
-&        INICIO: FUNCIONES NUEVA COTIZACION
-& ====================================================== 
-& */
-
-// |Obtener clientes por empresa
+// >>> ==============================================
+// >>>       INICIO: FUNCIONES NUEVA COTIZACION
+// >>> ============================================== 
+// [fn] Obtener clientes por empresa
 function obtenerUsuariosporEmpresa(PDO $pdo, int $empresa_id): array
 {
     $sql = "SELECT id_usuario, nombre, apellido_pat, apellido_mat 
@@ -47,7 +56,7 @@ function obtenerUsuariosporEmpresa(PDO $pdo, int $empresa_id): array
     return $stmt->fetchAll();
 }
 
-// |Obtener los clientes
+// [fn] Obtener los clientes
 function obtenerClientes(PDO $pdo): array
 {
     $sql = "SELECT id_empresa, razon_social 
@@ -59,7 +68,7 @@ function obtenerClientes(PDO $pdo): array
     return $stmt->fetchAll();
 }
 
-// |Obtener los productos
+// [fn] Obtener los productos
 function obtenerProduct(PDO $pdo): array
 {
     $sql = "SELECT id_product,descripcion_product, clave_product, precio_farmacia, precio_publico, foto_product, estatus 
@@ -71,7 +80,7 @@ function obtenerProduct(PDO $pdo): array
     return $stmt->fetchAll();
 }
 
-// |Guardar la nueva cotización
+// [fn] Guardar la nueva cotización
 function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): string|false
 {
     try {
@@ -121,22 +130,17 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
         throw new Exception($e->getMessage());
     }
 }
-
-/*  
-& ======================================================
-&        FIN: FUNCIONES NUEVA COTIZACION
-& ======================================================
-& */
+// >>> ==============================================
+// >>>       FIN: FUNCIONES NUEVA COTIZACION
+// >>> ============================================== 
 
 // -----------------------------------------------------
 
-/*   
-& ======================================================
-&        INICIO: FUNCION COTIZACIONES
-& ====================================================== 
-& */
-// ------%Ver_cotizaciones_por_Usuario/Cliente------
-// |Obtener las cotizaciones por Usuario Logeado
+// >>> ==============================================
+// >>>        INICIO: FUNCION COTIZACIONES
+// >>> ============================================== 
+// |------Ver_cotizaciones_por_Usuario/Cliente------
+// [fn] Obtener las cotizaciones por Usuario Logeado
 function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
 {
     $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva 
@@ -152,7 +156,7 @@ function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// |Obtener las cotizaciones por cliente
+// [fn] Obtener las cotizaciones por cliente
 function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
 {
     $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva 
@@ -168,7 +172,7 @@ function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// |Borrar cotizacion
+// [fn] Borrar cotizacion
 function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
 {
     try {
@@ -196,7 +200,7 @@ function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
     }
 }
 
-// |Editar cotizacion
+// [fn] Editar cotizacion
 // &Obtenemos la cotizacion especifica ID (Padre)
 function editarCotizacionporID(PDO $pdo, int $id_cotizacion)
 {
@@ -209,7 +213,7 @@ function editarCotizacionporID(PDO $pdo, int $id_cotizacion)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// |Obtener los productos de la cotizacion
+// [fn] Obtener los productos de la cotizacion
 // &Obtenemos los detalles de la cotizzacion(hijos)
 function obtenerdetallesCotizacionID(PDO $pdo, int $id_cotizacion)
 {
@@ -222,7 +226,7 @@ function obtenerdetallesCotizacionID(PDO $pdo, int $id_cotizacion)
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// |Actualizar la Cotizacion
+// [fn] Actualizar la Cotizacion
 function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, array $detalles): bool
 {
     try {
@@ -283,10 +287,11 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
         throw new Exception("Error al actualizar: " . $e->getMessage());
     }
 }
-// ------%Fin_Ver_cotizaciones_por_Usuario/Cliente------
+// |------Fin_Ver_cotizaciones_por_Usuario/Cliente------
 
 
-// ------%Inicio_Ver_todas_las_Cotizaciones_Users_Admin------
+// |------Inicio_Ver_todas_las_Cotizaciones_Users_Admin------
+// [fn] Obtener All cotizaciones Admin
 function obtenerTodasLasCotizaciones(PDO $pdo): array
 {
     $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva AS gran_total, 
@@ -304,22 +309,19 @@ function obtenerTodasLasCotizaciones(PDO $pdo): array
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-// ------%Fin_Ver_todas_las_Cotizaciones_Users_Admin------
-/*  
-& ======================================================
-&        FIN: FUNCIONES COTIZACIONES
-& ====================================================== 
-& */
+// |------Fin_Ver_todas_las_Cotizaciones_Users_Admin------
+
+// >>> ==============================================
+// >>>       FIN: FUNCIONES COTIZACIONES
+// >>> ============================================== 
 
 // -----------------------------------------------------
 
-/*   
-& ======================================================
-&        INICIO: FUNCIONES CLIENTES|EMPRESAS
-& ======================================================
-& */
+// >>> ==============================================
+// >>>       INICIO: FUNCIONES CLIENTES|EMPRESAS
+// >>> ============================================== 
 
-// |Obtener todas las empresas
+// [fn] Obtener todas las empresas
 function obtenerAllempresas(PDO $pdo): array
 {
     $sql = "SELECT e.id_empresa, e.nombre_empresa, e.razon_social, e.rfc, e.telefono, e.correo, e.estatus, d.calle_numero ,d.colonia, d.localidad, d.codigo_postal, d.municipio, d.estado, d.pais  
@@ -457,7 +459,7 @@ function eliminarEmpresa(PDO $pdo, int $id_empresa): string
     }
 }
 
-// |Candado evitar empresas suplicadas
+// [fn] Candado evitar empresas suplicadas
 function verificarEmpresaExistente(PDO $pdo, string $nombre_empresa, string $razon_social, string $rfc, int $id_empresa = 0): string|false 
 {
     // Limpiamos y convertimos a mayúsculas para una comparación exacta y sin importar si escribieron en minúsculas
@@ -506,21 +508,16 @@ function verificarEmpresaExistente(PDO $pdo, string $nombre_empresa, string $raz
     return false; // No hay duplicados
 }
 
-/*  
-& ======================================================
-&        FIN: FUNCIONES CLIENTES|EMPRESAS
-& ====================================================== 
-& */
+// >>> ==============================================
+// >>>        FIN: FUNCIONES CLIENTES|EMPRESAS
+// >>> ============================================== 
 
 // -----------------------------------------------------
 
-/*   
-& ======================================================
-&        INICIO: FUNCIONES CLIENTES|USUARIOS  
-& ======================================================
-& */
-
-// |Obtenemos todos los usuarios 
+// >>> ==============================================
+// >>>        INICIO: FUNCIONES CLIENTES|USUARIOS
+// >>> ============================================== 
+// [fn] Obtenemos todos los usuarios 
 function obtenerAllusers(PDO $pdo): array
 {
     $sql = "SELECT u.id_usuario, u.foto_perfil, u.correo, u.nombre, u.apellido_pat, u.apellido_mat, u.Empresa_id, u.activo, e.razon_social
@@ -591,7 +588,7 @@ function actualizarUsuario(PDO $pdo, array $datos): bool
     return $stmt->execute($params);
 }
 
-// |Eliminar usuario con candado
+// [fn] Eliminar usuario con candado
 function eliminarUsuario(PDO $pdo, int $id_usuario): string
 {
 
@@ -624,7 +621,7 @@ function eliminarUsuario(PDO $pdo, int $id_usuario): string
     }
 }
 
-// |Candado evitar usuarios clientes/usuarios repetidos
+// [fn] Candado evitar usuarios clientes/usuarios repetidos
 function verificarUsuarioClienteExistente(PDO $pdo, string $correo, int $id_usuario = 0): string|false 
 {
     $correo = trim($correo);
@@ -656,20 +653,15 @@ function verificarUsuarioClienteExistente(PDO $pdo, string $correo, int $id_usua
     return false; // No hay duplicados
 }
 
-
-/*  
-& ======================================================
-&        FIN: FUNCIONES CLIENTES|USUARIOS
-& ======================================================
-& */
+// >>> ==============================================
+// >>>         FIN: FUNCIONES CLIENTES|USUARIOS
+// >>> ============================================== 
 
 // -----------------------------------------------------
 
-/*   
-& ======================================================
-&        INICIO: FUNCIONES ALMACEN|PRODUCTOS
-& ======================================================- 
-& */
+// >>> ==============================================
+// >>>          INICIO: FUNCIONES ALMACEN|PRODUCTOS
+// >>> ============================================== 
 
 function insertarProduct(PDO $pdo, array $datos): bool
 {
@@ -751,7 +743,7 @@ function eliminarProduct(PDO $pdo, int $id_product): string
     }
 }
 
-// |Candado productos duplicados
+// [fn] Candado productos duplicados
 function verificarProductoExistente(PDO $pdo, string $descripcion, string $clave, int $id_product = 0): string|false 
 {
     // Limpiamos los datos y pasamos a mayúsculas para que la búsqueda sea exacta
@@ -789,22 +781,17 @@ function verificarProductoExistente(PDO $pdo, string $descripcion, string $clave
     
     return false; // No hay duplicados
 }
-
-/*  
-& ======================================================
-&        FIN: FUNCIONES ALMACEN|PRODUCTOS
-& ======================================================- 
-& */
+// >>> ==============================================
+// >>>          FIN: FUNCIONES ALMACEN|PRODUCTOS
+// >>> ============================================== 
 
 // -----------------------------------------------------
 
-/*   
-& ======================================================
-&        INICIO: FUNCIONES EMPLEADOS_LAN
-& ======================================================
-& */
+// >>> ==============================================
+// >>>          INICIO: FUNCIONES EMPLEADOS_LAN
+// >>> ============================================== 
 
-// |Obtener los usuarios Admin
+// [fn] Obtener los usuarios Admin
 function obtenerusuarios(PDO $pdo, int $id_user_admin): array
 {
     // Traemos el ID, el nombre, correo(Usuario) y su estatus
@@ -817,7 +804,7 @@ function obtenerusuarios(PDO $pdo, int $id_user_admin): array
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-// |Insertar nuevo usuario Admin
+// [fn] Insertar nuevo usuario Admin
 function insertarUsuarioAdmin(PDO $pdo, array $datos): bool
 {
     $foto = !empty($datos['foto_perfil']) ? $datos['foto_perfil'] : 'user.png';
@@ -841,7 +828,7 @@ function insertarUsuarioAdmin(PDO $pdo, array $datos): bool
     ]);
 }
 
-// |Actualizar usuario Admin
+// [fn] Actualizar usuario Admin
 function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
 {
     if (!empty($datos['foto_perfil'])) {
@@ -935,7 +922,7 @@ function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
     !return true;*/
 }
 
-// |Candado para evitar registros duplicados
+// [fn] Candado para evitar registros duplicados
 function CUsuarioAdminExistente(PDO $pdo, string $usuario_lan, int $id_user_admin = 0): string|false 
 {
     $usuario_lan = trim($usuario_lan);
@@ -967,51 +954,17 @@ function CUsuarioAdminExistente(PDO $pdo, string $usuario_lan, int $id_user_admi
     return false; // No hay duplicados
 }
 
-
-/*  
-& ======================================================
-&        FIN: FUNCIONES EMPLEADOS_LAN
-& ======================================================
-& */
+// >>> ==============================================
+// >>>          FIN: FUNCIONES EMPLEADOS_LAN
+// >>> ============================================== 
 
 // -----------------------------------------------------
 
-/*   
-& ======================================================
-&        INICIO: FUNCIONES LOGIN CLIENTES
-& ======================================================- 
-& */
+// >>> ==============================================
+// >>>           INICIO: FUNCIONES DOMICILIOS
+// >>> ============================================== 
 
-// |Obtener los clientes(Empresa) para login
-function obtenerUsuarioEmpresaporCorreo(PDO $pdo, string $correo)
-{
-    $sql = "SELECT id_usuario, nombre, apellido_pat, Empresa_id, correo, usuario_password, foto_perfil
-            FROM usuarios
-            WHERE correo = :correo AND activo = 'true'";
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':correo' => $correo]);
-
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-// |
-
-/*  
-& ======================================================
-&        FIN: FUNCIONES LOGIN CLIENTES 
-& ======================================================- 
-& */
-
-// -----------------------------------------------------
-
-/*   
-& ======================================================
-&        INICIO: FUNCIONES DOMICILIOS
-& ======================================================- 
-& */
-
-// |Domicilio de empresa ligada
+// [fn] Domicilio de empresa ligada
 function obtenerDomicilioPorCotizacion(PDO $pdo, int $id_cotizacion){
     $sql = "SELECT d.* FROM domicilio_empresa d 
             JOIN cotizacion c ON d.Empresa_id = c.Empresa_id 
@@ -1021,7 +974,7 @@ function obtenerDomicilioPorCotizacion(PDO $pdo, int $id_cotizacion){
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// |Guardar las direccioens ligadas
+// [fn] Guardar las direccioens ligadas
 function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, array $envio, bool $es_cliente = false): bool {
     try {
         $pdo->beginTransaction();
@@ -1075,19 +1028,16 @@ function obtenerDireccionesCotizacion(PDO $pdo, int $id_cotizacion) {
     return $data;
 }
 
-/*  
-& ======================================================
-&        FIN: FUNCIONES DOMICILIOS
-& ======================================================- 
-& */
+// >>> ==============================================
+// >>>           FIN: FUNCIONES DOMICILIOS
+// >>> ============================================== 
 
-/*   
-& ======================================================
-&        INICIO: FUNCIONES INICIO
-& ======================================================- 
-& */
 
-// |Estadisticas de inicio
+// >>> ==============================================
+// >>>           INICIO: FUNCIONES INICIO
+// >>> ============================================== 
+
+// [fn] Estadisticas de inicio
 function obtenerEstadisticasDashboard(PDO $pdo, int $id_cliente, int $id_admin, string $perfil) {
     $where = "1=1";
     $params = [];
@@ -1186,9 +1136,8 @@ function obtenerCotizacionesRecientes(PDO $pdo, int $id_cliente, int $id_admin, 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-/*  
-& ======================================================
-&        FIN: FUNCIONES INICIO
-& ======================================================- 
-& */
+// >>> ==============================================
+// >>>           FIN: FUNCIONES INICIO
+// >>> ============================================== 
+
 
