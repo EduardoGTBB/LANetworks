@@ -9,6 +9,8 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
+$url_origen = (isset($_GET['from']) && $_GET['from'] === 'all') ? 'ver_cotizaciones_all.php' : 'ver_cotizaciones.php';
+
 $id_cotizacion = (int)$_GET['id'];
 require 'views/finalizar_venta.view.php';
 

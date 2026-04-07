@@ -17,12 +17,17 @@ try {
     // GET: Leer direcciones previas y/o el domicilio original de la empresa
     if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id_cotizacion'])) {
         $id_cot = (int)$_GET['id_cotizacion'];
+
+        $stmtStatus = $pdo->prepare("SELECT estatus FROM cotizacion WHERE id_cotizacion = ?");
+        $stmtStatus->execute([$id_cot]);
+        $cotData = $stmtStatus->fetch(PDO::FETCH_ASSOC);
         
         // 1. Buscamos si ya tiene direcciones guardadas (Por si LAN la está editando)
         $direcciones = obtenerDireccionesCotizacion($pdo, $id_cot);
         
         // 2. Traemos la dirección original de la empresa para rellenar "Fiscal"
         $empresaDefault = obtenerDomicilioPorCotizacion($pdo, $id_cot);
+        $direcciones['estatus_cotizacion'] = $cotData['estatus'] ?? 'Guardado'; // Agregamos el estatus
         
         // Unimos todo en un solo paquete JSON
         $direcciones['empresa_default'] = $empresaDefault;

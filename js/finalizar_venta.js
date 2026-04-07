@@ -1,14 +1,34 @@
-$(document).ready(function() {
+$(document).ready(function () {
     let id_cot = $('#id_cotizacion').val();
 
     // 1. Cargar Direcciones Previas o Domicilio Fiscal Original
     $.ajax({
         url: 'api/api_finalizar_venta.php?id_cotizacion=' + id_cot,
         method: 'GET', dataType: 'json',
-        success: function(res) {
-            if(res.status === 'success' && res.data) {
+        success: function (res) {
+            if (res.status === 'success' && res.data) {
                 let d = res.data;
-                
+
+                let estatus = d.estatus_cotizacion;
+
+                // --- LÓGICA DE BLOQUEO PARA REVISIÓN (ADMIN) ---
+                if (estatus === 'Por aprobar') {
+                    // 1. Bloquear todos los inputs de texto
+                    $('input[type="text"]').prop('readonly', true);
+
+                    // 2. Desactivar y ocultar los checkboxes de "Misma dirección"
+                    $('#check_cert_igual, #check_envio_igual').prop('disabled', true).closest('.form-check').hide();
+
+                    // 3. Ocultar el botón de "Guardar" (porque es solo revisión)
+                    $('#formFormalizar button[type="submit"]').hide();
+
+                    // 4. Cambiar el texto del botón "Dejar para después" por "Regresar"
+                    $('#btn_regresar').text('Regresar al listado');
+
+                    // 5. Cambiar el título de la página visualmente
+                    $('.page-header-title h5').append(' <span class="badge bg-soft-info text-info ms-2">MODO REVISIÓN</span>');
+                }
+
                 // Si la cotización YA TENÍA dirección fiscal (el cliente la llenó)
                 if (d.fiscal && d.fiscal.calle_numero_fiscal) {
                     $('input[name="f_calle"]').val(d.fiscal.calle_numero_fiscal);
@@ -17,7 +37,7 @@ $(document).ready(function() {
                     $('input[name="f_municipio"]').val(d.fiscal.municipio_fiscal);
                     $('input[name="f_estado"]').val(d.fiscal.estado_fiscal);
                     $('input[name="f_cp"]').val(d.fiscal.cp_fiscal);
-                } 
+                }
                 // Si NO tenía, le ponemos la de la empresa por defecto
                 else if (d.empresa_default) {
                     $('input[name="f_calle"]').val(d.empresa_default.calle_numero);
@@ -52,8 +72,8 @@ $(document).ready(function() {
     });
 
     // 2. Checkbox: Copiar Fiscal a Certificado
-    $('#check_cert_igual').on('change', function() {
-        if($(this).is(':checked')) {
+    $('#check_cert_igual').on('change', function () {
+        if ($(this).is(':checked')) {
             $('input[name="c_calle"]').val($('input[name="f_calle"]').val());
             $('input[name="c_colonia"]').val($('input[name="f_colonia"]').val());
             $('input[name="c_localidad"]').val($('input[name="f_localidad"]').val());
@@ -68,8 +88,8 @@ $(document).ready(function() {
     });
 
     // 3. Checkbox: Copiar Certificado a Envío
-    $('#check_envio_igual').on('change', function() {
-        if($(this).is(':checked')) {
+    $('#check_envio_igual').on('change', function () {
+        if ($(this).is(':checked')) {
             $('input[name="e_calle"]').val($('input[name="c_calle"]').val());
             $('input[name="e_colonia"]').val($('input[name="c_colonia"]').val());
             $('input[name="e_localidad"]').val($('input[name="c_localidad"]').val());
@@ -83,30 +103,31 @@ $(document).ready(function() {
     });
 
     // 4. Refrescar copias si editan la fiscal
-    $('.f-input').on('keyup', function() { if($('#check_cert_igual').is(':checked')) $('#check_cert_igual').trigger('change'); });
-    $('.c-input').on('keyup', function() { if($('#check_envio_igual').is(':checked')) $('#check_envio_igual').trigger('change'); });
+    $('.f-input').on('keyup', function () { if ($('#check_cert_igual').is(':checked')) $('#check_cert_igual').trigger('change'); });
+    $('.c-input').on('keyup', function () { if ($('#check_envio_igual').is(':checked')) $('#check_envio_igual').trigger('change'); });
 
     // 5. Enviar Datos (DOBLE CLIC BLOQUEADO)
-    $('#formFormalizar').on('submit', function(e) {
+    $('#formFormalizar').on('submit', function (e) {
         e.preventDefault();
 
         let btnSubmit = $(this).find('button[type="submit"]');
         let textoOriginal = btnSubmit.text();
         btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
+        let urlOrigen = $('#url_origen').val();
 
         $.ajax({
             url: 'api/api_finalizar_venta.php',
             type: 'POST', data: $(this).serialize(),
-            success: function(res) {
-                if(res.status === 'success') {
+            success: function (res) {
+                if (res.status === 'success') {
                     alert(res.message);
-                    window.location.href = 'ver_cotizaciones.php';
+                    window.location.href = urlOrigen; // Usamos la URL dinámica aquí
                 } else {
                     alert("Error: " + res.message);
                     btnSubmit.prop('disabled', false).text(textoOriginal);
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 alert("Ocurrió un error al guardar. Intenta nuevamente.");
                 btnSubmit.prop('disabled', false).text(textoOriginal);
             }

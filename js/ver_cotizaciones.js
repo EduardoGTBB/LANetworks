@@ -65,17 +65,20 @@ $(document).ready(function () {
                     if (estatusTexto === 'No autorizada') badgeColor = 'bg-soft-danger text-danger';
 
                     let btnCompletarVenta = '';
-                    if (estatusTexto === 'Autorizada (sin dirección)' || estatusTexto === 'Por aprobar') {
-                        let colorIcon = estatusTexto === 'Por aprobar' ? 'text-primary' : 'text-warning';
-                        let latido = estatusTexto === 'Autorizada (sin dirección)' ? 'style="animation: pulse 2s infinite;"' : '';
+                    let yaTieneDirecciones = parseInt(cot.tiene_dir) || 0;
 
-                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md         bg-soft-light border">
-                                            <abbr title="Gestionar Direcciones" style="text-decoration:none;">
-                                                <i class="feather-map-pin ${colorIcon}"></i>
-                                            </abbr>
-                                        </a>`;
+                    if (estatusTexto === 'Autorizada (sin dirección)' || (estatusTexto === 'Guardado' && yaTieneDirecciones === 0)) {
+                        
+                        // Para el cliente, si está Guardado y sin direcciones, lo mostramos como advertencia (latido naranja)
+                        let colorIcon = 'text-warning';
+                        let latido = 'style="animation: pulse 2s infinite;"';
+
+                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md bg-soft-warning border border-warning" ${latido}>
+                                                <abbr title="¡Faltan Direcciones! Haz clic aquí." style="text-decoration:none;">
+                                                    <i class="feather-map-pin ${colorIcon}"></i>
+                                                </abbr>
+                                            </a>`;
                     }
-
                     /* `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md bg-soft-warning border border-warning" style="animation: pulse 2s infinite;">
                                                 <abbr title="¡Faltan Direcciones! Haz clic para completar la venta" style="text-decoration:none;">
                                                     <i class="feather-map-pin text-warning"></i>

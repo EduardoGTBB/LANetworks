@@ -73,7 +73,7 @@ try {
             'porcentaje_iva'=> (float)($_POST['porcentaje_iva'] ?? 0),
             'tipo_precio'   => $tipo_precio,
             'division'      => $division,
-            'estatus'        => $es_cliente ? 'Por aprobar' : 'Guardado'
+            'estatus'        => $es_cliente ? 'Guardado' : 'Guardado'
             
         ];
 

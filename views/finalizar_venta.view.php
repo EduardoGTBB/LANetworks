@@ -15,6 +15,7 @@
             <div class="main-content">
                 <form id="formFormalizar">
                     <input type="hidden" name="id_cotizacion" id="id_cotizacion" value="<?php echo $id_cotizacion; ?>">
+                    <input type="hidden" id="url_origen" value="<?php echo $url_origen; ?>">
 
                     <div class="row">
                         <div class="col-lg-12">
@@ -112,7 +113,8 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-center align-items-center gap-4 mt-4 mb-5 w-100">
-                        <a href="ver_cotizaciones.php" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a>
+                        <!-- <a href="ver_cotizaciones.php" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a> -->
+                        <a href="<?php echo $url_origen; ?>" id="btn_regresar" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a>
                         <button type="submit" class="btn btn-lg btn-primary px-5 text-uppercase fw-bold">Guardar</button>
                     </div>
                 </form>
