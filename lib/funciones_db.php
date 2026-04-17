@@ -1000,8 +1000,17 @@ function obtenerDomicilioPorCotizacion(PDO $pdo, int $id_cotizacion)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+// [fn] Sucursales por Usuario
+function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array {
+    $sql = "SELECT s.* FROM sucursales s
+            INNER JOIN usuario_sucursal us ON s.id_sucursal = us.Sucursal_id
+            WHERE us.Usuario_id = :usuario_id AND s.estatus = 'Y'";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':usuario_id' => $id_usuario]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 // [fn] Guardar las direccioens ligadas
-function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, array $envio, bool $es_cliente = false): bool
+/* function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, array $envio, bool $es_cliente = false): bool
 {
     try {
         $pdo->beginTransaction();
@@ -1022,12 +1031,40 @@ function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, arra
         // 3. Insertar Envío
         $stmtE = $pdo->prepare("INSERT INTO domicilio_envio (Cotizacion_id, calle_numero_envio, colonia_envio, localidad_envio, cp_envio, municipio_envio, estado_envio) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmtE->execute([$id_cot, $envio['calle'], $envio['colonia'], $envio['localidad'], $envio['cp'], $envio['municipio'], $envio['estado']]);
+        
+        $pdo->commit();
+        return true;
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+} */
+function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, array $envio, int $sucursal_id = 0): bool
+{
+    try {
+        $pdo->beginTransaction();
 
-        // 4. Cambiar estatus definitivo SOLO si el que guarda es un empleado de LAN
-        if (!$es_cliente) {
-            $stmtCot = $pdo->prepare("UPDATE cotizacion SET estatus = 'Autorizada (información completa)' WHERE id_cotizacion = ?");
-            $stmtCot->execute([$id_cot]);
-        }
+        // 0. Si se eligió una sucursal de destino, actualizamos la cotización
+        // Se permite NULL si $sucursal_id es 0 (por si deciden no elegir ninguna y meter los datos a mano)
+        $valSucursal = ($sucursal_id > 0) ? $sucursal_id : null;
+        $pdo->prepare("UPDATE cotizacion SET Sucursal_id = ? WHERE id_cotizacion = ?")->execute([$valSucursal, $id_cot]);
+
+        // 1. Borrar las direcciones anteriores si existían
+        $pdo->prepare("DELETE FROM domicilio_fiscal WHERE Cotizacion_id = ?")->execute([$id_cot]);
+        $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE Cotizacion_id = ?")->execute([$id_cot]);
+        $pdo->prepare("DELETE FROM domicilio_envio WHERE Cotizacion_id = ?")->execute([$id_cot]);
+
+        // 2. Insertar Fiscal
+        $stmtF = $pdo->prepare("INSERT INTO domicilio_fiscal (Cotizacion_id, calle_numero_fiscal, colonia_fiscal, localidad_fiscal, cp_fiscal, municipio_fiscal, estado_fiscal) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmtF->execute([$id_cot, $fiscal['calle'], $fiscal['colonia'], $fiscal['localidad'], $fiscal['cp'], $fiscal['municipio'], $fiscal['estado']]);
+
+        // 3. Insertar Certificado
+        $stmtC = $pdo->prepare("INSERT INTO domicilio_cert_calib (Cotizacion_id, calle_numero_cert, colonia_cert, localidad_cert, cp_cert, municipio_cert, estado) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmtC->execute([$id_cot, $cert['calle'], $cert['colonia'], $cert['localidad'], $cert['cp'], $cert['municipio'], $cert['estado']]);
+
+        // 4. Insertar Envío
+        $stmtE = $pdo->prepare("INSERT INTO domicilio_envio (Cotizacion_id, calle_numero_envio, colonia_envio, localidad_envio, cp_envio, municipio_envio, estado_envio) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmtE->execute([$id_cot, $envio['calle'], $envio['colonia'], $envio['localidad'], $envio['cp'], $envio['municipio'], $envio['estado']]);
 
         $pdo->commit();
         return true;
@@ -1055,6 +1092,7 @@ function obtenerDireccionesCotizacion(PDO $pdo, int $id_cotizacion)
 
     return $data;
 }
+
 
 // >>> ==============================================
 // >>>           FIN: FUNCIONES DOMICILIOS

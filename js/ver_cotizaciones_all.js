@@ -256,7 +256,41 @@ $(document).ready(function () {
     // ==========================================
     // GUARDAR CAMBIOS (CANDADO DE DOBLE CLIC)
     // ==========================================
-    $('#formEditarCotizacion').on('submit', function (e) {
+    $('#formEditarCotizacion').on('submit', function(e) {
+        e.preventDefault(); 
+        calcEdit();
+        
+        let btnSubmit = $(this).find('button[type="submit"]');
+        let textoOriginal = btnSubmit.text();
+        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...');
+
+        let formData = $(this).serializeArray();
+
+        $.ajax({
+            url: 'api/api_ver_cotizaciones.php', 
+            type: 'POST', 
+            data: $.param(formData),
+            success: function(res) {
+                if(res.status === 'success') {
+                    $('#modalEditarCotizacion').modal('hide'); 
+                    $('.modal-backdrop').remove();
+                    
+                    // Se quitó la redirección. Solo recarga la tabla y avisa.
+                    cargarTablaPrincipal(); 
+                    alert(res.message);
+                    
+                } else { 
+                    alert("Error: " + res.message); 
+                    btnSubmit.prop('disabled', false).text(textoOriginal);
+                }
+            },
+            error: function () {
+                alert("Error de conexión al servidor.");
+                btnSubmit.prop('disabled', false).text(textoOriginal);
+            }
+        });
+    });
+    /* $('#formEditarCotizacion').on('submit', function (e) {
         e.preventDefault();
         calcEdit();
 
@@ -299,7 +333,7 @@ $(document).ready(function () {
                 btnSubmit.prop('disabled', false).text(textoOriginal);
             }
         });
-    });
+    }); */
 
     $(document).on('click', '.btn-borrar-cot', function (e) {
         e.preventDefault();

@@ -67,14 +67,14 @@ $(document).ready(function () {
                     let btnCompletarVenta = '';
                     let yaTieneDirecciones = parseInt(cot.tiene_dir) || 0;
 
-                    if (estatusTexto === 'Autorizada (sin dirección)' || (estatusTexto === 'Guardado' && yaTieneDirecciones === 0)) {
+                    if (estatusTexto === 'Autorizada (sin dirección)' || estatusTexto === 'Por aprobar' || (estatusTexto === 'Guardado' && yaTieneDirecciones === 0)) {
                         
-                        // Para el cliente, si está Guardado y sin direcciones, lo mostramos como advertencia (latido naranja)
-                        let colorIcon = 'text-warning';
-                        let latido = 'style="animation: pulse 2s infinite;"';
+                        let colorIcon = (estatusTexto === 'Por aprobar') ? 'text-primary' : 'text-warning';
+                        let latido = (estatusTexto !== 'Por aprobar') ? 'style="animation: pulse 2s infinite;"' : '';
+                        let claseFondo = (estatusTexto === 'Por aprobar') ? 'bg-soft-light border border-light' : 'bg-soft-warning border border-warning';
 
-                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md bg-soft-warning border border-warning" ${latido}>
-                                                <abbr title="¡Faltan Direcciones! Haz clic aquí." style="text-decoration:none;">
+                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md ${claseFondo}" ${latido}>
+                                                <abbr title="${estatusTexto === 'Por aprobar' ? 'Revisar datos' : '¡Faltan Direcciones! Haz clic aquí.'}" style="text-decoration:none;">
                                                     <i class="feather-map-pin ${colorIcon}"></i>
                                                 </abbr>
                                             </a>`;
@@ -380,6 +380,41 @@ $(document).ready(function () {
         let textoOriginal = btnSubmit.text();
         btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...');
 
+        let formData = $(this).serializeArray();
+
+        $.ajax({
+            url: 'api/api_ver_cotizaciones.php',
+            type: 'POST',
+            data: $.param(formData),
+            success: function (res) {
+                if (res.status === 'success') {
+                    $('#modalEditarCotizacion').modal('hide');
+                    $('.modal-backdrop').remove();
+
+                    // Simplemente recargamos la tabla y mostramos éxito (Sin redirección forzada)
+                    cargarTablaPrincipal();
+                    alert(res.message);
+                    
+                } else {
+                    alert("Error: " + res.message);
+                    btnSubmit.prop('disabled', false).text(textoOriginal);
+                }
+            },
+            error: function () {
+                alert("Error de conexión al servidor.");
+                btnSubmit.prop('disabled', false).text(textoOriginal);
+            }
+        });
+    });
+
+   /*  $('#formEditarCotizacion').on('submit', function (e) {
+        e.preventDefault();
+        calcEdit();
+
+        let btnSubmit = $(this).find('button[type="submit"]');
+        let textoOriginal = btnSubmit.text();
+        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...');
+
         // Obtenemos los datos del formulario como un arreglo para poder modificarlos antes de enviarlos
         let formData = $(this).serializeArray();
         let uiEstatus = $('#edit_estatus').val();
@@ -410,7 +445,7 @@ $(document).ready(function () {
                 } else alert("Error: " + res.message);
             }
         });
-    });
+    }); */
 
     $(document).on('click', '.btn-borrar-cot', function (e) {
         e.preventDefault();
