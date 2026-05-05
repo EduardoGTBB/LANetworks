@@ -204,7 +204,7 @@
                                     <table class="table table-hover" id="proposalList">
                                         <thead>
                                             <tr>
-                                                <th>Clave</th>
+                                                <th class="text-center">Clave</th>
                                                 <th>Producto</th>
                                                 <th>Precio farmacia</th>
                                                 <th>Precio publico</th>
@@ -265,7 +265,7 @@
 
     <div class="modal fade-scale" id="modalProductos" tabindex="-1" aria-labelledby="modalProductoLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <form id="formProducto" class="modal-content bg-white">
+            <form id="formProducto" class="modal-content bg-white" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold text-primary" id="modalProductoLabel">Nuevo producto</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -273,6 +273,8 @@
                 <div class="modal-body">
                     <input type="hidden" name="action" id="producto_action" value="crear">
                     <input type="hidden" name="id_product" id="producto_id" value="">
+                    <input type="hidden" name="foto_actual" id="foto_actual" value="">
+                    
                     <div class="row mb-4 align-items-center">
                         <div class="col-lg-4">
                             <label class="fw-semibold">Foto del Producto: </label>
@@ -287,11 +289,6 @@
                                     </div>
 
                                     <input class="file-upload d-none" type="file" name="foto_product" id="input_foto_prod" accept="image/*">
-                                    <!-- <img src="assets/images/avatar/user.png" class="upload-pic img-fluid rounded h-100 w-100" alt="">
-                                    <div class="position-absolute start-50 top-50 end-0 bottom-0 translate-middle h-100 w-100 hstack align-items-center justify-content-center c-pointer upload-button">
-                                        <i class="feather feather-camera" aria-hidden="true"></i>
-                                    </div>
-                                    <input class="file-upload" type="file" name="foto_perfil" accept="image/*"> -->
                                 </div>
                                 <div class="d-flex flex-column gap-1">
                                     <div class="fs-11 text-gray-500 mt-2"># Sube una foto del producto</div>
@@ -306,17 +303,39 @@
                         <input type="text" class="form-control" name="descripcion_product" id="descripcion_product" required>
                     </div>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-12 mb-3">
                             <label class="form-label">Clave<span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="clave_product" id="clave_product" required>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <!-- <div class="col-md-6 mb-3">
                             <label class="form-label"><span class="text-danger">Precio Farmacia</span></label>
                             <input type="number" class="form-control" name="precio_farmacia" id="precio_farmacia" step="any" requerid>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label"><span class="text-danger">Precio Público</span></label>
                             <input type="number" class="form-control" name="precio_publico" id="precio_publico" step="any" required>
+                        </div> -->
+                    </div>
+                    <div class="row bg-light p-3 rounded mb-3 border">
+                        <h6 class="fw-bold text-primary"><i class="feather-tag me-2"></i>Precios FARMACIA</h6>
+                        <div class="col-md-6">
+                            <label class="form-label small">Precio Equipo</label>
+                            <input type="number" step="0.01" class="form-control" name="pf_equipo" id="pf_equipo" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Precio Calibración</label>
+                            <input type="number" step="0.01" class="form-control" name="pf_calib" id="pf_calib" min="0" required>
+                        </div>
+                    </div>
+                    <div class="row bg-light p-3 rounded mb-3 border">
+                        <h6 class="fw-bold text-success"><i class="feather-tag me-2"></i>Precios PÚBLICO</h6>
+                        <div class="col-md-6">
+                            <label class="form-label small">Precio Equipo</label>
+                            <input type="number" step="0.01" class="form-control" name="pp_equipo" id="pp_equipo" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Precio Calibración</label>
+                            <input type="number" step="0.01" class="form-control" name="pp_calib" id="pp_calib" min="0" required>
                         </div>
                     </div>
 

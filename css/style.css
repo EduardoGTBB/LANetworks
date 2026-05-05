@@ -1,3 +1,63 @@
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #f4f5f8 !important;
+    /* Fondo gris súper claro */
+    border: 1px solid #e2e5e8 !important;
+    /* Borde sutil */
+    border-radius: 4px !important;
+    padding: 4px 10px !important;
+    /* AUMENTAMOS EL PADDING PARA DARLE AIRE */
+    color: #4b5563 !important;
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    /* Mueve la 'X' a la derecha */
+    align-items: center !important;
+    margin-top: 6px !important;
+    margin-right: 6px !important;
+}
+
+/* Ajuste exacto del texto del nombre */
+.select2-container--default .select2-selection--multiple .select2-selection__choice__display {
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+}
+
+/* Reseteo y posición de la "x" */
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    position: relative !important;
+    /* CRÍTICO: Obliga a la X a quedarse DENTRO de la caja */
+    right: auto !important;
+    /* Quita propiedades absolutas por defecto */
+    left: auto !important;
+    border: none !important;
+    background: transparent !important;
+    color: #6c757d !important;
+    padding: 0 0 0 8px !important;
+    /* Espacio de separación entre la letra y la X */
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Efecto al pasar el mouse por la 'x' */
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #dc3545 !important;
+    /* Rojo */
+    background: transparent !important;
+}
+
+/* Forzar ocultar seudo-elementos que causan el cuadro fantasma */
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove::before,
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove::after {
+    display: none !important;
+}
+
 /* 1. El contenedor padre ahora controla la posición en la pantalla */
 #back-top {
     position: fixed;
@@ -5,11 +65,11 @@
     bottom: 20px;
     z-index: 99999;
     display: flex;
-    align-items: center; 
+    align-items: center;
 }
 
 /* 2. El diseño del botón verde */
-#back-top > a {
+#back-top>a {
     background-color: #25D366;
     color: #fff !important;
     height: 70px;
@@ -23,11 +83,11 @@
     text-decoration: none;
 }
 
-#back-top > a i {
+#back-top>a i {
     font-size: 45px !important;
 }
 
-#back-top > a:hover {
+#back-top>a:hover {
     background-color: #1ebe57;
     transform: scale(1.1);
     color: #fff !important;
@@ -44,7 +104,7 @@
     font-size: 14px;
     font-weight: 600;
     font-family: inherit;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     white-space: nowrap;
 
     opacity: 0;

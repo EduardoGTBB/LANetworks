@@ -175,6 +175,7 @@ $serie = "COTLAN";
                 <p class="m-0" style="font-size:16px;"><strong>COTIZACIÓN</strong></p>
                 <p class="m-0"><strong>Serie:</strong> <span><?php echo $serie; ?></span> <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?> <strong>Folio:</strong> <?php else: ?> <strong>No.</strong> <?php endif; ?> <span><?php echo $folio; ?></span></p>
                 <p class="m-0"><strong>Fecha de elaboración:</strong> <?php echo date('d/m/Y', strtotime($cot['fecha_cot'])); ?></p>
+                <p class="m-0 text-danger"><strong>Fecha de vencimiento:</strong> <?php echo date('d/m/Y', strtotime($cot['fecha_cot'] . ' + 30 days')); ?></p>
                 <p class="m-0"><strong>Moneda:</strong> Pesos</p>
             </div>
             <div class="col-6 text-end">

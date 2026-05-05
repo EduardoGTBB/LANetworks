@@ -63,6 +63,12 @@ try {
             $id_cotizacion = (int)($_POST['id_cotizacion'] ?? 0);
             $empresa_id    = (int)($_POST['Empresa_id'] ?? 0);
             $usuario_id    = (int)($_POST['Usuario_id'] ?? 0);
+            $sucursal_id   = (int)($_POST['Sucursal_id'] ?? 0);
+
+            if ($id_cotizacion === 0 || $empresa_id === 0 || $usuario_id === 0 || $sucursal_id === 0) {
+                echo json_encode(['status' => 'error', 'message' => 'Faltan datos obligatorios (Cliente, Solicitante o Sucursal).']);
+                exit;
+            }
 
             if ($id_cotizacion === 0 || $empresa_id === 0 || $usuario_id === 0) {
                 echo json_encode(['status' => 'error', 'message' => 'Faltan datos obligatorios.']);
@@ -99,6 +105,7 @@ try {
             $datosCotizacion = [
                 'empresa_id'    => $empresa_id,
                 'usuario_id'    => $usuario_id,
+                'sucursal_id'   => $sucursal_id,
                 'importe_total' => (float)($_POST['sub_total'] ?? 0),
                 'precio_iva'    => (float)($_POST['total_amount'] ?? 0),
                 'division'      => trim($_POST['division'] ?? ''),
@@ -137,5 +144,3 @@ try {
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Error BD: ' . $e->getMessage()]);
 }
-
-?>

@@ -6,9 +6,9 @@ $(document).ready(function () {
     let preciosProductos = {};
     let rowCount = 0;
 
-    // ==========================================
-    // 1. CARGA INICIAL DE DATOS MAESTROS
-    // ==========================================
+    //>>>==========================================
+    //>>> 1. CARGA INICIAL DE DATOS MAESTROS
+    //>>>==========================================
     $.ajax({ url: 'api/api_cotizador.php?action=get_empresas', type: 'GET', success: function (data) { windowEmpresas = data; } });
 
     $.ajax({
@@ -17,17 +17,18 @@ $(document).ready(function () {
         success: function (data) {
             windowProductos = data;
             data.forEach(prod => {
-                preciosProductos[prod.id_product] = {
-                    'Farmacia': parseFloat(prod.precio_farmacia),
-                    'Público': parseFloat(prod.precio_publico)
-                };
+                preciosProductos[prod.id_product] = prod;
             });
         }
     });
+    //<<< ==============================================
+    //<<<      FIN: CARGA INICIAL DE DATOS MAESTROS
+    //<<< ============================================== 
 
-    // ==========================================
-    // 2. CARGAR TABLA PRINCIPAL CON DATATABLES
-    // ==========================================
+
+    //>>> ==============================================
+    //>>> 2. CARGAR TABLA PRINCIPAL CON DATATABLES
+    //>>> ==============================================
     function cargarTablaPrincipal() {
         $.ajax({
             url: 'api/api_ver_cotizaciones.php?action=leer',
@@ -56,10 +57,10 @@ $(document).ready(function () {
                     let apellidoSol = cot.apellido_pat ? cot.apellido_pat : '';
                     let solicitante = `${nombreSol} ${apellidoSol}`.trim();
                     let razonSoc = cot.razon_social ? cot.razon_social : 'Sin Empresa';
-                    
+
                     let badgeColor = 'bg-soft-primary text-primary'; // Por defecto Guardada
                     let estatusTexto = cot.estatus ? cot.estatus : 'Guardado';
-                    
+
                     if (estatusTexto === 'Autorizada (sin dirección)') badgeColor = 'bg-soft-warning text-warning';
                     if (estatusTexto === 'Autorizada (información completa)') badgeColor = 'bg-soft-success text-success';
                     if (estatusTexto === 'No autorizada') badgeColor = 'bg-soft-danger text-danger';
@@ -68,7 +69,7 @@ $(document).ready(function () {
                     let yaTieneDirecciones = parseInt(cot.tiene_dir) || 0;
 
                     if (estatusTexto === 'Autorizada (sin dirección)' || estatusTexto === 'Por aprobar' || (estatusTexto === 'Guardado' && yaTieneDirecciones === 0)) {
-                        
+
                         let colorIcon = (estatusTexto === 'Por aprobar') ? 'text-primary' : 'text-warning';
                         let latido = (estatusTexto !== 'Por aprobar') ? 'style="animation: pulse 2s infinite;"' : '';
                         let claseFondo = (estatusTexto === 'Por aprobar') ? 'bg-soft-light border border-light' : 'bg-soft-warning border border-warning';
@@ -79,11 +80,7 @@ $(document).ready(function () {
                                                 </abbr>
                                             </a>`;
                     }
-                    /* `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md bg-soft-warning border border-warning" style="animation: pulse 2s infinite;">
-                                                <abbr title="¡Faltan Direcciones! Haz clic para completar la venta" style="text-decoration:none;">
-                                                    <i class="feather-map-pin text-warning"></i>
-                                                </abbr>
-                                             </a>` */
+
                     let btnEliminar = '';
                     // let cotizacionCerrada = (estatusTexto === 'Autorizada (sin dirección)' || estatusTexto === 'No autorizada');
                     let cotizacionCerrada = (estatusTexto === 'Autorizada (información completa)' || estatusTexto === 'No autorizada');
@@ -152,11 +149,15 @@ $(document).ready(function () {
     }
 
     cargarTablaPrincipal();
+    //<<< ==============================================
+    //<<<   FIN: CARGAR TABLA PRINCIPAL CON DATATABLES
+    //<<< ============================================== 
 
-    // ==========================================
-    // 3. LÓGICA DEL MODAL DE EDICIÓN
-    // ==========================================
-    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '') {
+
+    //>>>============================================== 
+    //>>>           3. MODAL DE EDICIÓN
+    //>>>============================================== 
+    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '', isCalib = true) {
         let opciones = '<option value="">Selecciona...</option>';
         windowProductos.forEach(p => {
             let selected = (p.id_product == prod_id) ? 'selected' : '';
@@ -166,10 +167,30 @@ $(document).ready(function () {
             opciones += `<option value="${p.id_product}" ${selected}>[${claveM}] ${descM}</option>`;
         });
 
+        //& Ayuda a recodar si la fila ya contaba con la calibración.
+        let checkedAttr = isCalib ? 'checked' : '';
+
         return `
             <tr id="edit_addr${index}" class="fila-producto">
                 <td class="text-center align-middle fila-numero">${index + 1}</td>
                 <td class="align-middle"><select class="form-control select-prod-modal" name="productos[]" required>${opciones}</select></td>
+                <td class="align-middle">
+                    <div class="modulo-config">
+                        <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
+                            <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="edit_chk_incluir_${index}" ${checkedAttr} style="cursor: pointer;">
+                            <label class="form-check-label fs-12 fw-bold text-dark text-start" for="edit_chk_incluir_${index}" style="cursor: pointer; padding-top: 2px;">
+                                Incluir Calibración
+                            </label>
+                        </div>
+                        <div class="form-check d-flex justify-content-center align-items-center gap-2">
+                            <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="edit_chk_desglosar_${index}" style="cursor: pointer;">
+                            <label class="form-check-label fs-11 text-muted text-start" for="edit_chk_desglosar_${index}" style="cursor: pointer; padding-top: 2px;">
+                                Desglosar
+                            </label>
+                        </div>
+                    </div>
+                    <div class="info-desglose text-center mt-2"></div>
+                </td>
                 <td class="align-middle"><input type="number" name="unitario[]" class="form-control edit-price" step="any" value="${precio}" required></td>
                 <td class="align-middle"><input type="number" name="cantidad_cot[]" class="form-control edit-qty" step="1" min="1" value="${qty}" required></td>
                 <td class="align-middle">
@@ -182,7 +203,124 @@ $(document).ready(function () {
         `;
     }
 
-    // ABRIR EL MODAL Y LLENAR DATOS
+    //| Dropdowns solicitantes
+    function cargarSucursales(usuarioId, preseleccion_suc = null) {
+        let $selectSuc = $('#edit_select_sucursal');
+        $selectSuc.empty().append('<option value="">Cargando...</option>');
+
+        if (usuarioId) {
+            $.ajax({
+                url: 'api/api_cotizador.php?action=get_sucursales_usuario&usuario_id=' + usuarioId,
+                method: 'GET', dataType: 'json',
+                success: function (data) {
+                    $selectSuc.empty();
+                    if (data.length === 0) {
+                        $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
+                    } else {
+                        $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
+                        data.forEach(suc => {
+                            $selectSuc.append(`<option value="${suc.id_sucursal}">${suc.nombre_sucursal} (${suc.estado})</option>`);
+                        });
+                        // Si nos pasaron un ID desde BD, lo marcamos
+                        if (preseleccion_suc) {
+                            $selectSuc.val(preseleccion_suc).trigger('change');
+                        }
+                    }
+                }
+            });
+        } else {
+            $selectSuc.empty().append('<option value="">Selecciona un solicitante primero...</option>');
+        }
+    }
+
+    function cargarSolicitantes(id_empresa, preseleccion = null, isReadOnly = false, preseleccion_suc = null) {
+        $.ajax({
+            url: 'api/api_cotizador.php?action=get_usuarios&empresa_id=' + id_empresa,
+            method: 'GET',
+            success: function (users) {
+                let $selSol = $('#edit_select_solicitante');
+                $selSol.empty().append('<option value="">Selecciona...</option>');
+                users.forEach(u => { $selSol.append(`<option value="${u.id_usuario}">${u.nombre} ${u.apellido_pat}</option>`); });
+
+                if (preseleccion) {
+                    $selSol.val(preseleccion);
+                    // AQUÍ ESTABA EL ERROR: Necesita conocer preseleccion_suc para funcionar
+                    cargarSucursales(preseleccion, preseleccion_suc);
+                }
+
+                $selSol.select2({ dropdownParent: $('#modalEditarCotizacion') });
+
+                //& Bloqueamos solicitante si es un cliente B2B
+                if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
+                    $selSol.prop('disabled', true);
+                    if ($('#hidden_edit_usuario').length === 0) {
+                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_usuario" name="Usuario_id" value="${preseleccion}">`);
+                    } else {
+                        $('#hidden_edit_usuario').val(preseleccion);
+                    }
+                }
+            }
+        });
+    }
+
+    $('#edit_select_empresa').on('change', function () {
+        cargarSolicitantes($(this).val());
+    });
+
+    $('#edit_select_solicitante').on('change', function () {
+        let usuarioId = $(this).val();
+        cargarSucursales(usuarioId, null)
+
+        /* //° let $selectSuc = $('#edit_select_sucursal');
+        $selectSuc.empty().append('<option value="">Cargando...</option>');
+
+        if (usuarioId) {
+            $.ajax({
+                url: 'api/api_cotizador.php?action=get_sucursales_usuario&usuario_id=' + usuarioId,
+                method: 'GET', dataType: 'json',
+                success: function(data) {
+                    $selectSuc.empty();
+                    if(data.length === 0) {
+                        $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
+                    } else {
+                        $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
+                        data.forEach(suc => {
+                            $selectSuc.append(`<option value="${suc.id_sucursal}">${suc.nombre_sucursal} (${suc.plaza})</option>`);
+                        });
+                    }
+                }
+            });
+        } else {
+            $selectSuc.empty().append('<option value="">Selecciona un solicitante primero...</option>');
+        } */
+    });
+
+    //? Es un candado para lista de precio
+    let previousTipoPrecio = '';
+    $('#tipo_precio').on('focus click', function () {
+        previousTipoPrecio = $(this).val();
+    }).on('change', function () {
+        let nuevoPrecio = $(this).val();
+        if (previousTipoPrecio && nuevoPrecio && previousTipoPrecio !== nuevoPrecio) {
+            if (confirm("ATENCIÓN: Cambiar la lista de precios recalculará de forma automática todas las partidas. ¿Deseas continuar?")) {
+                previousTipoPrecio = nuevoPrecio;
+                $('#tab_logic_edit tbody tr.fila-producto').each(function () {
+                    calculateRowEdit($(this));
+                });
+                calcEditTotal();
+            } else {
+                // Si le da cancelar, regresamos al valor anterior
+                $(this).val(previousTipoPrecio);
+            }
+        }
+    });
+    /* //° $('#tipo_precio').on('change', function () {
+        $('.select-prod-modal').each(function () {
+            if ($(this).val()) $(this).trigger('change');
+        });
+    }); */
+
+    //& EDITAR EL MODAL Y LLENAR DATOS
     $(document).on('click', '.btn-editar-modal', function (e) {
         e.preventDefault();
         let id_cot = $(this).data('id');
@@ -198,11 +336,14 @@ $(document).ready(function () {
                 let isReadOnly = (cot.estatus === 'Autorizada (información completa)' || cot.estatus === 'No autorizada');
                 $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', false);
                 $('#edit_add_row').show();
-                $('#formEditarCotizacion button[type="submit"]').show();
+                $('#formEditarCotizacion button[type="submit"]').prop('disabled', false).text('Actualizar Cambios').show();
 
                 $('#edit_id_cotizacion').val(cot.id_cotizacion);
                 $('#division').val(cot.division).trigger('change');
+
+                previousTipoPrecio = cot.tipo_precio;
                 $('#tipo_precio').val(cot.tipo_precio).trigger('change');
+
                 $('#edit_tax').val(cot.porcentaje_iva);
                 $('#edit_sub_total').val(cot.importe_total);
                 $('#edit_total_amount').val(cot.precio_iva);
@@ -216,7 +357,6 @@ $(document).ready(function () {
                 if (estatusBD === 'Autorizada (sin dirección)') {
                     estatusBD = 'Autorizada (información completa)';
                 }
-                /* $('#edit_estatus').val(cot.estatus ? cot.estatus : 'Guardada').trigger('change');*/
                 $('#edit_estatus').val(estatusBD).trigger('change');
 
                 let $colSolicitante = $('#edit_select_solicitante').closest('div[class^="col-"]');
@@ -226,22 +366,18 @@ $(document).ready(function () {
                 $colSolicitante.removeClass('col-md-12').addClass('col-md-4');
                 $colPrecio.show();
                 $colEstatus.show();
-                $selEmp.prop('disabled', false); // Habilitar select de Empresa por defecto
+                $selEmp.prop('disabled', false);
 
-                // ¡LÓGICA DEL CLIENTE - Ocultamos y bloqueamos campos para proteger la cotización
+                //& Lógica portal clientes - Ocultamos y bloqueamos campos para proteger la cotización
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-
-                    // A. Ocultar Status y Tipo de Precio
+                    //& A. Ocultar Status y Tipo de Precio
                     $colPrecio.hide();
                     $colEstatus.hide();
-
-                    // B. Solicitante abarca 12 columnas (fila completa)
                     $colSolicitante.removeClass('col-md-4').addClass('col-md-12');
-
-                    // REQUERIMIENTOS SEGURIDAD B2B: Bloqueamos alterar la Empresa
+                    //& B. REQUERIMIENTOS SEGURIDAD B2B: Bloqueamos alterar la Empresa
                     $selEmp.prop('disabled', true);
 
-                    // Aseguramos que los inputs ocultos (trampas) existan para enviar los datos obligatorios que bloqueamos
+                    //& Aseguramos que los inputs ocultos existan para enviar los datos obligatorios que bloqueamos
                     if ($('#hidden_edit_empresa').length === 0) {
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
@@ -251,18 +387,31 @@ $(document).ready(function () {
                         $('#hidden_edit_precio').val(cot.tipo_precio);
                         $('#hidden_edit_estatus').val(cot.estatus ? cot.estatus : 'Guardado');
                     }
-                } /* else {
-                    $('#fila_estatus_lan').show();
-                } */
+                }
 
-                cargarSolicitantes(cot.Empresa_id, cot.Usuario_empresa_id, isReadOnly);
+                cargarSolicitantes(cot.Empresa_id, cot.Usuario_empresa_id, isReadOnly, cot.Sucursal_id);
 
                 let $tbody = $('#edit_tbody_productos');
                 $tbody.empty();
                 rowCount = 0;
 
                 dets.forEach((item, index) => {
-                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido));
+                    let isCalibIncluida = true;
+                    if (preciosProductos[item.Product_id]) {
+                        let pData = preciosProductos[item.Product_id];
+
+                        let precioSoloEquipo = (cot.tipo_precio === 'Farmacia') ? parseFloat(pData.pf_equipo) : parseFloat(pData.pp_equipo);
+                        let precioGuardado = parseFloat(item.precio_unitario);
+
+                        // Si el precio guardado es exactamente igual al "Solo Equipo", le desmarcamos la palomita
+                        if (Math.abs(precioGuardado - precioSoloEquipo) < 0.01) {
+                            isCalibIncluida = false;
+                        }
+                    }
+
+                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida));
+                    // Forzamos el renderizado de los textos descriptivos
+                    calculateRowEdit($(`#edit_addr${index}`));
                     rowCount++;
                 });
 
@@ -279,42 +428,14 @@ $(document).ready(function () {
             }
         });
     });
+    //<<<==============================================
+    //<<<            FIN: MODAL DE EDICIÓN
+    //<<<============================================== 
 
-    function cargarSolicitantes(id_empresa, preseleccion = null, isReadOnly = false) {
-        $.ajax({
-            url: 'api/api_cotizador.php?action=get_usuarios&empresa_id=' + id_empresa,
-            method: 'GET',
-            success: function (users) {
-                let $selSol = $('#edit_select_solicitante');
-                $selSol.empty().append('<option value="">Selecciona...</option>');
-                users.forEach(u => { $selSol.append(`<option value="${u.id_usuario}">${u.nombre} ${u.apellido_pat}</option>`); });
-                if (preseleccion) $selSol.val(preseleccion);
-                $selSol.select2({ dropdownParent: $('#modalEditarCotizacion') });
 
-                // Bloqueamos también al solicitante si es un cliente B2B
-                if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-                    $selSol.prop('disabled', true);
-                    if ($('#hidden_edit_usuario').length === 0) {
-                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_usuario" name="Usuario_id" value="${preseleccion}">`);
-                    } else {
-                        $('#hidden_edit_usuario').val(preseleccion);
-                    }
-                }
-            }
-        });
-    }
-
-    $('#edit_select_empresa').on('change', function () { cargarSolicitantes($(this).val()); });
-
-    $('#tipo_precio').on('change', function () {
-        $('.select-prod-modal').each(function () {
-            if ($(this).val()) $(this).trigger('change');
-        });
-    });
-
-    // ==========================================
-    // 4. MATEMÁTICAS Y FILAS DINÁMICAS EN MODAL
-    // ==========================================
+    //>>>==============================================
+    //>>>  4. MATEMÁTICAS Y FILAS DINÁMICAS EN MODAL
+    //>>>==============================================
     $("#edit_add_row").click(function () {
         $("#edit_tbody_productos").append(construirFila(rowCount));
         $(`#edit_addr${rowCount} .select-prod-modal`).select2({ dropdownParent: $('#modalEditarCotizacion') });
@@ -327,7 +448,7 @@ $(document).ready(function () {
         if ($('#edit_tbody_productos tr.fila-producto').length > 1) {
             $(this).closest('tr').remove();
             recalcularNumerosFila();
-            calcEdit();
+            calcEditTotal();
         } else {
             alert("La cotización debe tener al menos un producto.");
         }
@@ -339,7 +460,12 @@ $(document).ready(function () {
         });
     }
 
-    $(document).on('change', '.select-prod-modal', function () {
+    $(document).on('change', '.select-prod-modal, .chk-config', function () {
+        let row = $(this).closest('tr');
+        calculateRowEdit(row);
+        calcEditTotal();
+    });
+    /* //° $(document).on('change', '.select-prod-modal', function () {
         let prodId = $(this).val();
         let tipoPrecioActivo = $('#tipo_precio').val();
         let inputPrecio = $(this).closest('tr').find('.edit-price');
@@ -351,17 +477,64 @@ $(document).ready(function () {
             $(this).val('').trigger('change.select2');
         }
         calcEdit();
+    }); */
+
+    $(document).on("keyup change", ".edit-qty, #edit_tax", function () {
+        let row = $(this).closest('tr');
+        if (row.length > 0) calculateRowEdit(row);
+        calcEditTotal();
     });
 
-    $(document).on("keyup change", ".edit-qty, .edit-price, #edit_tax", function () { calcEdit(); });
+    function calculateRowEdit(row) {
+        let prodId = row.find('.select-prod-modal').val();
+        let pData = preciosProductos[prodId];
+        if (!pData) return;
 
-    function calcEdit() {
+        let qty = parseFloat(row.find('.edit-qty').val()) || 0;
+        let tipoPrecio = $('#tipo_precio').val();
+
+        let incluirCalib = row.find('.chk-incluir').is(':checked');
+        let desglosar = row.find('.chk-desglosar').is(':checked');
+
+        if (!tipoPrecio) {
+            row.find('.info-desglose').html('<small class="text-danger fw-bold">Falta lista de precios</small>');
+            return;
+        }
+
+        // Extrayendo variables completas de la base de datos
+        let pEquipo = (tipoPrecio === 'Farmacia') ? parseFloat(pData.pf_equipo) : parseFloat(pData.pp_equipo);
+        let pCalib = (tipoPrecio === 'Farmacia') ? parseFloat(pData.pf_calib) : parseFloat(pData.pp_calib);
+        let pAntesIva = (tipoPrecio === 'Farmacia') ? parseFloat(pData.pf_antes_iva) : parseFloat(pData.pp_antes_iva);
+
+        let textoInformativo = "";
+
+        if (incluirCalib) {
+            row.find('.edit-price').val(pAntesIva.toFixed(2));
+            if (desglosar) {
+                textoInformativo = `<small class="text-primary d-block fw-bold mt-1">Equipo ($${pEquipo.toFixed(2)}) + Calibración ($${pCalib.toFixed(2)})</small>`;
+            } else {
+                textoInformativo = `<small class="text-muted d-block mt-1">Incluye equipo y calibración</small>`;
+            }
+        } else {
+            row.find('.edit-price').val(pEquipo.toFixed(2));
+            if (desglosar) {
+                textoInformativo = `<small class="text-info d-block fw-bold mt-1">Solo Equipo ($${pEquipo.toFixed(2)})</small>`;
+            } else {
+                textoInformativo = `<small class="text-muted d-block mt-1">Solo Equipo</small>`;
+            }
+        }
+
+        row.find('.info-desglose').html(textoInformativo);
+
+        let unitario = parseFloat(row.find('.edit-price').val()) || 0;
+        let totalFila = unitario * qty;
+        row.find('.edit-total').val(totalFila > 0 ? totalFila.toFixed(2) : '');
+    }
+
+    function calcEditTotal() {
         let sub = 0;
         $("#tab_logic_edit tbody tr.fila-producto").each(function () {
-            let q = parseFloat($(this).find(".edit-qty").val()) || 0;
-            let p = parseFloat($(this).find(".edit-price").val()) || 0;
-            let t = q * p;
-            $(this).find(".edit-total").val(t > 0 ? t.toFixed(2) : '');
+            let t = parseFloat($(this).find(".edit-total").val()) || 0;
             sub += t;
         });
         $("#edit_sub_total").val(sub.toFixed(2));
@@ -369,12 +542,24 @@ $(document).ready(function () {
         $("#edit_total_amount").val((sub + (sub * tax / 100)).toFixed(2));
     }
 
-    // ==========================================
-    // 5. GUARDAR CAMBIOS Y ELIMINAR
-    // ==========================================
+    //<<<==============================================
+    //<<<  FIN: MATEMÁTICAS Y FILAS DINÁMICAS EN MODAL
+    //<<<============================================== 
+
+
+    //>>>============================================== 
+    //>>>       5. GUARDAR CAMBIOS Y ELIMINAR
+    //>>>============================================== 
     $('#formEditarCotizacion').on('submit', function (e) {
         e.preventDefault();
-        calcEdit();
+
+        if (!$('#edit_select_sucursal').val()) {
+            alert("Debes seleccionar una sucursal de destino antes de guardar.");
+            return;
+        }
+
+        $('#tab_logic_edit tbody tr.fila-producto').each(function () { calculateRowEdit($(this)); });
+        calcEditTotal();
 
         let btnSubmit = $(this).find('button[type="submit"]');
         let textoOriginal = btnSubmit.text();
@@ -387,6 +572,9 @@ $(document).ready(function () {
             type: 'POST',
             data: $.param(formData),
             success: function (res) {
+
+                btnSubmit.prop('disabled', false).text(textoOriginal);
+
                 if (res.status === 'success') {
                     $('#modalEditarCotizacion').modal('hide');
                     $('.modal-backdrop').remove();
@@ -394,7 +582,7 @@ $(document).ready(function () {
                     // Simplemente recargamos la tabla y mostramos éxito (Sin redirección forzada)
                     cargarTablaPrincipal();
                     alert(res.message);
-                    
+
                 } else {
                     alert("Error: " + res.message);
                     btnSubmit.prop('disabled', false).text(textoOriginal);
@@ -406,46 +594,6 @@ $(document).ready(function () {
             }
         });
     });
-
-   /*  $('#formEditarCotizacion').on('submit', function (e) {
-        e.preventDefault();
-        calcEdit();
-
-        let btnSubmit = $(this).find('button[type="submit"]');
-        let textoOriginal = btnSubmit.text();
-        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...');
-
-        // Obtenemos los datos del formulario como un arreglo para poder modificarlos antes de enviarlos
-        let formData = $(this).serializeArray();
-        let uiEstatus = $('#edit_estatus').val();
-
-        // Si el usuario eligió "Ganada", le decimos a la base de datos que la deje en pausa
-        if (uiEstatus === 'Autorizada (información completa)') {
-            let estatusIndex = formData.findIndex(item => item.name === 'estatus');
-            if (estatusIndex !== -1) {
-                formData[estatusIndex].value = 'Autorizada (sin dirección)';
-            }
-        }
-        $.ajax({
-            url: 'api/api_ver_cotizaciones.php',
-            type: 'POST',
-            data: $.param(formData), // Convertimos el arreglo de vuelta a texto para mandarlo
-            success: function (res) {
-                if (res.status === 'success') {
-                    $('#modalEditarCotizacion').modal('hide');
-                    $('.modal-backdrop').remove();
-
-                    // Si eligieron Ganada, ¡Redirigimos inmediatamente!
-                    if (uiEstatus === 'Autorizada (información completa)') {
-                        window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val();
-                    } else {
-                        cargarTablaPrincipal();
-                        alert(res.message);
-                    }
-                } else alert("Error: " + res.message);
-            }
-        });
-    }); */
 
     $(document).on('click', '.btn-borrar-cot', function (e) {
         e.preventDefault();

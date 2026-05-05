@@ -71,13 +71,31 @@ function obtenerClientes(PDO $pdo): array
 // [fn] Obtener los productos
 function obtenerProduct(PDO $pdo): array
 {
-    $sql = "SELECT id_product,descripcion_product, clave_product, precio_farmacia, precio_publico, foto_product, estatus 
-            FROM productos
-            ORDER BY descripcion_product ASC";
+    $sql = "SELECT p.*, 
+            pf.pf_equipo, pf.pf_calibracion as pf_calib, pf.pf_precio_antes_iva as pf_antes_iva,
+            pp.pp_equipo, pp.pp_calibracion as pp_calib, pp.pp_precio_antes_iva as pp_antes_iva
+            FROM productos p
+            LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
+            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
+            ORDER BY p.id_product DESC";
+            
+    return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+}
 
+function obtenerProductPorId(PDO $pdo, int $id_product)
+{
+    // Usamos los nombres reales de las columnas en la BD: precio_equipo y precio_calibracion
+    $sql = "SELECT p.*, 
+            pf.pf_equipo, pf.pf_calibracion as pf_calib, pf.pf_precio_antes_iva as pf_antes_iva,
+            pp.pp_equipo, pp.pp_calibracion as pp_calib, pp.pp_precio_antes_iva as pp_antes_iva
+            FROM productos p
+            LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
+            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
+            WHERE p.id_product = :id";
+            
     $stmt = $pdo->prepare($sql);
-    $stmt->execute();
-    return $stmt->fetchAll();
+    $stmt->execute([':id' => $id_product]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 // [fn] Guardar la nueva cotización
@@ -86,12 +104,14 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
     try {
         $pdo->beginTransaction();
 
-        $sqlCotizacion = "INSERT INTO cotizacion (Empresa_id, Usuario_admin_id, Usuario_empresa_id , fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division)VALUES (:empresa_id,:id_user_admin,:usuario_id, :fecha_cot, :importe_total, :comentarios, :precio_iva,:pcte_iva , :tprecio, :division)";
+        $sqlCotizacion = "INSERT INTO cotizacion (Empresa_id,Sucursal_id, Usuario_admin_id, Usuario_empresa_id , fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division)
+                        VALUES (:empresa_id, :sucursal_id, :id_user_admin,:usuario_id, :fecha_cot, :importe_total, :comentarios, :precio_iva,:pcte_iva , :tprecio, :division)";
 
         $stmtCot = $pdo->prepare($sqlCotizacion);
 
         $stmtCot->execute([
             ':empresa_id'    => $datosCotizacion['empresa_id'],
+            ':sucursal_id'   => $datosCotizacion['sucursal_id'],
             ':id_user_admin' => $datosCotizacion['id_user_admin'],
             ':usuario_id'    => $datosCotizacion['usuario_id'],
             ':fecha_cot'     => $datosCotizacion['fecha_cot'],
@@ -219,7 +239,7 @@ function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
 // &Obtenemos la cotizacion especifica ID (Padre)
 function editarCotizacionporID(PDO $pdo, int $id_cotizacion)
 {
-    $sql = "SELECT id_cotizacion, Empresa_id, Usuario_admin_id, Usuario_empresa_id, fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, estatus 
+    $sql = "SELECT id_cotizacion, Empresa_id, Sucursal_id, Usuario_admin_id, Usuario_empresa_id, fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, estatus 
             FROM cotizacion
             WHERE id_cotizacion = :id";
 
@@ -251,6 +271,7 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
         // 1. Actualizamos el padre
         $sqlCot = "UPDATE cotizacion 
                    SET Empresa_id = :empresa_id, 
+                       Sucursal_id = :sucursal_id,
                        Usuario_empresa_id = :usuario_id, 
                        importe_total = :importe_total, 
                        precio_iva = :precio_iva, 
@@ -263,6 +284,7 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
         $stmtCot = $pdo->prepare($sqlCot);
         $stmtCot->execute([
             ':empresa_id'     => $datosCotizacion['empresa_id'],
+            ':sucursal_id'    => $datosCotizacion['sucursal_id'],
             ':usuario_id'     => $datosCotizacion['usuario_id'],
             ':importe_total'  => $datosCotizacion['importe_total'],
             ':precio_iva'     => $datosCotizacion['precio_iva'],
@@ -362,19 +384,18 @@ function obtenerAllempresas(PDO $pdo): array
 function insertarEmpresa(PDO $pdo, array $datos): bool
 {
     try {
-        $pdo->beginTransaction();
-        $sqlEMP = "INSERT INTO empresa (nombre_empresa, razon_social, rfc, telefono, correo, estatus) 
-            VALUES (:nombre, :razon, :rfc, :telefono, :correo, 'Y')";
+        //° $pdo->beginTransaction();
+        $sqlEMP = "INSERT INTO empresa (nombre_empresa, razon_social, rfc, dias_credito, estatus) 
+            VALUES (:nombre, :razon, :rfc, :dias, 'Y')";
 
         $stmtEMP = $pdo->prepare($sqlEMP);
-        $stmtEMP->execute([
+        return $stmtEMP->execute([
             ':nombre'   => $datos['nombre_empresa'],
             ':razon'    => $datos['razon_social'],
             ':rfc'      => $datos['rfc'],
-            ':telefono' => $datos['telefono'],
-            ':correo'   => $datos['correo']
+            ':dias' => $datos['dias_credito']
         ]);
-        $id_empresa = $pdo->lastInsertId(); // Obtenemos el ID generado
+        /* $id_empresa = $pdo->lastInsertId(); // Obtenemos el ID generado
 
         $sqlDOM = "INSERT INTO domicilio_empresa(Empresa_id, calle_numero, colonia, localidad, codigo_postal, municipio, estado, pais)
             VALUES (:emp_id, :calle, :colonia, :localidad, :cp, :municipio, :estado, :pais)";
@@ -390,9 +411,9 @@ function insertarEmpresa(PDO $pdo, array $datos): bool
             ':estado' => $datos['estado'],
             ':pais'   => $datos['pais']
         ]);
-
-        $pdo->commit();
-        return true;
+ */
+        /* $pdo->commit();
+        return true; */
     } catch (Exception $e) {
         $pdo->rollBack(); // Revertimos si hay error
         throw $e;
@@ -402,21 +423,20 @@ function insertarEmpresa(PDO $pdo, array $datos): bool
 function actualizarEmpresa(PDO $pdo, array $datos): bool
 {
     try {
-        $pdo->beginTransaction();
+        //° $pdo->beginTransaction();
 
         // 1. Actualizar empresa
-        $sqlEmp = "UPDATE empresa SET nombre_empresa = :nombre, razon_social = :razon, rfc = :rfc, telefono = :telefono, correo = :correo WHERE id_empresa = :id";
+        $sqlEmp = "UPDATE empresa SET nombre_empresa = :nombre, razon_social = :razon, rfc = :rfc, dias_credito = :dias WHERE id_empresa = :id";
         $stmtEmp = $pdo->prepare($sqlEmp);
-        $stmtEmp->execute([
+        return $stmtEmp->execute([
             ':nombre'   => $datos['nombre_empresa'],
             ':razon'    => $datos['razon_social'],
             ':rfc'      => $datos['rfc'],
-            ':telefono' => $datos['telefono'],
-            ':correo'   => $datos['correo'],
+            ':dias'     => $datos['dias_credito'],
             ':id'       => $datos['id_empresa']
         ]);
 
-        // 2. Verificar si ya tenía domicilio registrado para actualizarlo o insertarlo
+        /* //° 2. Verificar si ya tenía domicilio registrado para actualizarlo o insertarlo
         $stmtCheck = $pdo->prepare("SELECT id_domicilio_empresa FROM domicilio_empresa WHERE Empresa_id = :id");
         $stmtCheck->execute([':id' => $datos['id_empresa']]);
 
@@ -439,7 +459,7 @@ function actualizarEmpresa(PDO $pdo, array $datos): bool
         ]);
 
         $pdo->commit();
-        return true;
+        return true; */
     } catch (Exception $e) {
         $pdo->rollBack();
         throw $e;
@@ -678,9 +698,138 @@ function verificarUsuarioClienteExistente(PDO $pdo, string $correo, int $id_usua
     return false; // No hay duplicados
 }
 
+// <<< ==============================================
+// <<<         FIN: FUNCIONES CLIENTES|USUARIOS
+// <<< ============================================== 
+
+// -----------------------------------------------------
+
 // >>> ==============================================
-// >>>         FIN: FUNCIONES CLIENTES|USUARIOS
+// >>>        INICIO: FUNCIONES | SUCURSALES
 // >>> ============================================== 
+function obtenerAllSucursales(PDO $pdo): array
+{
+    $sql = "SELECT s.*, e.razon_social FROM sucursales s INNER JOIN empresa e ON s.Empresa_id = e.id_empresa ORDER BY e.razon_social ASC, s.nombre_sucursal ASC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function insertarSucursal(PDO $pdo, array $post, array $usuarios_ids): void
+{
+    try {
+        $pdo->beginTransaction();
+
+        $sql = "INSERT INTO sucursales (Empresa_id, id_sae, nombre_sucursal, calle, num_ext, num_int, entre_calle, y_calle, colonia, cp, poblacion, municipio, estado, estatus) 
+                VALUES (:emp_id, :sae, :nom, :calle, :ext, :int, :e_calle, :y_calle, :col, :cp, :pob, :mun, :est, 'Y')";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':emp_id' => $post['Empresa_id'],
+            ':sae'    => !empty($post['id_sae']) ? $post['id_sae'] : null,
+            ':nom'    => $post['nombre_sucursal'],
+            ':calle'  => $post['calle'] ?? null,
+            ':ext'    => $post['num_ext'] ?? null,
+            ':int'    => $post['num_int'] ?? null,
+            ':e_calle' => $post['entre_calle'] ?? null,
+            ':y_calle' => $post['y_calle'] ?? null,
+            ':col'    => $post['colonia'] ?? null,
+            ':cp'     => $post['cp'] ?? null,
+            ':pob'    => $post['poblacion'] ?? null,
+            ':mun'    => $post['municipio'] ?? null,
+            ':est'    => $post['estado'] ?? null,
+        ]);
+
+        // Obtenemos el ID de la sucursal recién creada
+        $id_sucursal = (int)$pdo->lastInsertId();
+
+        // Guardamos los usuarios relacionados
+        actualizarRelacionUsuariosSucursal($pdo, $id_sucursal, $usuarios_ids);
+
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function actualizarSucursal(PDO $pdo, array $post, array $usuarios_ids): void
+{
+    try {
+        $pdo->beginTransaction();
+
+        $sql = "UPDATE sucursales SET 
+                    Empresa_id = :emp_id, id_sae = :sae, nombre_sucursal = :nom, 
+                    calle = :calle, num_ext = :ext, num_int = :int, 
+                    entre_calle = :e_calle, y_calle = :y_calle, colonia = :col, 
+                    cp = :cp, poblacion = :pob, municipio = :mun, 
+                    estado = :est, estatus = :status
+                WHERE id_sucursal = :id";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':emp_id' => $post['Empresa_id'],
+            ':sae'    => !empty($post['id_sae']) ? $post['id_sae'] : null,
+            ':nom'    => $post['nombre_sucursal'],
+            ':calle'  => $post['calle'] ?? null,
+            ':ext'    => $post['num_ext'] ?? null,
+            ':int'    => $post['num_int'] ?? null,
+            ':e_calle' => $post['entre_calle'] ?? null,
+            ':y_calle' => $post['y_calle'] ?? null,
+            ':col'    => $post['colonia'] ?? null,
+            ':cp'     => $post['cp'] ?? null,
+            ':pob'    => $post['poblacion'] ?? null,
+            ':mun'    => $post['municipio'] ?? null,
+            ':est'    => $post['estado'] ?? null,
+            ':status' => $post['estatus'],
+            ':id'     => $post['id_sucursal']
+        ]);
+
+        // Sincronizamos los usuarios (Elimina anteriores e inserta nuevos)
+        actualizarRelacionUsuariosSucursal($pdo, (int)$post['id_sucursal'], $usuarios_ids);
+
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function actualizarRelacionUsuariosSucursal(PDO $pdo, int $id_sucursal, array $usuarios_ids): void
+{
+    // 1. Borramos todas las relaciones actuales de esta sucursal
+    $stmtDel = $pdo->prepare("DELETE FROM usuario_sucursal WHERE Sucursal_id = ?");
+    $stmtDel->execute([$id_sucursal]);
+
+    // 2. Si vienen usuarios seleccionados, los insertamos
+    if (!empty($usuarios_ids)) {
+        $sqlIns = "INSERT INTO usuario_sucursal (Usuario_id, Sucursal_id) VALUES (?, ?)";
+        $stmtIns = $pdo->prepare($sqlIns);
+        foreach ($usuarios_ids as $id_usuario) {
+            if (!empty($id_usuario)) {
+                $stmtIns->execute([(int)$id_usuario, $id_sucursal]);
+            }
+        }
+    }
+}
+
+function eliminarSucursal(PDO $pdo, int $id_sucursal)
+{
+    // Borrado físico si no tiene cotizaciones ligadas, sino borrado lógico
+    $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM cotizacion WHERE Sucursal_id = ?");
+    $stmtCheck->execute([$id_sucursal]);
+    if ($stmtCheck->fetchColumn() > 0) {
+        $pdo->prepare("UPDATE sucursales SET estatus = 'N' WHERE id_sucursal = ?")->execute([$id_sucursal]);
+        return 'inactivada';
+    } else {
+        $pdo->prepare("DELETE FROM sucursales WHERE id_sucursal = ?")->execute([$id_sucursal]);
+        return 'eliminada';
+    }
+}
+// <<< ==============================================
+// <<<         FIN: FUNCIONES | SUCURSALES
+// <<< ============================================== 
+
 
 // -----------------------------------------------------
 
@@ -688,52 +837,77 @@ function verificarUsuarioClienteExistente(PDO $pdo, string $correo, int $id_usua
 // >>>          INICIO: FUNCIONES ALMACEN|PRODUCTOS
 // >>> ============================================== 
 
-function insertarProduct(PDO $pdo, array $datos): bool
+function insertarProduct(PDO $pdo, array $datos): void
 {
+    try {
+        $pdo->beginTransaction();
 
-    $foto = !empty($datos['foto_product']) ? $datos['foto_product'] : 'producto.png';
-    // Convertimos a mayúsculas
-    $descripcion = mb_strtoupper($datos['descripcion_product'], 'UTF-8');
+        // 1. Insertar Producto (Removido nombre_product)
+        $sql = "INSERT INTO productos (clave_product, descripcion_product, foto_product, estatus) 
+                VALUES (:clave, :desc, :foto, :estatus)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':clave'   => $datos['clave_product'],
+            ':desc'    => $datos['descripcion_product'],
+            ':foto'    => $datos['foto_product'],
+            ':estatus' => $datos['estatus']
+        ]);
 
-    $sql = "INSERT INTO productos (descripcion_product, clave_product, precio_farmacia, precio_publico, foto_product, estatus) 
-            VALUES (:descripcion, :c_product, :f_product ,:p_product, :foto, :estatus)";
-    $stmt = $pdo->prepare($sql);
-    return $stmt->execute([
-        ':descripcion' => $descripcion,
-        ':c_product'   => $datos['clave_product'],
-        ':f_product'   => $datos['precio_farmacia'],
-        ':p_product'   => $datos['precio_publico'],
-        ':foto'        => $foto,
-        ':estatus'     => $datos['estatus']
-    ]);
+        $id_product = $pdo->lastInsertId();
+
+        // 2. Insertar Precios Farmacia
+        $pf_total = $datos['pf_equipo'] + $datos['pf_calib'];
+        $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion, pf_precio_antes_iva) VALUES (?, ?, ?, ?)";
+        $pdo->prepare($sqlF)->execute([$id_product, $datos['pf_equipo'], $datos['pf_calib'], $pf_total]);
+
+        // 3. Insertar Precios Público
+        $pp_total = $datos['pp_equipo'] + $datos['pp_calib'];
+        $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion, pp_precio_antes_iva) VALUES (?, ?, ?, ?)";
+        $pdo->prepare($sqlP)->execute([$id_product, $datos['pp_equipo'], $datos['pp_calib'], $pp_total]);
+
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
 }
 
-function actualizarProduct(PDO $pdo, array $datos): bool
+function actualizarProduct(PDO $pdo, array $datos): void
 {
-    // Preparamos el fragmento de la foto
-    $fotoSql = !empty($datos['foto_product']) ? ", foto_product = :foto" : "";
-    $descripcion = mb_strtoupper($datos['descripcion_product'], 'UTF-8');
+    try {
+        $pdo->beginTransaction();
 
-    $sql = "UPDATE productos
-            SET descripcion_product = :descripcion, clave_product = :c_product, 
-                precio_farmacia = :precio_farmacia, precio_publico = :precio_publico, estatus = :estatus {$fotoSql}
-            WHERE id_product = :id_product";
+        // 1. Actualizar Producto (Removido nombre_product)
+        $sql = "UPDATE productos SET 
+                clave_product = :clave, 
+                descripcion_product = :desc, foto_product = :foto, estatus = :estatus
+                WHERE id_product = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':clave'   => $datos['clave_product'],
+            ':desc'    => $datos['descripcion_product'],
+            ':foto'    => $datos['foto_product'],
+            ':estatus' => $datos['estatus'],
+            ':id'      => $datos['id_product']
+        ]);
 
-    $stmt = $pdo->prepare($sql);
-    $params = [
-        ':descripcion'     => $descripcion,
-        ':c_product'       => $datos['clave_product'],
-        ':precio_farmacia' => $datos['precio_farmacia'],
-        ':precio_publico'  => $datos['precio_publico'],
-        ':estatus'         => $datos['estatus'],
-        ':id_product'      => $datos['id_product']
-    ];
-    if (!empty($datos['foto_product'])) {
-        $params[':foto'] = $datos['foto_product'];
+        // 2. Sincronizar Precios Farmacia
+        $pdo->prepare("DELETE FROM precios_farmacia WHERE Producto_id = ?")->execute([$datos['id_product']]);
+        $pf_total = $datos['pf_equipo'] + $datos['pf_calib'];
+        $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion, pf_precio_antes_iva) VALUES (?, ?, ?, ?)";
+        $pdo->prepare($sqlF)->execute([$datos['id_product'], $datos['pf_equipo'], $datos['pf_calib'], $pf_total]);
+
+        // 3. Sincronizar Precios Público
+        $pdo->prepare("DELETE FROM precios_publico WHERE Producto_id = ?")->execute([$datos['id_product']]);
+        $pp_total = $datos['pp_equipo'] + $datos['pp_calib'];
+        $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion, pp_precio_antes_iva) VALUES (?, ?, ?, ?)";
+        $pdo->prepare($sqlP)->execute([$datos['id_product'], $datos['pp_equipo'], $datos['pp_calib'], $pp_total]);
+
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
     }
-
-    $stmt->execute($params);
-    return true;
 }
 
 function eliminarProduct(PDO $pdo, int $id_product): string
@@ -769,42 +943,21 @@ function eliminarProduct(PDO $pdo, int $id_product): string
 }
 
 // [fn] Candado productos duplicados
-function verificarProductoExistente(PDO $pdo, string $descripcion, string $clave, int $id_product = 0): string|false
+function verificarProductoExistente(PDO $pdo, string $descripcion, string $clave, int $id_product = 0)
 {
-    // Limpiamos los datos y pasamos a mayúsculas para que la búsqueda sea exacta
-    $descripcion = mb_strtoupper(trim($descripcion), 'UTF-8');
-    $clave = trim($clave);
-
-    // Buscamos coincidencias de nombre o clave
-    $sql = "SELECT id_product, descripcion_product, clave_product 
-            FROM productos 
-            WHERE (descripcion_product = :desc OR clave_product = :clave)";
-
-    // Si estamos editando ($id_product > 0), excluimos al propio producto de la búsqueda
-    if ($id_product > 0) {
-        $sql .= " AND id_product != :id";
-    }
-
+    $sql = "SELECT clave_product FROM productos WHERE clave_product = :clave AND id_product != :id LIMIT 1";
     $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ':clave' => $clave,
+        ':id'    => $id_product
+    ]);
+    $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $params = [':desc' => $descripcion, ':clave' => $clave];
-    if ($id_product > 0) {
-        $params[':id'] = $id_product;
+    if ($resultado) {
+        return "La CLAVE comercial [" . $clave . "] ya se encuentra registrada en el sistema. Por favor, verifica los datos.";
     }
 
-    $stmt->execute($params);
-    $existe = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($existe) {
-        if (mb_strtoupper($existe['descripcion_product'], 'UTF-8') === $descripcion) {
-            return 'El NOMBRE del producto ya existe en la base de datos.';
-        }
-        if (mb_strtoupper($existe['clave_product'], 'UTF-8') === mb_strtoupper($clave, 'UTF-8')) {
-            return 'La CLAVE del producto ya existe en la base de datos.';
-        }
-    }
-
-    return false; // No hay duplicados
+    return false;
 }
 // >>> ==============================================
 // >>>          FIN: FUNCIONES ALMACEN|PRODUCTOS
@@ -1001,7 +1154,8 @@ function obtenerDomicilioPorCotizacion(PDO $pdo, int $id_cotizacion)
 }
 
 // [fn] Sucursales por Usuario
-function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array {
+function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array
+{
     $sql = "SELECT s.* FROM sucursales s
             INNER JOIN usuario_sucursal us ON s.id_sucursal = us.Sucursal_id
             WHERE us.Usuario_id = :usuario_id AND s.estatus = 'Y'";

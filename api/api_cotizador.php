@@ -31,6 +31,10 @@ try {
                 $empresa_id = (int) ($_GET['empresa_id'] ?? 0);
                 echo json_encode(obtenerUsuariosPorEmpresa($pdo, $empresa_id));
                 break;
+            case 'get_sucursales_usuario': // <-- NUEVO ENDPOINT AGREGADO
+                $usuario_id = (int) ($_GET['usuario_id'] ?? 0);
+                echo json_encode(obtenerSucursalesPorUsuario($pdo, $usuario_id));
+                break;
             default:
                 echo json_encode(['status' => 'error', 'message' => 'Acción GET no válida']);
         }
@@ -44,11 +48,12 @@ try {
         
         $empresa_id = (int)($_POST['Empresa_id'] ?? 0);
         $usuario_id = (int)($_POST['Usuario_id'] ?? 0);
+        $sucursal_id = (int)($_POST['Sucursal_id'] ?? 0);
         $division    = trim($_POST['division'] ?? '');
         $tipo_precio = trim($_POST['tipo_precio'] ?? '');
         
-        if ($empresa_id === 0 || $usuario_id === 0) {
-            echo json_encode(['status' => 'error', 'message' => 'Debes seleccionar un Cliente y un Solicitante.']);
+        if ($empresa_id === 0 || $usuario_id === 0 || $sucursal_id === 0) {
+            echo json_encode(['status' => 'error', 'message' => 'Debes seleccionar un Cliente, un Solicitante y la Sucursal de destino..']);
             exit;
         }
         
@@ -63,7 +68,7 @@ try {
         // Datos principales
         $datosCotizacion = [
             'empresa_id'    => $empresa_id,
-            // 'id_user_admin' => (int)$_SESSION['id_user_admin'],
+            'sucursal_id'   => $sucursal_id,
             'id_user_admin' => $id_user_admin,
             'usuario_id'    => $usuario_id,
             'fecha_cot'     => $_POST['fecha_cot'] ?? date('Y-m-d'),

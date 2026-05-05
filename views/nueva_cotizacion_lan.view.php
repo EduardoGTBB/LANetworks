@@ -109,11 +109,11 @@
 
                                 <!-- <form enctype="multipart/form-data" id="nueva_cotizacion" action="?php echo trim(stripcslashes(strip_tags(htmlspecialchars($_SERVER['PHP_SELF'])))); ?>" method="POST" name="nueva_cotizacion"> -->
                                 <form id="nueva_cotizacion">
-                                    <input type="hidden" name="fecha_cot" value="<?php echo $fecha_hoy; ?>">
+                                    <input type="hidden" name="fecha_cot" value="<?php echo date('Y-m-d'); ?>">
                                     <div class="row">
                                         <div class="col-md-6 mb-4">
                                             <label class="form-label">División de LAN</label>
-                                            <select class="form-control" name="division" id="division"
+                                            <select class="form-control" id="division" name="division"
                                                 data-select2-selector="status" required>
                                                 <option value="">Selecciona una división...</option>
                                                 <option value="LA NETWORKS & TECHNOLOGIES">LA NETWORKS & TECHNOLOGIES, SA DE CV</option>
@@ -121,22 +121,28 @@
                                             </select>
                                         </div>
                                         <div class="col-md-6 mb-4">
-                                            <label class="form-label">Cliente</label>
-                                            <select class="form-control" id="select_empresa" name="Empresa_id" data-select2-selector="status" required>
-                                                <option value="">Selecciona un cliente...</option>
+                                            <label class="form-label">Solicitante</label>
+                                            <select class="form-control" id="select_solicitante" name="Usuario_id" data-select2-selector="status"  required>
+                                                <option value="">Selecciona un solicitante...</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-6 mb-4">
-                                            <label class="form-label">Solicitante</label>
-                                            <select class="form-control" id="select_solicitante" data-select2-selector="status" name="Usuario_id" required>
-                                                <option value="">Selecciona un solicitante...</option>
+                                        <div class="col-md-6 md-4">
+                                            <label class="form-label text-primary fw-bold">Sucursal de Destino *</label>
+                                            <select class="form-control border-primary" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" required>
+                                                <option value="">Esperando al solicitante...</option>
                                             </select>
                                         </div>
+                                        <!-- <div class="col-md-6 mb-4">
+                                            <label class="form-label">Cliente</label>
+                                            <select class="form-control" id="select_empresa" name="Empresa_id" data-select2-selector="status" required>
+                                                <option value="">Selecciona un cliente...</option>
+                                            </select>
+                                        </div> -->
                                         <div class="col-md-6 mb-4">
                                             <label class="form-label">Selecciona el precio que se utilizara</span></label>
-                                            <select class="form-control" name="tipo_precio" id="tipo_precio" data-select2-selector="status" required>
+                                            <select class="form-control" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
                                                 <option value="">Selecciona el tipo de precio...</option>
                                                 <option value="Farmacia">Farmacia</option>
                                                 <option value="Público">Público</option>
@@ -162,6 +168,7 @@
                                                         <tr class="single-item">
                                                             <th class="text-center wd-80">#</th>
                                                             <th class="text-center wd-400">Producto</th>
+                                                            <th class="text-center wd-250">Desglose de Calibración</th>
                                                             <th class="text-center wd-150">Precio unitario</th>
                                                             <th class="text-center wd-150">Cantidad</th>
                                                             <th class="text-center wd-200">Total</th>
@@ -177,6 +184,27 @@
                                                                 </select>
                                                                 <!--<input type="text" name="productos[]" placeholder="Product Name" class="form-control">-->
                                                             </td>
+                                                            <!-- //>>> INICIO -->
+                                                            <!-- //*Selección equipo nuevo/usado -->
+
+                                                            <td class="align-middle">
+                                                                <div class="modulo-config">
+                                                                    <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
+                                                                        <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="chk_incluir_0" checked style="cursor: pointer;">
+                                                                        <label class="form-check-label fs-12 fw-bold text-dark text-start" for="chk_incluir_0" style="cursor: pointer; padding-top: 2px;">
+                                                                            Incluir Calibración
+                                                                        </label>
+                                                                    </div>
+                                                                    <div class="form-check d-flex justify-content-center align-items-center gap-2">
+                                                                        <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="chk_desglosar_0" style="cursor: pointer;">
+                                                                        <label class="form-check-label fs-11 text-muted text-start" for="chk_desglosar_0" style="cursor: pointer; padding-top: 2px;">
+                                                                            Desglosar partida
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="info-desglose text-center mt-2"></div>
+                                                            </td>
+                                                            <!-- //<<< FIN -->
                                                             <td>
                                                                 <input type="number" name="unitario[]" placeholder="0.00" class="form-control price" step="any">
                                                             </td>
@@ -792,7 +820,7 @@
     <!--! END: Apps Init !-->
     <!--! BEGIN: Theme Customizer  !-->
     <script src="assets/js/theme-customizer-init.min.js"></script>
-    
+
     <script>
         const ES_CLIENTE_PORTAL = <?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
         const PORTAL_EMPRESA_ID = "<?php echo $_SESSION['Empresa_id'] ?? ''; ?>";

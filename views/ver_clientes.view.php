@@ -204,12 +204,10 @@
                                     <table class="table table-hover" id="proposalList">
                                         <thead>
                                             <tr>
-                                                <!-- <th>#</th> -->
-                                                <th>Nombre</th>
+                                                <th>Nombre Cormercial</th>
                                                 <th>Razón social</th>
                                                 <th>RFC</th>
-                                                <th>Telefono</th>
-                                                <th>Correo</th>
+                                                <th>Días Crédito</th>
                                                 <th>Estatus</th>
                                                 <th class="text-center">Acciones</th>
                                             </tr>
@@ -256,14 +254,14 @@
         </div>
         <?php include('views/include/footer.php'); ?>
     </main>
-    <div class="modal fade-scale" id="modalCliente" tabindex="-1" aria-labelledby="modalClienteLabel" aria-hidden="true">
+    <div class="modal fade-scale" id="modalEmpresa" tabindex="-1" aria-labelledby="modalEmpresaLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-white">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold text-primary" id="modalClienteLabel">Nuevo Cliente</h5>
+                    <h5 class="modal-title fw-bold text-primary" id="modalEmpresaLabel">Nuevo Cliente</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="formCliente" class="modal-content bg-white">
+                <form id="formEmpresa" class="modal-content bg-white">
                     <div class="modal-body">
                         <input type="hidden" name="action" id="cliente_action" value="crear">
                         <input type="hidden" name="id_empresa" id="cliente_id" value="">
@@ -276,11 +274,17 @@
                             <label class="form-label">Razón Social <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="razon_social" id="razon_social" required>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">RFC <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="rfc" id="rfc" required>
-                        </div>
                         <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">RFC <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="rfc" id="rfc" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Días de Crédito<span class="text-danger">*</span></label>
+                                <input type="number" min="0" value="30" class="form-control" name="dias_credito" id="dias_credito" required>
+                            </div>
+                        </div>
+                        <!-- <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Teléfono <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="telefono" id="telefono" required>
@@ -289,9 +293,9 @@
                                 <label class="form-label">Correo <span class="text-danger">*</span></label>
                                 <input type="email" class="form-control" name="correo" id="correo" required>
                             </div>
-                        </div>
+                        </div> -->
 
-                        <hr class="my-4">
+                        <!-- <hr class="my-4">
                         <h6 class="fw-bold text-primary mb-3">Dirección</h6>
                         <div class="mb-3">
                             <label class="form-label">Calle y Numero<span class="text-danger">*</span></label>
@@ -324,7 +328,7 @@
                                 <label class="form-label">Pais <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="pais" id="pais" required>
                             </div>
-                        </div>
+                        </div> -->
 
                         <div id="bloque_estatus_cli" class="row mt-3">
                             <div class="col-md-12">

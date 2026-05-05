@@ -209,48 +209,56 @@
                     <input type="hidden" name="id_cotizacion" id="edit_id_cotizacion" value="">
 
                     <div class="row">
-                        <div class="col-md-6 mb-4">
+                        <div class="col-md-4 mb-4">
                             <label class="form-label">División de LAN</label>
-                            <select class="form-control" name="division" id="division"
-                                data-select2-selector="status" required>
+                            <select class="form-control" id="division" name="division" data-select2-selector="status" required>
                                 <option value="">Selecciona una división...</option>
                                 <option value="LA NETWORKS & TECHNOLOGIES">LA NETWORKS & TECHNOLOGIES, SA DE CV</option>
                                 <option value="LA NETWORKS ANALITICAL">LA NETWORKS ANALITICAL, SA DE CV</option>
                             </select>
                         </div>
 
-                        <div class="col-md-6 mb-4">
+                        <div class="col-md-4 mb-4">
                             <label class="form-label">Cliente <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_select_empresa" name="Empresa_id"
-                                data-select2-selector="status" required>
+                            <select class="form-control" id="edit_select_empresa" name="Empresa_id" data-select2-selector="status" required>
                                 <option value="">Cargando clientes...</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Solicitante <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_select_solicitante" name="Usuario_id" required>
-                                <option value="">Selecciona un cliente primero...</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Selecciona el precio que se utilizara</span></label>
-                            <select class="form-control" name="tipo_precio" id="tipo_precio" data-select2-selector="status" required>
-                                <option value="">Selecciona el tipo de precio...</option>
-                                <option value="Farmacia">Farmacia</option>
-                                <option value="Público">Público</option>
-                            </select>
-                        </div>
+
                         <div class="col-md-4 mb-4">
                             <label class="form-label">Estatus de la cotización <span class="text-danger">*</span></label>
-                            <select class="form-control" name="estatus" id="edit_estatus" data-select2-selector="status" required>
+                            <select class="form-control" id="edit_estatus" name="estatus" data-select2-selector="status" required>
                                 <option value="Guardado">Guardado (En proceso)</option>
                                 <option value="Por aprobar">Por aprobar (Revisión)</option>
                                 <option value="Autorizada (información completa)">Autorizada (Aprobada)</option>
                                 <option value="No autorizada">No autorizada (Rechazada)</option>
                             </select>
                         </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <label class="form-label">Solicitante <span class="text-danger">*</span></label>
+                            <select class="form-control" id="edit_select_solicitante" name="Usuario_id" data-select2-selector="status" required>
+                                <option value="">Selecciona un cliente primero...</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-4">
+                            <label class="form-label">Sucursal de Destino <span class="text-danger">*</span></label>
+                            <select class="form-control" id="edit_select_sucursal" name="Sucursal_id" data-select2-selector="status" required>
+                                <option value="">Esperando al solicitante...</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-4">
+                            <label class="form-label">Selecciona el precio que se utilizara</span></label>
+                            <select class="form-control" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
+                                <option value="">Selecciona el tipo de precio...</option>
+                                <option value="Farmacia">Farmacia</option>
+                                <option value="Público">Público</option>
+                            </select>
+                        </div>
+                        
                     </div>
 
                     <hr class="mt-0 mb-3">
@@ -274,6 +282,7 @@
                                         <tr class="single-item">
                                             <th class="text-center wd-50">#</th>
                                             <th class="text-center wd-450">Producto</th>
+                                            <th class="text-center wd-250">Desglose de Calibración</th>
                                             <th class="text-center wd-150">Precio U.</th>
                                             <th class="text-center wd-100">Cantidad</th>
                                             <th class="text-center wd-150">Total</th>

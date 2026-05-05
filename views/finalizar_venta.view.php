@@ -1,14 +1,22 @@
 <?php include('views/include/head.php'); ?>
 
 <body>
-    <?php include('views/include/sidebar.php');?>
-    <?php include('views/include/header.php');?>
+    <?php include('views/include/sidebar.php'); ?>
+    <?php include('views/include/header.php'); ?>
     <main class="nxl-container">
         <div class="nxl-content">
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
-                        <h5 class="m-b-10">Formalizar Venta #<?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></h5>
+                        <div class="page-header-title">
+                            <h5 class="m-b-10">Clientes</h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
+                            <li class="breadcrumb-item">Cotizaciones</li>
+                            <li class="breadcrumb-item">Direcciones Cotizacion #<?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></li>
+                        </ul>
+                        <!-- <h5 class="m-b-10">Formalizar Venta #?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></h5> -->
                     </div>
                 </div>
             </div>

@@ -1,14 +1,16 @@
 <?php
+
 declare(strict_types=1);
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
-require_once 'config.php'; 
-require_once '../lib/funciones_db.php'; 
+require_once 'config.php';
+require_once '../lib/funciones_db.php';
 
+// Verificación de sesión de administrador
 if (!isset($_SESSION['id_user_admin'])) {
     http_response_code(403);
-    echo json_encode(['error' => 'Acceso denegado']);
+    echo json_encode(['status' => 'error', 'message' => 'Acceso denegado. Sesión no válida.']);
     exit;
 }
 
@@ -16,67 +18,84 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // ==========================================
-    // GET: Obtener lista de productos
+    // MÉTODO GET: Obtener lista o un producto
     // ==========================================
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        echo json_encode(obtenerProduct($pdo));
+        $action = $_GET['action'] ?? 'leer';
+
+        if ($action === 'leer_uno' && isset($_GET['id'])) {
+            $id = (int)$_GET['id'];
+            $producto = obtenerProductPorId($pdo, $id);
+            echo json_encode($producto ?: null);
+        } else {
+            $productos = obtenerProduct($pdo);
+            echo json_encode($productos ?: []);
+        }
         exit;
     }
 
     // ==========================================
-    // POST: Crear, Editar o Eliminar
+    // MÉTODO POST: Crear, Editar o Eliminar
     // ==========================================
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $action = $_POST['action'] ?? '';
+        $action = $_POST['action'] ?? 'crear';
+        $id_evaluar = (int)($_POST['id_product'] ?? 0);
+
+        // --- BLINDAJE 1: Forzar Edición ---
+        if ($id_evaluar > 0) {
+            $action = 'editar';
+        }
 
         if ($action === 'crear' || $action === 'editar') {
-            
-            $descripcion_evaluar = trim($_POST['descripcion_product'] ?? '');
             $clave_evaluar = trim($_POST['clave_product'] ?? '');
-            $id_evaluar = ($action === 'editar') ? (int)$_POST['id_product'] : 0;
 
-            // Verificamos en la BD usando la función que agregaste en funciones_db.php
-            $error_duplicado = verificarProductoExistente($pdo, $descripcion_evaluar, $clave_evaluar, $id_evaluar);
-            if ($error_duplicado !== false) {
-                // Si existe, detenemos todo el proceso y enviamos el error al JS
-                echo json_encode(['status' => 'error', 'message' => $error_duplicado]);
+            // Validar clave duplicada
+            $id_check = ($action === 'editar') ? $id_evaluar : 0;
+            $sql_check = "SELECT id_product FROM productos WHERE clave_product = ? AND id_product != ?";
+            $stmt_ch = $pdo->prepare($sql_check);
+            $stmt_ch->execute([$clave_evaluar, $id_check]);
+            
+            if ($stmt_ch->fetch()) {
+                echo json_encode(['status' => 'error', 'message' => 'La clave del producto ya existe.']);
                 exit;
             }
-            
-            $foto_product = '';
+
+            // --- BLINDAJE 2: RESCATAR FOTO ORIGINAL ---
+            $foto_final = 'producto.png'; // Por defecto
+            if ($action === 'editar' && $id_evaluar > 0) {
+                // Buscamos el producto en BD para no perder su foto actual
+                $producto_bd = obtenerProductPorId($pdo, $id_evaluar);
+                if ($producto_bd && !empty($producto_bd['foto_product'])) {
+                    $foto_final = $producto_bd['foto_product'];
+                }
+            }
+
+            // Si el usuario subió una foto NUEVA, entonces sí la reemplazamos
             if (isset($_FILES['foto_product']) && $_FILES['foto_product']['error'] === UPLOAD_ERR_OK) {
-                $ext = strtolower(pathinfo($_FILES['foto_product']['name'], PATHINFO_EXTENSION));
-                $permitidos = ['jpg', 'jpeg', 'png', 'webp'];
+                $fileTmpPath = $_FILES['foto_product']['tmp_name'];
+                $fileName = $_FILES['foto_product']['name'];
+                $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                $newFileName = 'prod_' . uniqid() . '.' . $fileExtension;
                 
-                if (in_array($ext, $permitidos)) {
-                    $nuevo_nombre = uniqid('prod_') . '.' . $ext;
-                    $ruta_destino = '../assets/images/productos/' . $nuevo_nombre;
-                    
-                    if (move_uploaded_file($_FILES['foto_product']['tmp_name'], $ruta_destino)) {
-                        $foto_product = $nuevo_nombre;
-
-                        if ($action === 'editar') {
-                            $id_product = (int)$_POST['id_product'];
-                            $stmt = $pdo->prepare("SELECT foto_product FROM productos WHERE id_product = :id");
-                            $stmt->execute([':id' => $id_product]);
-                            $oldProd = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                            if ($oldProd && !empty($oldProd['foto_product']) && $oldProd['foto_product'] !== 'producto.png') {
-                                $ruta_vieja = '../assets/images/productos/' . $oldProd['foto_product'];
-                                if (file_exists($ruta_vieja)) { unlink($ruta_vieja); }
-                            }
-                        }
+                $uploadFileDir = '../assets/images/productos/';
+                if (move_uploaded_file($fileTmpPath, $uploadFileDir . $newFileName)) {
+                    // Borramos la viejita si existía y no era la genérica
+                    if ($foto_final !== 'producto.png' && file_exists($uploadFileDir . $foto_final)) {
+                        unlink($uploadFileDir . $foto_final);
                     }
+                    $foto_final = $newFileName;
                 }
             }
 
             $datos = [
-                'descripcion_product' => $descripcion_evaluar,
                 'clave_product'       => $clave_evaluar,
-                'precio_farmacia'     => (float)($_POST['precio_farmacia'] ?? 0),
-                'precio_publico'      => (float)($_POST['precio_publico'] ?? 0),
-                'estatus'             => ($action === 'crear') ? 'Y' : (isset($_POST['estatus']) ? 'Y' : 'N'),
-                'foto_product'        => $foto_product
+                'descripcion_product' => trim($_POST['descripcion_product'] ?? ''),
+                'pf_equipo'           => (float)($_POST['pf_equipo'] ?? 0),
+                'pf_calib'            => (float)($_POST['pf_calib'] ?? 0),
+                'pp_equipo'           => (float)($_POST['pp_equipo'] ?? 0),
+                'pp_calib'            => (float)($_POST['pp_calib'] ?? 0),
+                'estatus'             => isset($_POST['estatus']) ? 'Y' : 'N',
+                'foto_product'        => $foto_final
             ];
 
             if ($action === 'editar') {
@@ -87,25 +106,18 @@ try {
                 insertarProduct($pdo, $datos);
                 echo json_encode(['status' => 'success', 'message' => 'Producto agregado correctamente.']);
             }
+            exit;
             
         } elseif ($action === 'eliminar') {
-            
-            // --- ELIMINAR PRODUCTO ---
-            $id = (int)$_POST['id_product'];
+            $id = (int)($_POST['id_product'] ?? 0);
             $resultado = eliminarProduct($pdo, $id);
-            
-            if ($resultado === 'inactivado') {
-                echo json_encode(['status' => 'warning', 'message' => 'El producto no se puede eliminar porque está en una cotización. Se ha cambiado su estatus a INACTIVO.']);
-            } else {
-                echo json_encode(['status' => 'success', 'message' => 'Producto eliminado permanentemente de la base de datos.']);
-            }
-            
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Acción no válida']);
+            $status = ($resultado === 'inactivado') ? 'warning' : 'success';
+            $msg = ($resultado === 'inactivado') ? 'Producto inactivado (tiene cotizaciones).' : 'Producto eliminado permanentemente.';
+            echo json_encode(['status' => $status, 'message' => $msg]);
+            exit;
         }
     }
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Error interno del servidor: ' . $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()]);
 }
-?>
