@@ -274,11 +274,11 @@
                                 <table class="table table-bordered overflow-hidden" id="tab_logic_edit">
                                     <thead>
                                         <tr class="single-item">
-                                            <th class="text-center wd-50">#</th>
+                                            <th class="text-center wd-70">Ítem</th>
+                                            <th class="text-center wd-150">Cantidad</th>
                                             <th class="text-center wd-450">Producto</th>
                                             <th class="text-center wd-250">Desglose de Calibración</th>
                                             <th class="text-center wd-150">Precio U.</th>
-                                            <th class="text-center wd-150">Cantidad</th>
                                             <th class="text-center wd-200">Total</th>
                                         </tr>
                                     </thead>

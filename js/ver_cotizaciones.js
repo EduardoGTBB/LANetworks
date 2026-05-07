@@ -21,10 +21,6 @@ $(document).ready(function () {
             });
         }
     });
-    //<<< ==============================================
-    //<<<      FIN: CARGA INICIAL DE DATOS MAESTROS
-    //<<< ============================================== 
-
 
     //>>> ==============================================
     //>>> 2. CARGAR TABLA PRINCIPAL CON DATATABLES
@@ -58,7 +54,7 @@ $(document).ready(function () {
                     let solicitante = `${nombreSol} ${apellidoSol}`.trim();
                     let razonSoc = cot.razon_social ? cot.razon_social : 'Sin Empresa';
 
-                    let badgeColor = 'bg-soft-primary text-primary'; // Por defecto Guardada
+                    let badgeColor = 'bg-soft-primary text-primary';
                     let estatusTexto = cot.estatus ? cot.estatus : 'Guardado';
 
                     if (estatusTexto === 'Autorizada (sin dirección)') badgeColor = 'bg-soft-warning text-warning';
@@ -82,14 +78,11 @@ $(document).ready(function () {
                     }
 
                     let btnEliminar = '';
-                    // let cotizacionCerrada = (estatusTexto === 'Autorizada (sin dirección)' || estatusTexto === 'No autorizada');
                     let cotizacionCerrada = (estatusTexto === 'Autorizada (información completa)' || estatusTexto === 'No autorizada');
 
-                    // Si no está cerrada, O si el usuario es Admin, mostramos el botón de basura
                     if (!cotizacionCerrada || USER_PERFIL === 'admin') {
                         btnEliminar = `<a href="#" class="avatar-text avatar-md btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2 text-danger"></i></abbr></a>`;
                     } else {
-                        // Si está cerrada y NO es admin, mostramos un candado inactivo
                         btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md" style="opacity: 0.4; cursor: not-allowed;"><abbr title="Bloqueado: Solo administradores pueden eliminarla" style="text-decoration:none;"><i class="feather-lock text-muted"></i></abbr></a>`;
                     }
 
@@ -132,12 +125,8 @@ $(document).ready(function () {
                         info: true,
                         dom: "<'table-responsive'tr>" +
                             "<'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
-
                         drawCallback: function () {
-                            // Le agregamos 'pagination-sm' para hacer los botones más pequeños
-                            // y 'mb-0' para quitar cualquier margen inferior sobrante
                             $('.dataTables_paginate > .pagination').addClass('pagination-sm mb-0');
-
                         }
                     });
                 }
@@ -149,41 +138,42 @@ $(document).ready(function () {
     }
 
     cargarTablaPrincipal();
-    //<<< ==============================================
-    //<<<   FIN: CARGAR TABLA PRINCIPAL CON DATATABLES
-    //<<< ============================================== 
 
 
     //>>>============================================== 
     //>>>           3. MODAL DE EDICIÓN
     //>>>============================================== 
-    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '', isCalib = true) {
+
+    // MAGIA: Construir Fila inyecta el dato de "esServicio" y deshabilita dinámicamente
+    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '', isCalib = true, esServicio = false) {
         let opciones = '<option value="">Selecciona...</option>';
         windowProductos.forEach(p => {
             let selected = (p.id_product == prod_id) ? 'selected' : '';
-            // Forzamos mayúsculas
             let claveM = p.clave_product.toUpperCase();
             let descM = p.descripcion_product.toUpperCase();
-            opciones += `<option value="${p.id_product}" ${selected}>[${claveM}] ${descM}</option>`;
+            let isSrv = (claveM.includes('SERVICIO') || descM.includes('SERVICIO'));
+            opciones += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}</option>`;
         });
 
-        //& Ayuda a recodar si la fila ya contaba con la calibración.
-        let checkedAttr = isCalib ? 'checked' : '';
+        // Si es servicio, apagamos los checks y los bloqueamos
+        let checkedAttr = (isCalib && !esServicio) ? 'checked' : '';
+        let disabledAttr = esServicio ? 'disabled' : '';
 
         return `
             <tr id="edit_addr${index}" class="fila-producto">
                 <td class="text-center align-middle fila-numero">${index + 1}</td>
+                <td class="align-middle"><input type="number" name="cantidad_cot[]" class="form-control edit-qty" step="1" min="1" value="${qty}" required></td>
                 <td class="align-middle"><select class="form-control select-prod-modal" name="productos[]" required>${opciones}</select></td>
                 <td class="align-middle">
                     <div class="modulo-config">
                         <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
-                            <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="edit_chk_incluir_${index}" ${checkedAttr} style="cursor: pointer;">
+                            <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="edit_chk_incluir_${index}" ${checkedAttr} ${disabledAttr} style="cursor: pointer;">
                             <label class="form-check-label fs-12 fw-bold text-dark text-start" for="edit_chk_incluir_${index}" style="cursor: pointer; padding-top: 2px;">
                                 Incluir Calibración
                             </label>
                         </div>
                         <div class="form-check d-flex justify-content-center align-items-center gap-2">
-                            <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="edit_chk_desglosar_${index}" style="cursor: pointer;">
+                            <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="edit_chk_desglosar_${index}" ${disabledAttr} style="cursor: pointer;">
                             <label class="form-check-label fs-11 text-muted text-start" for="edit_chk_desglosar_${index}" style="cursor: pointer; padding-top: 2px;">
                                 Desglosar
                             </label>
@@ -192,7 +182,6 @@ $(document).ready(function () {
                     <div class="info-desglose text-center mt-2"></div>
                 </td>
                 <td class="align-middle"><input type="number" name="unitario[]" class="form-control edit-price" step="any" value="${precio}" required></td>
-                <td class="align-middle"><input type="number" name="cantidad_cot[]" class="form-control edit-qty" step="1" min="1" value="${qty}" required></td>
                 <td class="align-middle">
                     <div class="d-flex align-items-center gap-2">
                         <input type="number" name="total[]" class="form-control edit-total" readonly value="${total}">
@@ -203,7 +192,6 @@ $(document).ready(function () {
         `;
     }
 
-    //| Dropdowns solicitantes
     function cargarSucursales(usuarioId, preseleccion_suc = null) {
         let $selectSuc = $('#edit_select_sucursal');
         $selectSuc.empty().append('<option value="">Cargando...</option>');
@@ -221,7 +209,6 @@ $(document).ready(function () {
                         data.forEach(suc => {
                             $selectSuc.append(`<option value="${suc.id_sucursal}">${suc.nombre_sucursal} (${suc.estado})</option>`);
                         });
-                        // Si nos pasaron un ID desde BD, lo marcamos
                         if (preseleccion_suc) {
                             $selectSuc.val(preseleccion_suc).trigger('change');
                         }
@@ -244,13 +231,11 @@ $(document).ready(function () {
 
                 if (preseleccion) {
                     $selSol.val(preseleccion);
-                    // AQUÍ ESTABA EL ERROR: Necesita conocer preseleccion_suc para funcionar
                     cargarSucursales(preseleccion, preseleccion_suc);
                 }
 
                 $selSol.select2({ dropdownParent: $('#modalEditarCotizacion') });
 
-                //& Bloqueamos solicitante si es un cliente B2B
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
                     $selSol.prop('disabled', true);
                     if ($('#hidden_edit_usuario').length === 0) {
@@ -270,32 +255,8 @@ $(document).ready(function () {
     $('#edit_select_solicitante').on('change', function () {
         let usuarioId = $(this).val();
         cargarSucursales(usuarioId, null)
-
-        /* //° let $selectSuc = $('#edit_select_sucursal');
-        $selectSuc.empty().append('<option value="">Cargando...</option>');
-
-        if (usuarioId) {
-            $.ajax({
-                url: 'api/api_cotizador.php?action=get_sucursales_usuario&usuario_id=' + usuarioId,
-                method: 'GET', dataType: 'json',
-                success: function(data) {
-                    $selectSuc.empty();
-                    if(data.length === 0) {
-                        $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
-                    } else {
-                        $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
-                        data.forEach(suc => {
-                            $selectSuc.append(`<option value="${suc.id_sucursal}">${suc.nombre_sucursal} (${suc.plaza})</option>`);
-                        });
-                    }
-                }
-            });
-        } else {
-            $selectSuc.empty().append('<option value="">Selecciona un solicitante primero...</option>');
-        } */
     });
 
-    //? Es un candado para lista de precio
     let previousTipoPrecio = '';
     $('#tipo_precio').on('focus click', function () {
         previousTipoPrecio = $(this).val();
@@ -309,16 +270,10 @@ $(document).ready(function () {
                 });
                 calcEditTotal();
             } else {
-                // Si le da cancelar, regresamos al valor anterior
                 $(this).val(previousTipoPrecio);
             }
         }
     });
-    /* //° $('#tipo_precio').on('change', function () {
-        $('.select-prod-modal').each(function () {
-            if ($(this).val()) $(this).trigger('change');
-        });
-    }); */
 
     //& EDITAR EL MODAL Y LLENAR DATOS
     $(document).on('click', '.btn-editar-modal', function (e) {
@@ -359,25 +314,37 @@ $(document).ready(function () {
                 }
                 $('#edit_estatus').val(estatusBD).trigger('change');
 
+                // Variables de nuestras columnas para poder moverlas de lugar
                 let $colSolicitante = $('#edit_select_solicitante').closest('div[class^="col-"]');
                 let $colPrecio = $('#tipo_precio').closest('div[class^="col-"]');
-                let $colEstatus = $('#fila_estatus_lan'); // ID de la columna estatus
+                let $colEstatus = $('#fila_estatus_lan');
+                let $colCliente = $('#edit_select_empresa').closest('div[class^="col-"]');
+                let $colSucursal = $('#edit_select_sucursal').closest('div[class^="col-"]');
 
+                // 1. Restauramos el diseño original por si está entrando un administrador
                 $colSolicitante.removeClass('col-md-12').addClass('col-md-4');
                 $colPrecio.show();
                 $colEstatus.show();
                 $selEmp.prop('disabled', false);
+                $colSucursal.insertAfter($colSolicitante); // Lo regresa a su lugar normal
 
-                //& Lógica portal clientes - Ocultamos y bloqueamos campos para proteger la cotización
+                // 2. Lógica específica para el portal de Clientes (B2B)
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-                    //& A. Ocultar Status y Tipo de Precio
+
+                    // A. Ocultar Status y Tipo de Precio
                     $colPrecio.hide();
                     $colEstatus.hide();
+
+                    // B. MAGIA DE DISEÑO: Movemos "Sucursal" a la fila de arriba (al lado de Cliente)
+                    $colSucursal.insertAfter($colCliente);
+
+                    // C. Hacemos que "Solicitante" ocupe todo el ancho de la fila de abajo
                     $colSolicitante.removeClass('col-md-4').addClass('col-md-12');
-                    //& B. REQUERIMIENTOS SEGURIDAD B2B: Bloqueamos alterar la Empresa
+
+                    // D. Bloqueamos alterar la Empresa
                     $selEmp.prop('disabled', true);
 
-                    //& Aseguramos que los inputs ocultos existan para enviar los datos obligatorios que bloqueamos
+                    // E. Forzamos los valores ocultos para que el POST no falle
                     if ($('#hidden_edit_empresa').length === 0) {
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
@@ -395,22 +362,32 @@ $(document).ready(function () {
                 $tbody.empty();
                 rowCount = 0;
 
+                // RECONOCIMIENTO INTELIGENTE DE SERVICIOS Y CALIBRACIÓN
                 dets.forEach((item, index) => {
                     let isCalibIncluida = true;
+                    let esServicio = false;
+
                     if (preciosProductos[item.Product_id]) {
                         let pData = preciosProductos[item.Product_id];
 
+                        // 1. Detectar si la calibración iba incluida analizando el precio
                         let precioSoloEquipo = (cot.tipo_precio === 'Farmacia') ? parseFloat(pData.pf_equipo) : parseFloat(pData.pp_equipo);
                         let precioGuardado = parseFloat(item.precio_unitario);
 
-                        // Si el precio guardado es exactamente igual al "Solo Equipo", le desmarcamos la palomita
                         if (Math.abs(precioGuardado - precioSoloEquipo) < 0.01) {
+                            isCalibIncluida = false;
+                        }
+
+                        // 2. Detectar si es un Servicio
+                        let claveM = pData.clave_product.toUpperCase();
+                        let descM = pData.descripcion_product.toUpperCase();
+                        if (claveM.includes('SERVICIO') || descM.includes('SERVICIO')) {
+                            esServicio = true;
                             isCalibIncluida = false;
                         }
                     }
 
-                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida));
-                    // Forzamos el renderizado de los textos descriptivos
+                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida, esServicio));
                     calculateRowEdit($(`#edit_addr${index}`));
                     rowCount++;
                 });
@@ -420,24 +397,24 @@ $(document).ready(function () {
                 if (isReadOnly) {
                     $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', true);
                     $('#edit_add_row').hide();
-                    $('.btn-eliminar-fila-unica').hide(); // Ocultamos los íconos de basura
-                    $('#formEditarCotizacion button[type="submit"]').hide(); // Ocultar botón guardar
+                    $('.btn-eliminar-fila-unica').hide();
+                    $('#formEditarCotizacion button[type="submit"]').hide();
                 }
 
                 $('#modalEditarCotizacion').modal('show');
             }
         });
     });
-    //<<<==============================================
-    //<<<            FIN: MODAL DE EDICIÓN
-    //<<<============================================== 
-
 
     //>>>==============================================
     //>>>  4. MATEMÁTICAS Y FILAS DINÁMICAS EN MODAL
     //>>>==============================================
     $("#edit_add_row").click(function () {
-        $("#edit_tbody_productos").append(construirFila(rowCount));
+        $("#edit_tbody_productos").append(construirFila(rowCount, '', '', 1, '', false, false));
+
+        // Forzamos el checkbox de calibración encendido por defecto en filas nuevas (que no sean servicios)
+        $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
+
         $(`#edit_addr${rowCount} .select-prod-modal`).select2({ dropdownParent: $('#modalEditarCotizacion') });
         rowCount++;
         recalcularNumerosFila();
@@ -465,19 +442,6 @@ $(document).ready(function () {
         calculateRowEdit(row);
         calcEditTotal();
     });
-    /* //° $(document).on('change', '.select-prod-modal', function () {
-        let prodId = $(this).val();
-        let tipoPrecioActivo = $('#tipo_precio').val();
-        let inputPrecio = $(this).closest('tr').find('.edit-price');
-
-        if (prodId && tipoPrecioActivo && preciosProductos[prodId]) {
-            inputPrecio.val(preciosProductos[prodId][tipoPrecioActivo]);
-        } else if (prodId && !tipoPrecioActivo) {
-            alert("¡Atención! Selecciona primero la 'Lista de Precios' en la parte superior.");
-            $(this).val('').trigger('change.select2');
-        }
-        calcEdit();
-    }); */
 
     $(document).on("keyup change", ".edit-qty, #edit_tax", function () {
         let row = $(this).closest('tr');
@@ -486,12 +450,25 @@ $(document).ready(function () {
     });
 
     function calculateRowEdit(row) {
-        let prodId = row.find('.select-prod-modal').val();
+        let prodSelect = row.find('.select-prod-modal');
+        let prodId = prodSelect.val();
         let pData = preciosProductos[prodId];
         if (!pData) return;
 
         let qty = parseFloat(row.find('.edit-qty').val()) || 0;
         let tipoPrecio = $('#tipo_precio').val();
+
+        // MAGIA: Detectar si es servicio leyendo la opción del select
+        let optionSelected = prodSelect.find('option:selected');
+        let esServicio = optionSelected.data('servicio') === true || optionSelected.data('servicio') === 'true';
+
+        if (esServicio) {
+            row.find('.chk-incluir').prop('checked', false).prop('disabled', true);
+            row.find('.chk-desglosar').prop('checked', false).prop('disabled', true);
+        } else {
+            row.find('.chk-incluir').prop('disabled', false);
+            row.find('.chk-desglosar').prop('disabled', false);
+        }
 
         let incluirCalib = row.find('.chk-incluir').is(':checked');
         let desglosar = row.find('.chk-desglosar').is(':checked');
@@ -501,26 +478,30 @@ $(document).ready(function () {
             return;
         }
 
-        // Extrayendo variables completas de la base de datos
         let pEquipo = (tipoPrecio === 'Farmacia') ? parseFloat(pData.pf_equipo) : parseFloat(pData.pp_equipo);
         let pCalib = (tipoPrecio === 'Farmacia') ? parseFloat(pData.pf_calib) : parseFloat(pData.pp_calib);
         let pAntesIva = (tipoPrecio === 'Farmacia') ? parseFloat(pData.pf_antes_iva) : parseFloat(pData.pp_antes_iva);
 
         let textoInformativo = "";
 
-        if (incluirCalib) {
-            row.find('.edit-price').val(pAntesIva.toFixed(2));
-            if (desglosar) {
-                textoInformativo = `<small class="text-primary d-block fw-bold mt-1">Equipo ($${pEquipo.toFixed(2)}) + Calibración ($${pCalib.toFixed(2)})</small>`;
-            } else {
-                textoInformativo = `<small class="text-muted d-block mt-1">Incluye equipo y calibración</small>`;
-            }
-        } else {
+        if (esServicio) {
             row.find('.edit-price').val(pEquipo.toFixed(2));
-            if (desglosar) {
-                textoInformativo = `<small class="text-info d-block fw-bold mt-1">Solo Equipo ($${pEquipo.toFixed(2)})</small>`;
+            textoInformativo = `<small class="text-info d-block fw-bold mt-1">Servicio ($${pEquipo.toFixed(2)})</small>`;
+        } else {
+            if (incluirCalib) {
+                row.find('.edit-price').val(pAntesIva.toFixed(2));
+                if (desglosar) {
+                    textoInformativo = `<small class="text-primary d-block fw-bold mt-1">Equipo ($${pEquipo.toFixed(2)}) + Calibración ($${pCalib.toFixed(2)})</small>`;
+                } else {
+                    textoInformativo = `<small class="text-muted d-block mt-1">Incluye equipo y calibración</small>`;
+                }
             } else {
-                textoInformativo = `<small class="text-muted d-block mt-1">Solo Equipo</small>`;
+                row.find('.edit-price').val(pEquipo.toFixed(2));
+                if (desglosar) {
+                    textoInformativo = `<small class="text-info d-block fw-bold mt-1">Solo Equipo ($${pEquipo.toFixed(2)})</small>`;
+                } else {
+                    textoInformativo = `<small class="text-muted d-block mt-1">Solo Equipo</small>`;
+                }
             }
         }
 
@@ -541,10 +522,6 @@ $(document).ready(function () {
         let tax = parseFloat($("#edit_tax").val()) || 0;
         $("#edit_total_amount").val((sub + (sub * tax / 100)).toFixed(2));
     }
-
-    //<<<==============================================
-    //<<<  FIN: MATEMÁTICAS Y FILAS DINÁMICAS EN MODAL
-    //<<<============================================== 
 
 
     //>>>============================================== 
@@ -579,7 +556,6 @@ $(document).ready(function () {
                     $('#modalEditarCotizacion').modal('hide');
                     $('.modal-backdrop').remove();
 
-                    // Simplemente recargamos la tabla y mostramos éxito (Sin redirección forzada)
                     cargarTablaPrincipal();
                     alert(res.message);
 

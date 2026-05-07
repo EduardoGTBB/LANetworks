@@ -73,22 +73,33 @@
                                     <h5 class="mb-0 text-dark">Dirección Certificado</h5>
                                 </div>
                                 <div class="card-body">
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="check_cert_igual">
-                                        <label class="form-check-label fw-bold" for="check_cert_igual">Usar misma Dirección Fiscal</label>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="tipo_dir_cert" id="cert_sucursal" value="sucursal" checked>
+                                        <label class="form-check-label fw-bold text-dark" for="cert_sucursal">Usar dir. de sucursal (<span id="nombre_sucursal_label" class="text-primary">Cargando...</span>)</label>
                                     </div>
-                                    <span>Calle y Número:</span>
-                                    <input type="text" class="form-control mb-2 c-input" name="c_calle" required>
-                                    <span>Colonia:</span>
-                                    <input type="text" class="form-control mb-2 c-input" name="c_colonia" required>
-                                    <span>Localidad:</span>
-                                    <input type="text" class="form-control mb-2 c-input" name="c_localidad" required>
-                                    <span>Municipio:</span>
-                                    <input type="text" class="form-control mb-2 c-input" name="c_municipio" required>
-                                    <span>Estado:</span>
-                                    <input type="text" class="form-control mb-2 c-input" name="c_estado" required>
-                                    <span>Codigo Postal:</span>
-                                    <input type="text" class="form-control mb-2 c-input" name="c_cp" required>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="tipo_dir_cert" id="cert_fiscal" value="fiscal">
+                                        <label class="form-check-label fw-bold text-dark" for="cert_fiscal">Usar misma Dirección Fiscal</label>
+                                    </div>
+                                    <div class="form-check mb-3 border-bottom pb-3">
+                                        <input class="form-check-input" type="radio" name="tipo_dir_cert" id="cert_manual" value="manual">
+                                        <label class="form-check-label fw-bold text-dark" for="cert_manual">Ingresar manualmente</label>
+                                    </div>
+
+                                    <div id="bloque_cert_manual" class="mt-3">
+                                        <span>Calle y Número:</span>
+                                        <input type="text" class="form-control mb-2 c-input" name="c_calle" required>
+                                        <span>Colonia:</span>
+                                        <input type="text" class="form-control mb-2 c-input" name="c_colonia" required>
+                                        <span>Localidad:</span>
+                                        <input type="text" class="form-control mb-2 c-input" name="c_localidad" required>
+                                        <span>Municipio:</span>
+                                        <input type="text" class="form-control mb-2 c-input" name="c_municipio" required>
+                                        <span>Estado:</span>
+                                        <input type="text" class="form-control mb-2 c-input" name="c_estado" required>
+                                        <span>Codigo Postal:</span>
+                                        <input type="text" class="form-control mb-2 c-input" name="c_cp" required>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -125,41 +136,33 @@
                                 </div> -->
 
                                 <div class="card-body">
-                                    <div class="bg-soft-success p-3 rounded mb-4 border border-success border-opacity-25">
-                                        <div class="mb-3">
-                                            <label class="fw-bold fs-12 text-uppercase text-success mb-1">Elegir Sucursal:</label>
-                                            <select class="form-select border-success" id="select_sucursal_final" name="Sucursal_id">
-                                                <option value="">Cargando sucursales...</option>
-                                            </select>
-                                        </div>
-                                        <hr class="border-success border-opacity-25 my-2">
-                                        <div class="form-check mt-2">
-                                            <input class="form-check-input" type="checkbox" id="check_envio_igual">
-                                            <label class="form-check-label fw-bold text-dark" for="check_envio_igual">O copiar Dir. de Certificado</label>
-                                        </div>
+                                    <div class="form-check mb-3 border-bottom pb-3">
+                                        <input class="form-check-input" type="checkbox" id="check_envio_igual">
+                                        <label class="form-check-label fw-bold text-dark" for="check_envio_igual">Copiar la dirección del certificado</label>
                                     </div>
 
-                                    <span>Calle y Número:</span>
-                                    <input type="text" class="form-control mb-2 e-input" name="e_calle" required>
-                                    <span>Colonia:</span>
-                                    <input type="text" class="form-control mb-2 e-input" name="e_colonia" required>
-                                    <span>Localidad:</span>
-                                    <input type="text" class="form-control mb-2 e-input" name="e_localidad" required>
-                                    <span>Municipio:</span>
-                                    <input type="text" class="form-control mb-2 e-input" name="e_municipio" required>
-                                    <span>Estado:</span>
-                                    <input type="text" class="form-control mb-2 e-input" name="e_estado" required>
-                                    <span>Codigo Postal:</span>
-                                    <input type="text" class="form-control mb-2 e-input" name="e_cp" required>
+                                    <div id="bloque_envio_manual" class="mt-3">
+                                        <span>Calle y Número:</span>
+                                        <input type="text" class="form-control mb-2 e-input" name="e_calle" required>
+                                        <span>Colonia:</span>
+                                        <input type="text" class="form-control mb-2 e-input" name="e_colonia" required>
+                                        <span>Localidad:</span>
+                                        <input type="text" class="form-control mb-2 e-input" name="e_localidad" required>
+                                        <span>Municipio:</span>
+                                        <input type="text" class="form-control mb-2 e-input" name="e_municipio" required>
+                                        <span>Estado:</span>
+                                        <input type="text" class="form-control mb-2 e-input" name="e_estado" required>
+                                        <span>Codigo Postal:</span>
+                                        <input type="text" class="form-control mb-2 e-input" name="e_cp" required>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="d-flex justify-content-center align-items-center gap-4 mt-4 mb-5 w-100">
-                        <!-- <a href="ver_cotizaciones.php" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a> -->
-                        <a href="<?php echo $url_origen; ?>" id="btn_regresar" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a>
-                        <button type="submit" class="btn btn-lg btn-primary px-5 text-uppercase fw-bold">Guardar</button>
-                    </div>
+                        <div class="d-flex justify-content-center align-items-center gap-4 mt-4 mb-5 w-100">
+                            <!-- <a href="ver_cotizaciones.php" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a> -->
+                            <a href="<?php echo $url_origen; ?>" id="btn_regresar" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a>
+                            <button type="submit" class="btn btn-lg btn-primary px-5 text-uppercase fw-bold">Guardar</button>
+                        </div>
                 </form>
             </div>
         </div>

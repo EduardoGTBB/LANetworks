@@ -223,7 +223,10 @@ $serie = "COTLAN";
                             <tr>
                                 <td class="text-center"><?php echo $d['cantidad']; ?></td>
                                 <td class="text-center"><?php echo htmlspecialchars($d['clave_product']); ?></td>
-                                <td class="text-start px-2"><?php echo htmlspecialchars($d['descripcion_product']); ?></td>
+                                <!-- <td class="text-start px-2">?php echo htmlspecialchars($d['descripcion_product']); ?></td> -->
+                                <td class="text-start px-2 py-2">
+                                    <?php echo nl2br(htmlspecialchars($d['descripcion_product'])); ?>
+                                </td>
                                 <td class="text-end px-2"><?php echo number_format($d['precio_unitario'], 2); ?></td>
                                 <td class="text-end px-2"><?php echo number_format($d['precio_extendido'], 2); ?></td>
                             </tr>
@@ -233,8 +236,20 @@ $serie = "COTLAN";
             </div>
         </div>
 
-        <div class="row mt-4 align-items-center">
-            <div class="col-6 mt-2">
+        <?php if (!empty($cot['comentarios'])): ?>
+            <div class="row mt-2 mb-3">
+                <div class="col-12">
+                    <div class="small text-uppercase" style="font-size: 11px; line-height: 1.4;">
+                        <strong>Notas / Observaciones:</strong><br>
+                        <?php echo nl2br(htmlspecialchars($cot['comentarios'])); ?>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <div class="row mt-3 align-items-center">
+
+            <div class="col-7">
                 <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
                     <div class="notes-box text-center small rounded">
                         CON EL FIN DE BRINDARLE ATENCION OPORTUNA<br>
@@ -242,12 +257,51 @@ $serie = "COTLAN";
                         DE CERTIFICADOS Y DE ENVIO DE EQUIPOS
                     </div>
                 <?php endif; ?>
+            </div>
 
-                <?php if (!empty($cot['comentarios'])): ?>
-                    <div class="small mb-4 text-uppercase" style="font-size: 11px; line-height: 1.4;">
-                        <?php echo nl2br(htmlspecialchars($cot['comentarios'])); ?>
+            <div class="col-5">
+                <table class="table table-bordered table-striped float-end table-sm mb-0" style="width: 100%">
+                    <tbody>
+                        <tr>
+                            <td class="text-start fw-bold px-2">Subtotal</td>
+                            <td class="text-end px-2">$ <?php echo number_format($cot['importe_total'], 2); ?></td>
+                        </tr>
+                        <tr>
+                            <td class="text-start fw-bold px-2">IVA</td>
+                            <td class="text-end px-2">$ <?php echo number_format($cot['precio_iva'] - $cot['importe_total'], 2); ?></td>
+                        </tr>
+                        <tr class="table-dark">
+                            <td class="text-start fw-bold px-2 border-0">Total</td>
+                            <td class="text-end fw-bold px-2 border-0">$ <?php echo number_format(($cot['precio_iva']), 2); ?></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="fw-bold small text-uppercase mt-1 text-start" style="font-size: 10px;">
+                    <?php
+                    // Sumamos subtotal + IVA para obtener el Total real
+                    $total_cotizacion = $cot['precio_iva'];
+                    echo NumeroALetras::convertir($total_cotizacion) . " M.N.";
+                    ?>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- <div class="row mt-4 align-items-center">
+            <div class="col-6 mt-2">
+                ?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+                    <div class="notes-box text-center small rounded">
+                        CON EL FIN DE BRINDARLE ATENCION OPORTUNA<br>
+                        FAVOR DE ENVIAR LOS DOMICILIOS, PARA ELABORACION<br>
+                        DE CERTIFICADOS Y DE ENVIO DE EQUIPOS
                     </div>
-                <?php endif; ?>
+                ?php endif; ?>
+
+                ?php if (!empty($cot['comentarios'])): ?>
+                    <div class="small mb-4 text-uppercase" style="font-size: 11px; line-height: 1.4;">
+                        ?php echo nl2br(htmlspecialchars($cot['comentarios'])); ?>
+                    </div>
+                ?php endif; ?>
             </div>
             <div class="col-6">
                 <table class="table table-bordered table-striped float-end table-sm mb-0" style="width: 70%">
@@ -267,17 +321,17 @@ $serie = "COTLAN";
                     </tbody>
                 </table>
             </div>
-        </div>
+        </div> -->
 
-        <div class="row mt-1 mb-4">
+        <!-- <div class="row mt-1 mb-4">
             <div class="col-12 fw-bold small text-uppercase text-end">
-                <?php
+                ?php
                 // Sumamos subtotal + IVA para obtener el Total real (caso normal) Para este caso, la base de datos guarda el total con iva en el campo precio_iva
                 $total_cotizacion = $cot['precio_iva'];
                 echo NumeroALetras::convertir($total_cotizacion);
                 ?>
             </div>
-        </div>
+        </div> -->
 
         <div class="row">
             <div class="col-12">

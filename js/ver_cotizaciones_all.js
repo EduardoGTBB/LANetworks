@@ -117,29 +117,35 @@ $(document).ready(function () {
     cargarTablaPrincipal();
 
     // 3. LÓGICA DEL MODAL DE EDICIÓN Y MATEMÁTICAS
-    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '', isCalib = true) {
+    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '', isCalib = true, esServicio = false) {
         let opciones = '<option value="">Selecciona...</option>';
         windowProductos.forEach(p => {
             let selected = (p.id_product == prod_id) ? 'selected' : '';
-            opciones += `<option value="${p.id_product}" ${selected}>[${p.clave_product.toUpperCase()}] ${p.descripcion_product.toUpperCase()}</option>`;
+            let claveM = p.clave_product.toUpperCase();
+            let descM = p.descripcion_product.toUpperCase();
+            let isSrv = (claveM.includes('SERVICIO') || descM.includes('SERVICIO'));
+            opciones += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}</option>`;
         });
 
-        let checkedAttr = isCalib ? 'checked' : '';
+        // Si es servicio, apagamos los checks y los bloqueamos
+        let checkedAttr = (isCalib && !esServicio) ? 'checked' : '';
+        let disabledAttr = esServicio ? 'disabled' : '';
 
         return `
             <tr id="edit_addr${index}" class="fila-producto">
                 <td class="text-center align-middle fila-numero">${index + 1}</td>
+                <td class="align-middle"><input type="number" name="cantidad_cot[]" class="form-control edit-qty" step="1" min="1" value="${qty}" required></td>
                 <td class="align-middle"><select class="form-control select-prod-modal" name="productos[]" required>${opciones}</select></td>
                 <td class="align-middle">
                     <div class="modulo-config">
                         <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
-                            <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="edit_chk_incluir_${index}" ${checkedAttr} style="cursor: pointer;">
+                            <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="edit_chk_incluir_${index}" ${checkedAttr} ${disabledAttr} style="cursor: pointer;">
                             <label class="form-check-label fs-12 fw-bold text-dark text-start" for="edit_chk_incluir_${index}" style="cursor: pointer; padding-top: 2px;">
                                 Incluir Calibración
                             </label>
                         </div>
                         <div class="form-check d-flex justify-content-center align-items-center gap-2">
-                            <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="edit_chk_desglosar_${index}" style="cursor: pointer;">
+                            <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="edit_chk_desglosar_${index}" ${disabledAttr} style="cursor: pointer;">
                             <label class="form-check-label fs-11 text-muted text-start" for="edit_chk_desglosar_${index}" style="cursor: pointer; padding-top: 2px;">
                                 Desglosar
                             </label>
@@ -147,12 +153,11 @@ $(document).ready(function () {
                     </div>
                     <div class="info-desglose text-center mt-2"></div>
                 </td>
-                <td class="align-middle"><input type="number" name="unitario[]" class="form-control edit-price" step="any" value="${precio}" required readonly></td>
-                <td class="align-middle"><input type="number" name="cantidad_cot[]" class="form-control edit-qty" step="1" min="1" value="${qty}" required></td>
+                <td class="align-middle"><input type="number" name="unitario[]" class="form-control edit-price" step="any" value="${precio}" required></td>
                 <td class="align-middle">
                     <div class="d-flex align-items-center gap-2">
                         <input type="number" name="total[]" class="form-control edit-total" readonly value="${total}">
-                        <a href="#" class="text-danger btn-eliminar-fila-unica" style="font-size: 1.2rem;"><i class="feather-trash-2"></i></a>
+                        <a href="#" class="text-danger btn-eliminar-fila-unica" title="Eliminar fila" style="font-size: 1.2rem;"><i class="feather-trash-2"></i></a>
                     </div>
                 </td>
             </tr>
@@ -284,8 +289,11 @@ $(document).ready(function () {
                 let $tbody = $('#edit_tbody_productos');
                 $tbody.empty(); rowCount = 0;
 
+                // RECONOCIMIENTO INTELIGENTE DE SERVICIOS Y CALIBRACIÓN
                 dets.forEach((item, index) => {
                     let isCalibIncluida = true;
+                    let esServicio = false;
+
                     if (preciosProductos[item.Product_id]) {
                         let pData = preciosProductos[item.Product_id];
                         let precioSoloEquipo = (cot.tipo_precio === 'Farmacia') ? parseFloat(pData.pf_equipo) : parseFloat(pData.pp_equipo);
@@ -294,9 +302,17 @@ $(document).ready(function () {
                         if (Math.abs(precioGuardado - precioSoloEquipo) < 0.01) {
                             isCalibIncluida = false;
                         }
+
+                        // 2. Detectar si es un Servicio
+                        let claveM = pData.clave_product.toUpperCase();
+                        let descM = pData.descripcion_product.toUpperCase();
+                        if (claveM.includes('SERVICIO') || descM.includes('SERVICIO')) {
+                            esServicio = true;
+                            isCalibIncluida = false;
+                        }
                     }
 
-                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida));
+                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida, esServicio));
                     calculateRowEdit($(`#edit_addr${index}`));
                     rowCount++;
                 });
@@ -316,7 +332,11 @@ $(document).ready(function () {
     });
 
     $("#edit_add_row").click(function () {
-        $("#edit_tbody_productos").append(construirFila(rowCount));
+        $("#edit_tbody_productos").append(construirFila(rowCount, '', '', 1, '', false, false));
+        
+        // Forzamos el checkbox de calibración encendido por defecto en filas nuevas
+        $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
+
         $(`#edit_addr${rowCount} .select-prod-modal`).select2({ dropdownParent: $('#modalEditarCotizacion') });
         rowCount++; recalcularNumerosFila();
     });
@@ -343,12 +363,25 @@ $(document).ready(function () {
     });
 
     function calculateRowEdit(row) {
-        let prodId = row.find('.select-prod-modal').val();
+        let prodSelect = row.find('.select-prod-modal');
+        let prodId = prodSelect.val();
         let pData = preciosProductos[prodId];
         if (!pData) return;
 
         let qty = parseFloat(row.find('.edit-qty').val()) || 0;
         let tipoPrecio = $('#tipo_precio').val();
+
+        // MAGIA: Detectar si es servicio leyendo la opción del select
+        let optionSelected = prodSelect.find('option:selected');
+        let esServicio = optionSelected.data('servicio') === true || optionSelected.data('servicio') === 'true';
+
+        if (esServicio) {
+            row.find('.chk-incluir').prop('checked', false).prop('disabled', true);
+            row.find('.chk-desglosar').prop('checked', false).prop('disabled', true);
+        } else {
+            row.find('.chk-incluir').prop('disabled', false);
+            row.find('.chk-desglosar').prop('disabled', false);
+        }
 
         let incluirCalib = row.find('.chk-incluir').is(':checked');
         let desglosar = row.find('.chk-desglosar').is(':checked');
@@ -364,19 +397,24 @@ $(document).ready(function () {
 
         let textoInformativo = "";
 
-        if (incluirCalib) {
-            row.find('.edit-price').val(pAntesIva.toFixed(2));
-            if (desglosar) {
-                textoInformativo = `<small class="text-primary d-block fw-bold mt-1">Equipo ($${pEquipo.toFixed(2)}) + Calibración ($${pCalib.toFixed(2)})</small>`;
-            } else {
-                textoInformativo = `<small class="text-muted d-block mt-1">Incluye equipo y calibración</small>`;
-            }
-        } else {
+        if (esServicio) {
             row.find('.edit-price').val(pEquipo.toFixed(2));
-            if (desglosar) {
-                textoInformativo = `<small class="text-info d-block fw-bold mt-1">Solo Equipo ($${pEquipo.toFixed(2)})</small>`;
+            textoInformativo = `<small class="text-info d-block fw-bold mt-1">Servicio ($${pEquipo.toFixed(2)})</small>`;
+        } else {
+            if (incluirCalib) {
+                row.find('.edit-price').val(pAntesIva.toFixed(2));
+                if (desglosar) {
+                    textoInformativo = `<small class="text-primary d-block fw-bold mt-1">Equipo ($${pEquipo.toFixed(2)}) + Calibración ($${pCalib.toFixed(2)})</small>`;
+                } else {
+                    textoInformativo = `<small class="text-muted d-block mt-1">Incluye equipo y calibración</small>`;
+                }
             } else {
-                textoInformativo = `<small class="text-muted d-block mt-1">Solo Equipo</small>`;
+                row.find('.edit-price').val(pEquipo.toFixed(2));
+                if (desglosar) {
+                    textoInformativo = `<small class="text-info d-block fw-bold mt-1">Solo Equipo ($${pEquipo.toFixed(2)})</small>`;
+                } else {
+                    textoInformativo = `<small class="text-muted d-block mt-1">Solo Equipo</small>`;
+                }
             }
         }
 

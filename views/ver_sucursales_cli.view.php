@@ -249,7 +249,7 @@
                     <div class="row">
                         <div class="col-md-8 mb-3">
                             <label class="form-label">Pertenece a la Empresa: <span class="text-danger">*</span></label>
-                            <select class="form-control" name="Empresa_id" id="Empresa_id" required>
+                            <select class="form-control" id="Empresa_id" name="Empresa_id" data-select2-selector="status" required>
                                 <option value="">Selecciona una empresa...</option>
                             </select>
                         </div>

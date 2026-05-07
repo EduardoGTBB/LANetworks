@@ -122,7 +122,7 @@
                                         </div>
                                         <div class="col-md-6 mb-4">
                                             <label class="form-label">Solicitante</label>
-                                            <select class="form-control" id="select_solicitante" name="Usuario_id" data-select2-selector="status"  required>
+                                            <select class="form-control" id="select_solicitante" name="Usuario_id" data-select2-selector="status" required>
                                                 <option value="">Selecciona un solicitante...</option>
                                             </select>
                                         </div>
@@ -166,11 +166,11 @@
                                                 <table class="table table-bordered overflow-hidden" id="tab_logic">
                                                     <thead>
                                                         <tr class="single-item">
-                                                            <th class="text-center wd-80">#</th>
+                                                            <th class="text-center wd-80">Item</th>
+                                                            <th class="text-center wd-150">Cantidad</th>
                                                             <th class="text-center wd-400">Producto</th>
                                                             <th class="text-center wd-250">Desglose de Calibración</th>
                                                             <th class="text-center wd-150">Precio unitario</th>
-                                                            <th class="text-center wd-150">Cantidad</th>
                                                             <th class="text-center wd-200">Total</th>
                                                         </tr>
                                                     </thead>
@@ -182,15 +182,12 @@
                                                                     <option value="">Selecciona un producto...</option>
                                                                     <!-- <option value="1">[B-LITIO] Bateria Litio CR-2025</option> -->
                                                                 </select>
-                                                                <!--<input type="text" name="productos[]" placeholder="Product Name" class="form-control">-->
                                                             </td>
-                                                            <!-- //>>> INICIO -->
-                                                            <!-- //*Selección equipo nuevo/usado -->
-
+                                                            <!--//>>> INICIO -->
                                                             <td class="align-middle">
                                                                 <div class="modulo-config">
                                                                     <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
-                                                                        <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="chk_incluir_0" checked style="cursor: pointer;">
+                                                                        <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="chk_incluir_0" style="cursor: pointer;">
                                                                         <label class="form-check-label fs-12 fw-bold text-dark text-start" for="chk_incluir_0" style="cursor: pointer; padding-top: 2px;">
                                                                             Incluir Calibración
                                                                         </label>

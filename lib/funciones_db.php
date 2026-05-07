@@ -1200,8 +1200,8 @@ function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, arra
 
         // 0. Si se eligió una sucursal de destino, actualizamos la cotización
         // Se permite NULL si $sucursal_id es 0 (por si deciden no elegir ninguna y meter los datos a mano)
-        $valSucursal = ($sucursal_id > 0) ? $sucursal_id : null;
-        $pdo->prepare("UPDATE cotizacion SET Sucursal_id = ? WHERE id_cotizacion = ?")->execute([$valSucursal, $id_cot]);
+        /* $valSucursal = ($sucursal_id > 0) ? $sucursal_id : null;
+        $pdo->prepare("UPDATE cotizacion SET Sucursal_id = ? WHERE id_cotizacion = ?")->execute([$valSucursal, $id_cot]); */
 
         // 1. Borrar las direcciones anteriores si existían
         $pdo->prepare("DELETE FROM domicilio_fiscal WHERE Cotizacion_id = ?")->execute([$id_cot]);
