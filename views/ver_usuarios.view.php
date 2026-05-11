@@ -323,18 +323,6 @@
                         </div>
 
                         <div class="row mb-4 align-items-center">
-                            <div class="col-lg-4"><label for="designationInput" class="fw-semibold">Perfil: <span class="text-danger">*</span></label></div>
-                            <div class="col-lg-8">
-                                <select class="form-control" id="perfil" name="perfil" required>
-                                    <option value="">Selecciona un perfil...</option>
-                                    <option value="admin">Administrador</option>
-                                    <option value="oper">Operativo</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <hr>
-                        <div class="row mb-4 align-items-center">
                             <div class="col-lg-4">
                                 <label for="Input" class="fw-semibold">Contraseña:</label>
                             </div>
@@ -343,7 +331,7 @@
                                     <div class="input-group-text"><i class="feather-key"></i></div>
                                     <input type="password" class="form-control password" id="newPassword" name="password" placeholder="Escribe una contraseña" required>
 
-                                    <div class="input-group-text c-pointer gen-pass"><i class="feather-hash"></i></div>
+                                    <!-- <div class="input-group-text c-pointer gen-pass"><i class="feather-hash"></i></div> -->
 
                                     <div class="input-group-text border-start bg-gray-2 c-pointer show-pass"><i class="feather-eye"></i></div>
                                 </div>
@@ -397,6 +385,20 @@
 
 
                         <hr>
+
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4"><label for="designationInput" class="fw-semibold">Perfil: <span class="text-danger">*</span></label></div>
+                            <div class="col-lg-8">
+                                <select class="form-control" id="perfil" name="perfil" data-select2-selector="status" required>
+                                    <option value="">Selecciona un perfil...</option>
+                                    <option value="admin">Administrador</option>
+                                    <option value="oper">Operativo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+
                         <div class="row mb-3 align-items-center">
                             <p class="fw-bold"><i class="feather-user-check"></i>&nbsp;&nbsp; Permisos de usuario</p>
                         </div>
@@ -1117,6 +1119,7 @@
     <!--! ================================================================ !-->
     <!--! BEGIN: Vendors JS !-->
     <script src="assets/vendors/js/vendors.min.js"></script>
+    <!-- <script src="assets/vendors/js/lslstrength.min.js"></script> -->
     <!-- vendors.min.js {always must need to be top} -->
     <script src="assets/vendors/js/circle-progress.min.js"></script>
     <script src="assets/vendors/js/dataTables.min.js"></script>

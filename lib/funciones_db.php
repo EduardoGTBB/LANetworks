@@ -1296,13 +1296,28 @@ function obtenerGraficaCotizaciones(PDO $pdo, int $id_cliente, int $id_admin, st
             ORDER BY mes ASC"; */
 
 
-    $sql = "SELECT CONCAT('Semana ', WEEK(fecha_cot, 1)) as mes_texto, 
+    /* $sql = "SELECT CONCAT('Semana ', WEEK(fecha_cot, 1)) as mes_texto, 
                    YEARWEEK(fecha_cot, 1) as semana, 
                    SUM(precio_iva) as total
             FROM cotizacion
             WHERE $where AND fecha_cot >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 WEEK)
             GROUP BY semana, mes_texto
-            ORDER BY semana ASC";
+            ORDER BY semana ASC"; */
+
+    $sql = "SELECT CONCAT(
+                    CASE MONTH(fecha_cot)
+                        WHEN 1 THEN 'Ene' WHEN 2 THEN 'Feb' WHEN 3 THEN 'Mar'
+                        WHEN 4 THEN 'Abr' WHEN 5 THEN 'May' WHEN 6 THEN 'Jun'
+                        WHEN 7 THEN 'Jul' WHEN 8 THEN 'Ago' WHEN 9 THEN 'Sep'
+                        WHEN 10 THEN 'Oct' WHEN 11 THEN 'Nov' WHEN 12 THEN 'Dic'
+                    END, ' ', YEAR(fecha_cot)
+                   ) as mes_texto, 
+                   DATE_FORMAT(fecha_cot, '%Y-%m') as mes, 
+                   SUM(precio_iva) as total
+            FROM cotizacion
+            WHERE $where AND fecha_cot >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
+            GROUP BY mes, mes_texto
+            ORDER BY mes ASC";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
