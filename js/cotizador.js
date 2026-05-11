@@ -290,12 +290,17 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
-                    if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
+                    //& Bloque donde a los admin no los manda a direcciones
+                    /* //° if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
                         window.location.href = 'finalizar_venta.php?id=' + response.id_cotizacion;
                     } else {
                         alert(response.message);
                         window.location.href = 'ver_cotizaciones.php';
-                    }
+                    } */
+
+                    //& Manda a direcciones al guardar
+                    alert(response.message);
+                    window.location.href = 'finalizar_venta.php?id=' + response.id_cotizacion;
                 } else {
                     alert("Error: " + response.message);
                     btnSubmit.prop('disabled', false).text(textoOriginal);

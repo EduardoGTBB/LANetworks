@@ -141,6 +141,10 @@ $(document).ready(function () {
     $('#btnNuevoUsuario').click(function (e) {
         e.preventDefault();
         $('#formUsuario')[0].reset();
+
+        $('.progress-bar div').css('background-color', '#e5e7eb');
+        $('#usuario_password, #confirmar_password').attr('type', 'password');
+
         $('#usuario_action').val('crear');
         $('#usuario_id').val('');
         

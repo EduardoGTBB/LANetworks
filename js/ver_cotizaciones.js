@@ -22,6 +22,16 @@ $(document).ready(function () {
         }
     });
 
+    $('#edit_estatus').on('change', function() {
+        let val = $(this).val();
+        let tieneDir = $(this).data('tiene-dir');
+        
+        if (val === 'Autorizada (información completa)' && tieneDir === 0) {
+            alert("No puedes marcar la cotización como 'Autorizada' sin antes registrar las direcciones de Certificado y Envío.");
+            $(this).val('Por aprobar').trigger('change.select2');; // Lo regresamos a "Por revisar"
+        }
+    });
+
     $(document).on('change', '.chk-desglosar', function() {
         $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
     });
@@ -302,6 +312,7 @@ $(document).ready(function () {
                 $('#formEditarCotizacion button[type="submit"]').prop('disabled', false).text('Actualizar Cambios').show();
 
                 $('#edit_id_cotizacion').val(cot.id_cotizacion);
+                $('#edit_comentarios').val(cot.comentarios);
                 $('#division').val(cot.division).trigger('change');
 
                 previousTipoPrecio = cot.tipo_precio;
@@ -315,6 +326,8 @@ $(document).ready(function () {
                 $selEmp.empty().append('<option value="">Selecciona un cliente...</option>');
                 windowEmpresas.forEach(emp => { $selEmp.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`); });
                 $selEmp.val(cot.Empresa_id).select2({ dropdownParent: $('#modalEditarCotizacion') });
+
+                $('#edit_estatus').data('tiene-dir', cot.tiene_dir ? parseInt(cot.tiene_dir) : 0);
 
                 let estatusBD = cot.estatus ? cot.estatus : 'Guardado';
                 if (estatusBD === 'Autorizada (sin dirección)') {

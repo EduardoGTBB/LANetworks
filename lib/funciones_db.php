@@ -240,7 +240,8 @@ function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
 // &Obtenemos la cotizacion especifica ID (Padre)
 function editarCotizacionporID(PDO $pdo, int $id_cotizacion)
 {
-    $sql = "SELECT id_cotizacion, Empresa_id, Sucursal_id, Usuario_admin_id, Usuario_empresa_id, fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, estatus 
+    $sql = "SELECT id_cotizacion, Empresa_id, Sucursal_id, Usuario_admin_id, Usuario_empresa_id, fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, estatus,
+            (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = cotizacion.id_cotizacion) as tiene_dir
             FROM cotizacion
             WHERE id_cotizacion = :id";
 
@@ -279,7 +280,8 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
                        division = :division,
                        tipo_precio = :tipo_precio,
                        porcentaje_iva = :porcentaje_iva,
-                       estatus = :estatus
+                       estatus = :estatus,
+                       comentarios = :comentarios
                    WHERE id_cotizacion = :id_cot";
 
         $stmtCot = $pdo->prepare($sqlCot);
@@ -293,6 +295,7 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
             ':tipo_precio'    => $datosCotizacion['tipo_precio'],
             ':division'       => $datosCotizacion['division'],
             ':estatus'        => $datosCotizacion['estatus'],
+            ':comentarios'    => $datosCotizacion['comentarios'],
             ':id_cot'         => $id_cotizacion
         ]);
 

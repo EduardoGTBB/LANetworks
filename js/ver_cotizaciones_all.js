@@ -8,6 +8,7 @@ $(document).ready(function () {
 
     // 1. CARGA INICIAL
     $.ajax({ url: 'api/api_cotizador.php?action=get_empresas', type: 'GET', success: function (data) { windowEmpresas = data; } });
+    
     $.ajax({
         url: 'api/api_cotizador.php?action=get_productos', type: 'GET',
         success: function (data) {
@@ -18,6 +19,15 @@ $(document).ready(function () {
         }
     });
 
+    $('#edit_estatus').on('change', function() {
+        let val = $(this).val();
+        let tieneDir = $(this).data('tiene-dir');
+        
+        if (val === 'Autorizada (información completa)' && tieneDir === 0) {
+            alert("No puedes marcar la cotización como 'Autorizada' sin antes registrar las direcciones de Certificado y Envío.");
+            $(this).val('Por aprobar').trigger('change.select2'); // Lo regresamos a "Por revisar"
+        }
+    });
     $(document).on('change', '.chk-desglosar', function() {
         $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
     });
@@ -274,6 +284,7 @@ $(document).ready(function () {
                 $('#formEditarCotizacion button[type="submit"]').prop('disabled', false).text('Actualizar Cambios').show();
 
                 $('#edit_id_cotizacion').val(cot.id_cotizacion);
+                $('#edit_comentarios').val(cot.comentarios);
                 $('#division').val(cot.division).trigger('change');
                 
                 previousTipoPrecio = cot.tipo_precio; 
@@ -283,8 +294,12 @@ $(document).ready(function () {
                 $('#edit_sub_total').val(cot.importe_total);
                 $('#edit_total_amount').val(cot.precio_iva);
 
+                $('#edit_estatus').data('tiene-dir', cot.tiene_dir ? parseInt(cot.tiene_dir) : 0);
+
                 let estatusBD = cot.estatus ? cot.estatus : 'Guardado';
-                if (estatusBD === 'Autorizada (sin dirección)') { estatusBD = 'Autorizada (información completa)'; }
+                if (estatusBD === 'Autorizada (sin dirección)') { 
+                    estatusBD = 'Autorizada (información completa)'; 
+                }
                 $('#edit_estatus').val(estatusBD).trigger('change');
 
                 let $selEmp = $('#edit_select_empresa');

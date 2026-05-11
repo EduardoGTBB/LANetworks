@@ -295,7 +295,15 @@
                         </div>
                     </div>
 
-                    <div class="row mb-4 d-flex justify-content-end">
+                    <div class="row mb-4 "><!-- d-flex justify-content-end -->
+                        <div class="col-lg-8 mt-2 text-start">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Notas / Observaciones adicionales:</label>
+                                <textarea name="comentarios" id="edit_comentarios" class="form-control" rows="4" placeholder="Ej. ENTREGA INMEDIATA..."></textarea>
+                                <small class="text-muted">Estas notas aparecerán en el PDF de la cotización.</small>
+                            </div>
+                        </div>
+                        
                         <div class="col-lg-4 mt-2">
                             <table class="table table-bordered">
                                 <tbody>

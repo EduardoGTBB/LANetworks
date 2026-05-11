@@ -190,7 +190,7 @@
                                                             <td class="align-middle">
                                                                 <div class="modulo-config">
                                                                     <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
-                                                                        <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="chk_incluir_0" style="cursor: pointer;">
+                                                                        <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="chk_incluir_0" checked style="cursor: pointer;">
                                                                         <label class="form-check-label fs-12 fw-bold text-dark text-start" for="chk_incluir_0" style="cursor: pointer; padding-top: 2px;">
                                                                             Incluir Calibración
                                                                         </label>

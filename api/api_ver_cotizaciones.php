@@ -104,6 +104,21 @@ try {
                 }
             }
 
+            $estatus_nuevo = trim($_POST['estatus'] ?? 'Guardado');
+
+            // --- NUEVO CANDADO DE DIRECCIONES ---
+            if ($estatus_nuevo === 'Autorizada (información completa)') {
+                $stmtCheckDir = $pdo->prepare("SELECT COUNT(*) FROM domicilio_fiscal WHERE Cotizacion_id = ?");
+                $stmtCheckDir->execute([$id_cotizacion]);
+                if ($stmtCheckDir->fetchColumn() == 0) {
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'No puedes autorizar una cotización que aún no tiene direcciones de certificado y envío.'
+                    ]);
+                    exit;
+                }
+            }
+
             $datosCotizacion = [
                 'empresa_id'    => $empresa_id,
                 'usuario_id'    => $usuario_id,
@@ -113,7 +128,8 @@ try {
                 'division'      => trim($_POST['division'] ?? ''),
                 'tipo_precio'   => trim($_POST['tipo_precio'] ?? ''),
                 'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 16),
-                'estatus'       => trim($_POST['estatus'] ?? 'Guardada'),
+                'estatus'       => $estatus_nuevo,
+                'comentarios'   => trim($_POST['comentarios'] ?? ''),
                 'mostrar_desglose' => isset($_POST['mostrar_desglose']) ? 'Si' : 'No' // <--- Capturamos el checkbox
             ];
 

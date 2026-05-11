@@ -20,13 +20,17 @@ if (!$id_cot) {
 }
 
 // 1. Datos Generales - Manteniendo tu lógica PDO original
-$sql = "SELECT c.*, e.*, dem.calle_numero, dem.colonia, dem.localidad, dem.codigo_postal, dem.municipio, dem.estado, CONCAT(usu.nombre, ' ', usu.apellido_pat, ' ', usu.apellido_mat) as cliente, CONCAT(u.admin_nombre, ' ', u.admin_apell_pat) as vendedor
+$sql = "SELECT c.*, e.*, dem.calle_numero, dem.colonia, dem.localidad, dem.codigo_postal, dem.municipio, dem.estado, 
+        CONCAT(usu.nombre, ' ', usu.apellido_pat, ' ', usu.apellido_mat) as cliente, 
+        CONCAT(u.admin_nombre, ' ', u.admin_apell_pat) as vendedor,
+        s.nombre_sucursal, s.estado as sucursal_estado
     FROM cotizacion c
     JOIN empresa e ON c.Empresa_id = e.id_empresa
     -- JOIN domicilio_empresa dem ON e.id_empresa = dem.id_domicilio_empresa
     JOIN domicilio_empresa dem ON e.id_empresa = dem.Empresa_id
     LEFT JOIN usuarios_admin u ON c.Usuario_admin_id = u.id_user_admin
     JOIN usuarios usu ON c.Usuario_empresa_id = usu.id_usuario
+    LEFT JOIN sucursales s ON c.Sucursal_id = s.id_sucursal
     WHERE c.id_cotizacion = ?";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$id_cot]);
@@ -159,7 +163,7 @@ $serie = "COTLAN";
         <?php else: ?>
             <div class="row align-items-center mb-3">
                 <div class="col-2 text-start">
-                    <img src="assets/images/LAN_Analitica.png" alt="Logo LAN" class="img-fluid" style="max-height: 100px;">
+                    <img src="assets/images/logo-lan.png" alt="Logo LAN" class="img-fluid" style="max-height: 100px;">
                 </div>
 
                 <div class="col-9 text-center">
@@ -177,19 +181,44 @@ $serie = "COTLAN";
         <div class="row mb-4">
             <div class="col-6">
                 <p class="m-0" style="font-size:16px;"><strong>COTIZACIÓN</strong></p>
-                <p class="m-0"><strong>Serie:</strong> <span><?php echo $serie; ?></span> <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?> <strong>Folio:</strong> <?php else: ?> <strong>No.</strong> <?php endif; ?> <span><?php echo $folio; ?></span></p>
+                <p class="m-0"><strong>Serie:</strong> <span><?php echo $serie; ?></span> <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?> <strong>Folio:</strong> <?php else: ?> <strong>Folio:</strong> <?php endif; ?> <span><?php echo $folio; ?></span></p>
                 <p class="m-0"><strong>Fecha de elaboración:</strong> <?php echo date('d/m/Y', strtotime($cot['fecha_cot'])); ?></p>
                 <p class="m-0 text-danger"><strong>Fecha de vencimiento:</strong> <?php echo date('d/m/Y', strtotime($cot['fecha_cot'] . ' + 30 days')); ?></p>
                 <p class="m-0"><strong>Moneda:</strong> Pesos</p>
             </div>
             <div class="col-6 text-end">
+                <!-- ?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+                    <p class="m-0"><strong>PLAZA:</strong> 
+                        !-- Sin especificar ?php /echo htmlspecialchars($cot['municipio']); ?> ?php /echo htmlspecialchars($cot['vendedor']); ?> --
+                        ?php echo htmlspecialchars($cot['nombre_sucursal'] ?? 'Sin especificar'); ?>
+                    </p>
+                ?php else: ?
+                    <p class="m-0"><strong>Atención a:</strong> ?php echo $cot['cliente']; ?></p>
+                    <p class="m-0"><strong>PLAZA:</strong> 
+                        !-- Sin especificar --
+                        ?php echo htmlspecialchars($cot['nombre_sucursal'] ?? 'Sin especificar'); ?>
+                    </p>
+                ?php endif; ?> -->
+                <?php
+                // 1. Preparamos el texto de la plaza una sola vez
+                $plaza_completa = 'Sin especificar';
+                if (!empty($cot['nombre_sucursal'])) {
+                    // Si hay estado, le ponemos la coma, si no, se queda vacío
+                    $estado_texto = !empty($cot['sucursal_estado']) ? htmlspecialchars($cot['sucursal_estado']) . ', ' : '';
+                    $plaza_completa = $estado_texto . htmlspecialchars($cot['nombre_sucursal']);
+                }
+                ?>
+
                 <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
-                    <p class="m-0"><strong>PLAZA:</strong> Sin especificar<?php //echo htmlspecialchars($cot['municipio']); 
-                                                                            ?> <?php //echo htmlspecialchars($cot['vendedor']); 
-                                                                                ?></p>
+                    <p class="m-0"><strong>Atención a:</strong> <?php echo $cot['cliente']; ?></p>
+                    <p class="m-0"><strong>PLAZA:</strong>
+                        <?php echo $plaza_completa; ?>
+                    </p>
                 <?php else: ?>
                     <p class="m-0"><strong>Atención a:</strong> <?php echo $cot['cliente']; ?></p>
-                    <p class="m-0"><strong>PLAZA:</strong> Sin especificar</p>
+                    <p class="m-0"><strong>PLAZA:</strong>
+                        <?php echo $plaza_completa; ?>
+                    </p>
                 <?php endif; ?>
             </div>
         </div>

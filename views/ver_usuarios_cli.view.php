@@ -322,7 +322,31 @@
                         <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
                         <input type="email" class="form-control" name="correo" id="correo" required>
                     </div>
+
                     <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Contraseña <span class="text-danger" id="req_pass">*</span></label>
+                            <div class="generate-pass">
+                                <div class="input-group field">
+                                    <input type="password" class="form-control password" name="usuario_password" id="usuario_password" placeholder="***">
+                                    <div class="input-group-text c-pointer gen-pass" data-bs-toggle="tooltip" title="Generar Contraseña"><i class="feather-hash"></i></div>
+                                    <div class="input-group-text border-start bg-gray-2 c-pointer show-pass" data-bs-toggle="tooltip" title="Mostrar/Ocultar"><i></i></div>
+                                </div>
+                                <div class="progress-bar mt-2">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                            </div>
+                            <small class="text-muted d-block mt-2" id="nota_pass" style="display:none;">Déjalo en blanco para no cambiarla</small>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Confirmar Contraseña <span class="text-danger" id="req_pass2">*</span></label>
+                            <input type="password" class="form-control" id="confirmar_password" placeholder="***">
+                        </div>
+                    </div>
+                    <!-- <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Contraseña <span class="text-danger" id="req_pass">*</span></label>
                             <input type="text" class="form-control" name="usuario_password" id="usuario_password" placeholder="***">
@@ -332,7 +356,7 @@
                             <label class="form-label">Confirmar Contraseña <span class="text-danger" id="req_pass2">*</span></label>
                             <input type="password" class="form-control" id="confirmar_password" placeholder="***">
                         </div>
-                    </div>
+                    </div> -->
                     <div id="bloque_estatus_usr" class="row mt-3">
                         <div class="col-md-12">
                             <hr>
@@ -923,6 +947,7 @@
     <!--! ================================================================ !-->
     <!--! BEGIN: Vendors JS !-->
     <script src="assets/vendors/js/vendors.min.js"></script>
+    <script src="assets/vendors/js/lslstrength.min.js"></script>
     <!-- vendors.min.js {always must need to be top} -->
     <script src="assets/vendors/js/circle-progress.min.js"></script>
     <script src="assets/vendors/js/dataTables.min.js"></script>
@@ -939,7 +964,7 @@
     <!--! END: Apps Init !-->
     <!--! BEGIN: Theme Customizer  !-->
     <script src="assets/js/theme-customizer-init.min.js"></script>
-    
+
     <script src="js/ver_usuarios_cli.js"></script>
     <!--! END: Theme Customizer !-->
 </body>
