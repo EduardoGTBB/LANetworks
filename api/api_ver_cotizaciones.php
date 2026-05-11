@@ -89,6 +89,7 @@ try {
             $cantidades    = $_POST['cantidad_cot'] ?? [];
             $unitarios     = $_POST['unitario'] ?? [];
             $totales       = $_POST['total'] ?? [];
+            $desglosar_arr = $_POST['desglosar'] ?? []; // <--- NUEVO CAMPO
             $detalles = [];
 
             for ($i = 0; $i < count($productos_ids); $i++) {
@@ -98,6 +99,7 @@ try {
                         'cantidad'         => (int)$cantidades[$i],
                         'precio_unitario'  => (float)$unitarios[$i],
                         'precio_extendido' => (float)$totales[$i],
+                        'desglosar'        => $desglosar_arr[$i] ?? 'N' // <--- GUARDAMOS SI SE DESGLOSA O NO
                     ];
                 }
             }
@@ -111,7 +113,8 @@ try {
                 'division'      => trim($_POST['division'] ?? ''),
                 'tipo_precio'   => trim($_POST['tipo_precio'] ?? ''),
                 'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 16),
-                'estatus'       => trim($_POST['estatus'] ?? 'Guardada')
+                'estatus'       => trim($_POST['estatus'] ?? 'Guardada'),
+                'mostrar_desglose' => isset($_POST['mostrar_desglose']) ? 'Si' : 'No' // <--- Capturamos el checkbox
             ];
 
             updateCotizacion($pdo, $id_cotizacion, $datosCotizacion, $detalles);

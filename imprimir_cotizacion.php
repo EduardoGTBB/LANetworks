@@ -37,9 +37,13 @@ if (!$cot) {
 }
 
 // 2. Detalles de la cotización - Manteniendo tu lógica PDO original
-$sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product
+$sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product,
+           pf.pf_equipo, pf.pf_calibracion,
+           pp.pp_equipo, pp.pp_calibracion
            FROM detalle_cotizacion d
            JOIN productos p ON d.Product_id = p.id_product
+           LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
+           LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
            WHERE d.Cotizacion_id = ?";
 $stmtDet = $pdo->prepare($sqlDet);
 $stmtDet->execute([$id_cot]);
@@ -226,6 +230,32 @@ $serie = "COTLAN";
                                 <!-- <td class="text-start px-2">?php echo htmlspecialchars($d['descripcion_product']); ?></td> -->
                                 <td class="text-start px-2 py-2">
                                     <?php echo nl2br(htmlspecialchars($d['descripcion_product'])); ?>
+
+                                    <?php
+                                    // Si el desglose está activo, mostramos los precios
+                                    if (isset($d['desglosar']) && $d['desglosar'] === 'Y'):
+                                        $pEquipo = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_equipo'] : $d['pp_equipo'];
+                                        $pCalib = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_calibracion'] : $d['pp_calibracion'];
+
+                                        // Multiplicamos por la cantidad para tener el total real de esa fila
+                                        $tEquipo = $pEquipo * $d['cantidad'];
+                                        $tCalib  = $pCalib * $d['cantidad'];
+                                    ?>
+                                        <div style="margin-top: 6px;">
+                                            <?php if ($d['cantidad'] > 1): ?>
+                                                <span style="color: #0d6efd; font-weight: bold; font-size: 10px; display: block;">
+                                                    Desglose Total (<?php echo $d['cantidad']; ?> pz): Equipo ($<?php echo number_format((float)$tEquipo, 2); ?>) + Calibración ($<?php echo number_format((float)$tCalib, 2); ?>)
+                                                </span>
+                                                <span style="color: #777; font-size: 9px; display: block; margin-top: 2px;">
+                                                    <i>* Unitario (c/u): Equipo $<?php echo number_format((float)$pEquipo, 2); ?> + Calib. $<?php echo number_format((float)$pCalib, 2); ?></i>
+                                                </span>
+                                            <?php else: ?>
+                                                <span style="color: #0d6efd; font-weight: bold; font-size: 10px; display: block;">
+                                                    Desglose: Equipo ($<?php echo number_format((float)$pEquipo, 2); ?>) + Calibración ($<?php echo number_format((float)$pCalib, 2); ?>)
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="text-end px-2"><?php echo number_format($d['precio_unitario'], 2); ?></td>
                                 <td class="text-end px-2"><?php echo number_format($d['precio_extendido'], 2); ?></td>

@@ -178,6 +178,9 @@
                                                         <tr id="addr0">
                                                             <td>1</td>
                                                             <td>
+                                                                <input type="number" name="cantidad_cot[]" placeholder="Cantidad" class="form-control qty" step="1" min="1">
+                                                            </td>
+                                                            <td>
                                                                 <select class="form-control product-select" name="productos[]" required data-select2-selector="status">
                                                                     <option value="">Selecciona un producto...</option>
                                                                     <!-- <option value="1">[B-LITIO] Bateria Litio CR-2025</option> -->
@@ -193,6 +196,7 @@
                                                                         </label>
                                                                     </div>
                                                                     <div class="form-check d-flex justify-content-center align-items-center gap-2">
+                                                                        <input type="hidden" name="desglosar[]" class="hidden-desglose" value="N">
                                                                         <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="chk_desglosar_0" style="cursor: pointer;">
                                                                         <label class="form-check-label fs-11 text-muted text-start" for="chk_desglosar_0" style="cursor: pointer; padding-top: 2px;">
                                                                             Desglosar partida
@@ -204,9 +208,6 @@
                                                             <!-- //<<< FIN -->
                                                             <td>
                                                                 <input type="number" name="unitario[]" placeholder="0.00" class="form-control price" step="any">
-                                                            </td>
-                                                            <td>
-                                                                <input type="number" name="cantidad_cot[]" placeholder="Cantidad" class="form-control qty" step="1" min="1">
                                                             </td>
                                                             <td>
                                                                 <div class="d-flex align-items-center gap-2">

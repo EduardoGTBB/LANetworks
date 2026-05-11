@@ -126,7 +126,7 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
         // Obtenemos el ID recién generado
         $id_cotizacion = $pdo->lastInsertId();
 
-        $sqlDetalle = "INSERT INTO `detalle_cotizacion` (`Cotizacion_id`, `Product_id`, `cantidad`, `precio_unitario`, `precio_extendido`)VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext)";
+        $sqlDetalle = "INSERT INTO `detalle_cotizacion` (`Cotizacion_id`, `Product_id`, `cantidad`, `precio_unitario`, `precio_extendido`, `desglosar`)VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar)";
 
         $stmtDet = $pdo->prepare($sqlDetalle);
 
@@ -137,7 +137,8 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
                 ':prod_id'    => $item['producto_id'],
                 ':cantidad'   => $item['cantidad'],
                 ':precio_u'   => $item['precio_unitario'],
-                ':precio_ext' => $item['precio_extendido']
+                ':precio_ext' => $item['precio_extendido'],
+                ':desglosar'  => $item['desglosar'] ?? 'N'
             ]);
         }
 
@@ -252,7 +253,7 @@ function editarCotizacionporID(PDO $pdo, int $id_cotizacion)
 // &Obtenemos los detalles de la cotizzacion(hijos)
 function obtenerdetallesCotizacionID(PDO $pdo, int $id_cotizacion)
 {
-    $sql = "SELECT id_detalle_cot, Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido 
+    $sql = "SELECT id_detalle_cot, Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar
             FROM detalle_cotizacion
             WHERE Cotizacion_id = :id";
 
@@ -301,8 +302,8 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
         $stmtDel->execute([':id_cot' => $id_cotizacion]);
 
         // 3. Insertamos los hijos nuevos o modificados
-        $sqlDet = "INSERT INTO detalle_cotizacion (Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido) 
-                    VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext)";
+        $sqlDet = "INSERT INTO detalle_cotizacion (Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar) 
+                    VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar)";
         $stmtDet = $pdo->prepare($sqlDet);
 
         foreach ($detalles as $item) {
@@ -311,7 +312,8 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
                 ':prod_id'    => $item['producto_id'],
                 ':cantidad'   => $item['cantidad'],
                 ':precio_u'   => $item['precio_unitario'],
-                ':precio_ext' => $item['precio_extendido']
+                ':precio_ext' => $item['precio_extendido'],
+                ':desglosar'  => $item['desglosar'] ?? 'N'
             ]);
         }
 
@@ -856,14 +858,14 @@ function insertarProduct(PDO $pdo, array $datos): void
         $id_product = $pdo->lastInsertId();
 
         // 2. Insertar Precios Farmacia
-        $pf_total = $datos['pf_equipo'] + $datos['pf_calib'];
-        $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion, pf_precio_antes_iva) VALUES (?, ?, ?, ?)";
-        $pdo->prepare($sqlF)->execute([$id_product, $datos['pf_equipo'], $datos['pf_calib'], $pf_total]);
+        /* $pf_total = $datos['pf_equipo'] + $datos['pf_calib']; */
+        $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion) VALUES (?, ?, ?)";
+        $pdo->prepare($sqlF)->execute([$id_product, $datos['pf_equipo'], $datos['pf_calib']]);
 
         // 3. Insertar Precios Público
-        $pp_total = $datos['pp_equipo'] + $datos['pp_calib'];
-        $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion, pp_precio_antes_iva) VALUES (?, ?, ?, ?)";
-        $pdo->prepare($sqlP)->execute([$id_product, $datos['pp_equipo'], $datos['pp_calib'], $pp_total]);
+        /* $pp_total = $datos['pp_equipo'] + $datos['pp_calib']; */
+        $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion) VALUES (?, ?, ?)";
+        $pdo->prepare($sqlP)->execute([$id_product, $datos['pp_equipo'], $datos['pp_calib']]);
 
         $pdo->commit();
     } catch (Exception $e) {
@@ -894,14 +896,14 @@ function actualizarProduct(PDO $pdo, array $datos): void
         // 2. Sincronizar Precios Farmacia
         $pdo->prepare("DELETE FROM precios_farmacia WHERE Producto_id = ?")->execute([$datos['id_product']]);
         $pf_total = $datos['pf_equipo'] + $datos['pf_calib'];
-        $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion, pf_precio_antes_iva) VALUES (?, ?, ?, ?)";
-        $pdo->prepare($sqlF)->execute([$datos['id_product'], $datos['pf_equipo'], $datos['pf_calib'], $pf_total]);
+        $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion) VALUES (?, ?, ?)";
+        $pdo->prepare($sqlF)->execute([$datos['id_product'], $datos['pf_equipo'], $datos['pf_calib']]);
 
         // 3. Sincronizar Precios Público
         $pdo->prepare("DELETE FROM precios_publico WHERE Producto_id = ?")->execute([$datos['id_product']]);
         $pp_total = $datos['pp_equipo'] + $datos['pp_calib'];
-        $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion, pp_precio_antes_iva) VALUES (?, ?, ?, ?)";
-        $pdo->prepare($sqlP)->execute([$datos['id_product'], $datos['pp_equipo'], $datos['pp_calib'], $pp_total]);
+        $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion) VALUES (?, ?, ?)";
+        $pdo->prepare($sqlP)->execute([$datos['id_product'], $datos['pp_equipo'], $datos['pp_calib']]);
 
         $pdo->commit();
     } catch (Exception $e) {
@@ -1164,35 +1166,6 @@ function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 // [fn] Guardar las direccioens ligadas
-/* function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, array $envio, bool $es_cliente = false): bool
-{
-    try {
-        $pdo->beginTransaction();
-
-        // 0. Borrar las direcciones anteriores si existían (para evitar duplicados al editar)
-        $pdo->prepare("DELETE FROM domicilio_fiscal WHERE Cotizacion_id = ?")->execute([$id_cot]);
-        $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE Cotizacion_id = ?")->execute([$id_cot]);
-        $pdo->prepare("DELETE FROM domicilio_envio WHERE Cotizacion_id = ?")->execute([$id_cot]);
-
-        // 1. Insertar Fiscal
-        $stmtF = $pdo->prepare("INSERT INTO domicilio_fiscal (Cotizacion_id, calle_numero_fiscal, colonia_fiscal, localidad_fiscal, cp_fiscal, municipio_fiscal, estado_fiscal) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmtF->execute([$id_cot, $fiscal['calle'], $fiscal['colonia'], $fiscal['localidad'], $fiscal['cp'], $fiscal['municipio'], $fiscal['estado']]);
-
-        // 2. Insertar Certificado
-        $stmtC = $pdo->prepare("INSERT INTO domicilio_cert_calib (Cotizacion_id, calle_numero_cert, colonia_cert, localidad_cert, cp_cert, municipio_cert, estado) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmtC->execute([$id_cot, $cert['calle'], $cert['colonia'], $cert['localidad'], $cert['cp'], $cert['municipio'], $cert['estado']]);
-
-        // 3. Insertar Envío
-        $stmtE = $pdo->prepare("INSERT INTO domicilio_envio (Cotizacion_id, calle_numero_envio, colonia_envio, localidad_envio, cp_envio, municipio_envio, estado_envio) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmtE->execute([$id_cot, $envio['calle'], $envio['colonia'], $envio['localidad'], $envio['cp'], $envio['municipio'], $envio['estado']]);
-        
-        $pdo->commit();
-        return true;
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        throw $e;
-    }
-} */
 function formalizarVenta(PDO $pdo, int $id_cot, array $fiscal, array $cert, array $envio, int $sucursal_id = 0): bool
 {
     try {
@@ -1246,7 +1219,6 @@ function obtenerDireccionesCotizacion(PDO $pdo, int $id_cotizacion)
 
     return $data;
 }
-
 
 // >>> ==============================================
 // >>>           FIN: FUNCIONES DOMICILIOS

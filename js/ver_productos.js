@@ -1,5 +1,9 @@
 $(document).ready(function () {
 
+    $('#clave_product, #descripcion_product').on('input', function() {
+        $(this).val($(this).val().toUpperCase());
+    }); 
+    
     function cargarProductos() {
         const formatoMoneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
@@ -82,7 +86,7 @@ $(document).ready(function () {
     cargarProductos();
 
     // NUEVO PRODUCTO
-    $('#btn-nuevo-producto').on('click', function() {
+    $('#btnNuevoProducto').on('click', function() {
         $('#formProducto')[0].reset();
         
         $('#producto_action').val('crear');
@@ -122,7 +126,7 @@ $(document).ready(function () {
                     $('#pp_equipo').val(res.pp_equipo);
                     $('#pp_calib').val(res.pp_calib);
                     
-                    $('#estatus').prop('checked', res.estatus === 'Y');
+                    $('#estatus_prod').prop('checked', res.estatus === 'Y');
 
                     let imgSrc = (res.foto_product && res.foto_product.trim() !== '') ? 'assets/images/productos/' + res.foto_product : 'assets/images/productos/producto.png';
                     $('#preview_foto_prod').attr('src', imgSrc);
@@ -202,7 +206,7 @@ $(document).ready(function () {
     });
 
     // PREVISUALIZAR IMAGEN
-    $('#foto_product').on('change', function() {
+    $('#input_foto_prod').on('change', function() {
         let file = this.files[0];
         if (file) {
             let reader = new FileReader();

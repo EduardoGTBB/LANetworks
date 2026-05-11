@@ -42,7 +42,7 @@ try {
         $id_evaluar = (int)($_POST['id_product'] ?? 0);
 
         // --- BLINDAJE 1: Forzar Edición ---
-        if ($id_evaluar > 0) {
+        if ($id_evaluar > 0 && $action !== 'eliminar') {
             $action = 'editar';
         }
 

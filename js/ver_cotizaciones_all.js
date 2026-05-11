@@ -18,6 +18,10 @@ $(document).ready(function () {
         }
     });
 
+    $(document).on('change', '.chk-desglosar', function() {
+        $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
+    });
+
     // 2. CARGAR TABLA (Lógica específica para ALL cotizaciones)
     function cargarTablaPrincipal() {
         $.ajax({
@@ -117,7 +121,7 @@ $(document).ready(function () {
     cargarTablaPrincipal();
 
     // 3. LÓGICA DEL MODAL DE EDICIÓN Y MATEMÁTICAS
-    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '', isCalib = true, esServicio = false) {
+    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '', isCalib = true, esServicio = false, isDesglose = false) {
         let opciones = '<option value="">Selecciona...</option>';
         windowProductos.forEach(p => {
             let selected = (p.id_product == prod_id) ? 'selected' : '';
@@ -130,6 +134,9 @@ $(document).ready(function () {
         // Si es servicio, apagamos los checks y los bloqueamos
         let checkedAttr = (isCalib && !esServicio) ? 'checked' : '';
         let disabledAttr = esServicio ? 'disabled' : '';
+
+        let checkedDesglose = (isDesglose && !esServicio) ? 'checked' : '';
+        let valDesglose = (isDesglose && !esServicio) ? 'Y' : 'N';
 
         return `
             <tr id="edit_addr${index}" class="fila-producto">
@@ -145,7 +152,8 @@ $(document).ready(function () {
                             </label>
                         </div>
                         <div class="form-check d-flex justify-content-center align-items-center gap-2">
-                            <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="edit_chk_desglosar_${index}" ${disabledAttr} style="cursor: pointer;">
+                            <input type="hidden" name="desglosar[]" class="hidden-desglose" value="${valDesglose}">
+                            <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="edit_chk_desglosar_${index}" ${checkedDesglose} ${disabledAttr} style="cursor: pointer;">
                             <label class="form-check-label fs-11 text-muted text-start" for="edit_chk_desglosar_${index}" style="cursor: pointer; padding-top: 2px;">
                                 Desglosar
                             </label>
@@ -200,7 +208,7 @@ $(document).ready(function () {
             success: function (users) {
                 let $selSol = $('#edit_select_solicitante');
                 $selSol.empty().append('<option value="">Selecciona...</option>');
-                users.forEach(u => { $selSol.append(`<option value="${u.id_usuario}">${u.nombre} ${u.apellido_pat}</option>`); });
+                users.forEach(u => { $selSol.append(`<option value="${u.id_usuario}">${u.nombre} ${u.apellido_pat} ${u.apellido_mat}</option>`); });
 
                 if (preseleccion) {
                     $selSol.val(preseleccion);
@@ -312,7 +320,7 @@ $(document).ready(function () {
                         }
                     }
 
-                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida, esServicio));
+                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida, esServicio, item.desglosar === 'Y' ));
                     calculateRowEdit($(`#edit_addr${index}`));
                     rowCount++;
                 });

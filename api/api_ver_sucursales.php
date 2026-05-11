@@ -22,7 +22,7 @@ try {
         } 
         elseif ($action === 'get_usuarios_empresa') {
             $empresa_id = (int)$_GET['empresa_id'];
-            $stmt = $pdo->prepare("SELECT id_usuario, nombre, apellido_pat FROM usuarios WHERE Empresa_id = ? AND activo = 'true'");
+            $stmt = $pdo->prepare("SELECT id_usuario, nombre, apellido_pat, apellido_mat FROM usuarios WHERE Empresa_id = ? AND activo = 'true'");
             $stmt->execute([$empresa_id]);
             echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
         }

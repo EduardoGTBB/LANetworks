@@ -87,6 +87,7 @@ try {
         $cantidades    = $_POST['cantidad_cot'] ?? [];
         $unitarios     = $_POST['unitario'] ?? [];
         $totales       = $_POST['total'] ?? [];
+        $desglosar_arr = $_POST['desglosar'] ?? [];
         $detalles      = [];
 
         for ($i = 0; $i < count($productos_ids); $i++) {
@@ -95,7 +96,8 @@ try {
                     'producto_id'      => (int)$productos_ids[$i],
                     'cantidad'         => (int)$cantidades[$i],
                     'precio_unitario'  => (float)$unitarios[$i],
-                    'precio_extendido' => (float)$totales[$i]
+                    'precio_extendido' => (float)$totales[$i],
+                    'desglosar'        => $desglosar_arr[$i] ?? 'N'
                 ];
             }
         }

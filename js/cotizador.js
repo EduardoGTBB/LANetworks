@@ -4,6 +4,10 @@ $(document).ready(function() {
     var uniqueIdCounter = 1; 
     var preciosProductos = {}; 
 
+    $(document).on('change', '.chk-desglosar', function() {
+        $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
+    });
+
     if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
         let $tipoPrecio = $('#tipo_precio');
         $tipoPrecio.val('Público').trigger('change.select2');
@@ -67,7 +71,7 @@ $(document).ready(function() {
                 } else {
                     $selectSol.append('<option value="">Selecciona un solicitante...</option>');
                     data.forEach(usr => {
-                        $selectSol.append(`<option value="${usr.id_usuario}">${usr.nombre} ${usr.apellido_pat}</option>`);
+                        $selectSol.append(`<option value="${usr.id_usuario}">${usr.nombre} ${usr.apellido_pat} ${usr.apellido_mat}</option>`);
                     });
                     
                     if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
@@ -134,11 +138,13 @@ $(document).ready(function() {
         nuevaFila.find("input[type='text'], input[type='number']").val('');
         
         // >>> AJUSTE: Siempre clona las filas con el checkbox APAGADO pero ACTIVO
-        nuevaFila.find('.chk-incluir').attr('id', 'chk_incluir_' + uniqueIdCounter).prop('checked', false).prop('disabled', false);
+        nuevaFila.find('.chk-incluir').attr('id', 'chk_incluir_' + uniqueIdCounter).prop('checked', true).prop('disabled', true);
         nuevaFila.find('label[for^="chk_incluir"]').attr('for', 'chk_incluir_' + uniqueIdCounter);
         
         nuevaFila.find('.chk-desglosar').attr('id', 'chk_desglosar_' + uniqueIdCounter).prop('checked', false).prop('disabled', false);
         nuevaFila.find('label[for^="chk_desglosar"]').attr('for', 'chk_desglosar_' + uniqueIdCounter);
+
+        nuevaFila.find('.hidden-desglose').val('N');
 
         nuevaFila.find('.info-desglose').html('');
         nuevaFila.find('.select2-container').remove();
