@@ -278,14 +278,15 @@ $(document).ready(function () {
         e.preventDefault();
         let id_admin = $(this).data('id');
 
-        if (confirm("¿Estás seguro de inhabilitar este administrador? Ya no podrá iniciar sesión en el sistema.")) {
+        if (confirm("¿Estás seguro de eliminar este usuario de LAN? Si tiene cotizaciones, solo se inactivará.")) {
             $.ajax({
-                url: 'api/api_ver_usuarios_admin.php',
+                url: 'api/api_ver_usuarios.php',
                 type: 'POST',
                 data: { action: 'eliminar', id_user_admin: id_admin },
                 dataType: 'json',
                 success: function (response) {
-                    if (response.status === 'success') {
+                    if (response.status === 'success' || response.status === 'warning') {
+                        alert(response.message);
                         cargarTablaAdmin();
                     } else { alert("Error: " + response.message); }
                 }

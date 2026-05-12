@@ -404,18 +404,18 @@ $serie = "COTLAN";
             </div><!--  -->
         </div>
 
-        <?php if ($cot['division'] == 'LA NETWORKS ANALITICAL'): ?>
+       <!--  ?php if ($cot['division'] == 'LA NETWORKS ANALITICAL'): ?>
             <div class="row mt-5 mb-4">
                 <div class="col-12 text-center" style="font-size: 12px; font-weight: bold;">
                     Atentamente
                 </div>
                 <div class="col-12 text-center mt-5" style="font-size: 12px;">
                     <strong>Ejecutivo de ventas: </strong><br>
-                    <!-- ?php echo $cot['vendedor']; ? -->
-                    <?php echo $nombre_vendedor; ?>
+                    !-- ?php echo $cot['vendedor']; ? --
+                    ?php echo $nombre_vendedor; ?>
                 </div>
             </div>
-        <?php endif; ?>
+        ?php endif; ?> -->
 
         <footer class="row mt-5 pt-3 border-top border-secondary footer-system text-center small">
             <div class="col-12" style="font-size: 9px; font-weight: bold;">
