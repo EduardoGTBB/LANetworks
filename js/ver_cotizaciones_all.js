@@ -45,7 +45,7 @@ $(document).ready(function () {
                 tbody.empty();
 
                 if (data.length === 0) {
-                    tbody.append('<tr><td colspan="6" class="text-center text-muted py-4">No hay cotizaciones registradas en la empresa.</td></tr>');
+                    tbody.append('<tr><td colspan="6" class="text-center text-muted py-4">No hay cotizaciones registradas.</td></tr>');
                     return;
                 }
 

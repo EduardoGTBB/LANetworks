@@ -162,7 +162,7 @@ $(document).ready(function () {
                     $('#estatus_suc').prop('checked', s.estatus === 'Y');
                     $('#bloque_estatus_suc').show();
 
-                    $('#Empresa_id').val(s.Empresa_id);
+                    $('#Empresa_id').val(s.Empresa_id).trigger('change');
                     $.ajax({
                         url: 'api/api_ver_sucursales.php?action=get_usuarios_empresa&empresa_id=' + s.Empresa_id,
                         method: 'GET', dataType: 'json',
