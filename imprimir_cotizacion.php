@@ -53,6 +53,14 @@ $stmtDet = $pdo->prepare($sqlDet);
 $stmtDet->execute([$id_cot]);
 $detalles = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
 
+$stmtCert = $pdo->prepare("SELECT * FROM domicilio_cert_calib WHERE Cotizacion_id = ?");
+$stmtCert->execute([$id_cot]);
+$dir_cert = $stmtCert->fetch(PDO::FETCH_ASSOC);
+
+$stmtEnvio = $pdo->prepare("SELECT * FROM domicilio_envio WHERE Cotizacion_id = ?");
+$stmtEnvio->execute([$id_cot]);
+$dir_envio = $stmtEnvio->fetch(PDO::FETCH_ASSOC);
+
 $folio = $cot['id_cotizacion']; // O usar str_pad($cot['id_cotizacion'], 4, "0", STR_PAD_LEFT);
 $serie = "COTLAN";
 
@@ -238,6 +246,38 @@ $serie = "COTLAN";
                 <p class="m-0"><strong>R.F.C.</strong> <?php echo htmlspecialchars($cot['rfc']); ?></p>
             </div>
         </div>
+
+        <?php if ($dir_cert || $dir_envio): ?>
+        <div class="row mb-4">
+            <?php if ($dir_cert): ?>
+            <div class="col-6">
+                <div style="background-color: #f4f6f9; border-left: 4px solid #00a3f0; padding: 8px 12px; border-radius: 3px; font-size: 10px; line-height: 1.4;">
+                    <p class="m-0" style="color: #00a3f0; font-size: 11px;"><strong>■ DIRECCIÓN EN CERTIFICADO</strong></p>
+                    <p class="m-0 mt-1">
+                        <strong>Calle:</strong> <?php echo htmlspecialchars($dir_cert['calle_numero_cert']); ?>, 
+                        <strong>Col.</strong> <?php echo htmlspecialchars($dir_cert['colonia_cert']); ?><br>
+                        <strong>CP:</strong> <?php echo htmlspecialchars($dir_cert['cp_cert']); ?>, 
+                        <?php echo htmlspecialchars($dir_cert['municipio_cert'] . ', ' . $dir_cert['estado']); ?>
+                    </p>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($dir_envio): ?>
+            <div class="col-6">
+                <div style="background-color: #f4f6f9; border-left: 4px solid #00a3f0; padding: 8px 12px; border-radius: 3px; font-size: 10px; line-height: 1.4;">
+                    <p class="m-0" style="color: #00a3f0; font-size: 11px;"><strong>■ DIRECCIÓN DE ENVÍO</strong></p>
+                    <p class="m-0 mt-1">
+                        <strong>Calle:</strong> <?php echo htmlspecialchars($dir_envio['calle_numero_envio']); ?>, 
+                        <strong>Col.</strong> <?php echo htmlspecialchars($dir_envio['colonia_envio']); ?><br>
+                        <strong>CP:</strong> <?php echo htmlspecialchars($dir_envio['cp_envio']); ?>, 
+                        <?php echo htmlspecialchars($dir_envio['municipio_envio'] . ', ' . $dir_envio['estado_envio']); ?>
+                    </p>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
 
         <div class="row mb-3">
             <div class="col-12">

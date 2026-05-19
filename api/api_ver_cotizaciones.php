@@ -140,19 +140,33 @@ try {
 
             // --- NUEVO CANDADO DE ELIMINACIÓN ---
             $cotizacion_actual = editarCotizacionporID($pdo, $id);
-            if ($cotizacion_actual && in_array($cotizacion_actual['estatus'], ['Ganada', 'Perdida'])) {
-                // Verificamos si el usuario activo NO es un administrador
-                $es_admin = isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin';
+            
+            if ($cotizacion_actual) {
+                $estatus_actual = $cotizacion_actual['estatus'];
 
-                if (!$es_admin) {
+                // Usamos strpos para que detecte "Autorizada" sin importar lo que diga entre paréntesis
+                if (strpos($estatus_actual, 'Autorizada') !== false || $estatus_actual === 'No autorizada') {
                     echo json_encode([
                         'status' => 'error',
-                        'message' => 'Operación denegada. Las cotizaciones Ganadas o Perdidas solo pueden ser eliminadas por un Administrador.'
+                        'message' => 'Operación denegada. No puedes eliminar una cotización que ya se encuentra Autorizada.'
                     ]);
                     exit;
                 }
+
+                // 2. Candado de perfil-Solo admins borran Ganadas/Perdidas
+                /* //*if (in_array($estatus_actual, ['Ganada', 'Perdida'])) {
+                    // Verificamos si el usuario activo NO es un administrador
+                    $es_admin = isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin';
+
+                    if (!$es_admin) {
+                        echo json_encode([
+                            'status' => 'error',
+                            'message' => 'Operación denegada. Las cotizaciones Ganadas o Perdidas solo pueden ser eliminadas por un Administrador.'
+                        ]);
+                        exit;
+                    }
+                } */
             }
-            // ------------------------------------
 
             borrarCotizacion($pdo, $id);
             echo json_encode(['status' => 'success', 'message' => 'Cotización eliminada permanentemente.']);

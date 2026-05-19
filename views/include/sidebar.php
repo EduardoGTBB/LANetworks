@@ -102,7 +102,7 @@
                 <?php endif; ?>
 
                 <?php if($permisos['mp_ver_productos'] === 'Activado'): ?>
-                <li class="nxl-item nxl-hasmenu">
+                <!-- <li class="nxl-item nxl-hasmenu">
                     <a href="javascript:void(0);" class="nxl-link">
                         <span class="nxl-micon"><i class="feather-box"></i></span>
                         <span class="nxl-mtext">Almacén</span><span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
@@ -110,6 +110,12 @@
                     <ul class="nxl-submenu">
                         <li class="nxl-item"><a class="nxl-link" href="ver_productos.php">Productos</a></li>
                     </ul>
+                </li> -->
+                <li class="nxl-item">
+                    <a href="ver_productos.php" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-box"></i></span>
+                        <span class="nxl-mtext">Productos</span>
+                    </a>
                 </li>
                 <?php endif; ?>
 

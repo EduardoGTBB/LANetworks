@@ -172,7 +172,7 @@ $(document).ready(function () {
         $('#apellido_pat').val($(this).data('pat'));
         $('#apellido_mat').val($(this).data('mat'));
         $('#correo').val($(this).data('correo'));
-        $('#Empresa_id').val($(this).data('empresa'));
+        $('#Empresa_id').val($(this).data('empresa')).trigger('change');
 
         let foto = $(this).data('foto') ? $(this).data('foto') : 'user.png';
         $('#preview_foto_cli').attr('src', 'assets/images/avatar/' + foto);
