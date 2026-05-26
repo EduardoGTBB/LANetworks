@@ -76,8 +76,8 @@ function obtenerProduct(PDO $pdo): array
             pp.pp_equipo, pp.pp_calibracion as pp_calib, pp.pp_precio_antes_iva as pp_antes_iva
             FROM productos p
             LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
-            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
-            ORDER BY p.id_product DESC";
+            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id";
+            // ORDER BY p.id_product DESC
             
     return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -126,7 +126,7 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
         // Obtenemos el ID recién generado
         $id_cotizacion = $pdo->lastInsertId();
 
-        $sqlDetalle = "INSERT INTO `detalle_cotizacion` (`Cotizacion_id`, `Product_id`, `cantidad`, `precio_unitario`, `precio_extendido`, `desglosar`)VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar)";
+        $sqlDetalle = "INSERT INTO `detalle_cotizacion` (`Cotizacion_id`, `Product_id`, `cantidad`, `precio_unitario`, `precio_extendido`, `desglosar`, `sucursal_destino_id`)VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar, :suc_dest)";
 
         $stmtDet = $pdo->prepare($sqlDetalle);
 
@@ -138,7 +138,8 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
                 ':cantidad'   => $item['cantidad'],
                 ':precio_u'   => $item['precio_unitario'],
                 ':precio_ext' => $item['precio_extendido'],
-                ':desglosar'  => $item['desglosar'] ?? 'N'
+                ':desglosar'  => $item['desglosar'] ?? 'N', 
+                ':suc_dest'   => $item['sucursal_destino_id']
             ]);
         }
 
@@ -254,7 +255,7 @@ function editarCotizacionporID(PDO $pdo, int $id_cotizacion)
 // &Obtenemos los detalles de la cotizzacion(hijos)
 function obtenerdetallesCotizacionID(PDO $pdo, int $id_cotizacion)
 {
-    $sql = "SELECT id_detalle_cot, Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar
+    $sql = "SELECT id_detalle_cot, Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar, sucursal_destino_id
             FROM detalle_cotizacion
             WHERE Cotizacion_id = :id";
 
@@ -305,8 +306,8 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
         $stmtDel->execute([':id_cot' => $id_cotizacion]);
 
         // 3. Insertamos los hijos nuevos o modificados
-        $sqlDet = "INSERT INTO detalle_cotizacion (Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar) 
-                    VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar)";
+        $sqlDet = "INSERT INTO detalle_cotizacion (Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar, sucursal_destino_id) 
+                    VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar, :suc_dest)";
         $stmtDet = $pdo->prepare($sqlDet);
 
         foreach ($detalles as $item) {
@@ -316,7 +317,8 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
                 ':cantidad'   => $item['cantidad'],
                 ':precio_u'   => $item['precio_unitario'],
                 ':precio_ext' => $item['precio_extendido'],
-                ':desglosar'  => $item['desglosar'] ?? 'N'
+                ':desglosar'  => $item['desglosar'] ?? 'N', 
+                ':suc_dest'   => $item['sucursal_destino_id']
             ]);
         }
 
@@ -848,12 +850,15 @@ function insertarProduct(PDO $pdo, array $datos): void
         $pdo->beginTransaction();
 
         // 1. Insertar Producto (Removido nombre_product)
-        $sql = "INSERT INTO productos (clave_product, descripcion_product, foto_product, estatus) 
-                VALUES (:clave, :desc, :foto, :estatus)";
+        $sql = "INSERT INTO productos (clave_product, descripcion_product, marca_product, tipo_product, estado_product, foto_product, estatus) 
+                VALUES (:clave, :desc, :marca, :tipo, :estado, :foto, :estatus)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':clave'   => $datos['clave_product'],
             ':desc'    => $datos['descripcion_product'],
+            ':marca'   => $datos['marca_product'],
+            ':tipo'    => $datos['tipo_product'],
+            ':estado'  => $datos['estado_product'],
             ':foto'    => $datos['foto_product'],
             ':estatus' => $datos['estatus']
         ]);
@@ -885,12 +890,18 @@ function actualizarProduct(PDO $pdo, array $datos): void
         // 1. Actualizar Producto (Removido nombre_product)
         $sql = "UPDATE productos SET 
                 clave_product = :clave, 
-                descripcion_product = :desc, foto_product = :foto, estatus = :estatus
+                descripcion_product = :desc, 
+                marca_product = :marca,
+                tipo_product = :tipo,
+                estado_product = :estado, foto_product = :foto, estatus = :estatus
                 WHERE id_product = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':clave'   => $datos['clave_product'],
             ':desc'    => $datos['descripcion_product'],
+            ':marca'   => $datos['marca_product'],
+            ':tipo'    => $datos['tipo_product'],
+            ':estado'  => $datos['estado_product'],
             ':foto'    => $datos['foto_product'],
             ':estatus' => $datos['estatus'],
             ':id'      => $datos['id_product']

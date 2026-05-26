@@ -200,11 +200,14 @@
                 <form id="formEditarCotizacion" class="modal-body custom-card-action">
                     <input type="hidden" name="action" value="editar">
                     <input type="hidden" name="id_cotizacion" id="edit_id_cotizacion" value="">
+                    <!-- //& Prueba -->
+                    <input type="hidden" name="is_multisucursal" id="edit_is_multisucursal" value="0">
+                    <!-- //& Prueba -->
 
                     <div class="row">
                         <div class="col-md-4 mb-4">
                             <label class="form-label">División de LAN</label>
-                            <select class="form-control" id="division" name="division" 
+                            <select class="form-control" id="division" name="division"
                                 data-select2-selector="status" required>
                                 <option value="">Selecciona una división...</option>
                                 <option value="LA NETWORKS & TECHNOLOGIES">LA NETWORKS & TECHNOLOGIES, SA DE CV</option>
@@ -246,11 +249,21 @@
                         </div>
 
                         <div class="col-md-4 mb-4">
-                            <label class="form-label">Selecciona el precio que se utilizara</span></label>
+                            <label class="form-label">Selecciona el precio que se utilizara</label>
                             <select class="form-control" name="tipo_precio" id="tipo_precio" data-select2-selector="status" required>
                                 <option value="">Selecciona el tipo de precio...</option>
                                 <option value="Farmacia">Farmacia</option>
                                 <option value="Público">Público</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-4">
+                            <label class="form-label fw-bold">¿Qué tipo de producto se cotizará?</label>
+                            <select class="form-control max-select" id="edit_filtro_tipo_producto">
+                                <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
+                                <option value="NUEVO">✨ Solo Equipos Nuevos</option>
+                                <option value="USADO">🔧 Solo Equipos Usados</option>
+                                <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
                             </select>
                         </div>
                     </div>
@@ -277,6 +290,9 @@
                                             <th class="text-center wd-70">Ítem</th>
                                             <th class="text-center wd-150">Cantidad</th>
                                             <th class="text-center wd-450">Producto</th>
+                                            <!-- //& Prueba -->
+                                            <th class="text-center wd-250 col-edit-multisucursal" style="display:none">Sucursal Destino</th>
+                                            <!-- //& Prueba -->
                                             <th class="text-center wd-250">Desglose de Calibración</th>
                                             <th class="text-center wd-150">Precio U.</th>
                                             <th class="text-center wd-200">Total</th>
@@ -293,7 +309,7 @@
                         <div class="col-lg-8 mt-2 text-start">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Notas / Observaciones adicionales:</label>
-                                <textarea name="comentarios" id="edit_comentarios" class="form-control" rows="4" placeholder="Ej. ENTREGA INMEDIATA..."></textarea>
+                                <textarea name="comentarios" id="edit_comentarios" class="form-control" rows="4"></textarea>
                                 <small class="text-muted">Estas notas aparecerán en el PDF de la cotización.</small>
                             </div>
                         </div>

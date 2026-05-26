@@ -6,6 +6,11 @@ $(document).ready(function () {
     let preciosProductos = {};
     let rowCount = 0;
 
+    /* //& Prueba */
+    let windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
+    let isEditMultiSucursal = false;
+    /* //& Prueba */
+
     //>>>==========================================
     //>>> 1. CARGA INICIAL DE DATOS MAESTROS
     //>>>==========================================
@@ -35,6 +40,12 @@ $(document).ready(function () {
     $(document).on('change', '.chk-desglosar', function() {
         $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
     });
+
+    /* //& Prueba */
+    $(document).on('change', '.select-sucursal-fila-edit', function() {
+        $(this).attr('data-selected-suc', $(this).val());
+    });
+    /* //& Prueba */
 
     //>>> ==============================================
     //>>> 2. CARGAR TABLA PRINCIPAL CON DATATABLES
@@ -93,7 +104,7 @@ $(document).ready(function () {
 
                     let btnEliminar = '';
                     let cotizacionCerrada = (estatusTexto === 'Autorizada (información completa)' || estatusTexto === 'No autorizada');
-
+                    // &Candado para solo admin eliminar
                     /* if (!cotizacionCerrada || USER_PERFIL === 'admin') {
                         btnEliminar = `<a href="#" class="avatar-text avatar-md btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2 text-danger"></i></abbr></a>`;
                     } else {
@@ -163,15 +174,43 @@ $(document).ready(function () {
     //>>>           3. MODAL DE EDICIÓN
     //>>>============================================== 
 
-    // MAGIA: Construir Fila inyecta el dato de "esServicio" y deshabilita dinámicamente
-    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '', isCalib = true, esServicio = false, isDesglose = false) {
+    //& "esServicio" y deshabilita dinámicamente
+    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '', isCalib = true, esServicio = false, isDesglose = false, sucursal_destino_id = '') {
         let opciones = '<option value="">Selecciona...</option>';
+
+        let filtroActual = $('#edit_filtro_tipo_producto').val() || 'TODOS';
+
         windowProductos.forEach(p => {
-            let selected = (p.id_product == prod_id) ? 'selected' : '';
             let claveM = p.clave_product.toUpperCase();
             let descM = p.descripcion_product.toUpperCase();
+            let estadoBD = p.estado_product ? p.estado_product.toUpperCase().trim() : 'N/A';
+            
+            // 🧠 INTELIGENCIA CORREGIDA:
+            let pasaFiltro = false;
+            
+            // Si es una fila nueva, evaluamos qué seleccionó el vendedor en el filtro de arriba.
+            if (filtroActual === 'TODOS') {
+                pasaFiltro = true; // Si es TODOS, pasan todos
+            } else if (filtroActual === estadoBD) {
+                pasaFiltro = true; // Coincidencia exacta (NUEVO, USADO, etc.)
+            } else if (p.id_product == prod_id) {
+                pasaFiltro = true; // ✨ CLAVE: Se respeta el producto que ya estaba guardado en la fila
+            }
+
+            if (pasaFiltro) {
+                let selected = (p.id_product == prod_id) ? 'selected' : '';
+                let marca = (p.marca_product && p.marca_product !== 'N/A') ? p.marca_product.toUpperCase() : '';
+                let textoMarca = marca ? ` | Marca: ${marca}` : '';
+                let isSrv = (estadoBD === 'CALIBRACION');
+                
+                opciones += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}${textoMarca}</option>`;
+            }
+
+            /* let marca = (p.marca_product && p.marca_product !== 'N/A') ? p.marca_product.toUpperCase() : '';
+            let textoMarca = marca ? ` | Marca: ${marca}` : '';
+
             let isSrv = (claveM.includes('SERVICIO') || descM.includes('SERVICIO'));
-            opciones += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}</option>`;
+            opciones += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}${textoMarca} </option>`;  */
         });
 
         // Si es servicio, apagamos los checks y los bloqueamos
@@ -181,11 +220,25 @@ $(document).ready(function () {
         let checkedDesglose = (isDesglose && !esServicio) ? 'checked' : '';
         let valDesglose = (isDesglose && !esServicio) ? 'Y' : 'N';
 
+        /* //& Prueba */
+        let displayStyle = isEditMultiSucursal ? '' : 'style="display: none;"';
+        let tdSucursal = `
+            <td class="align-middle col-edit-multisucursal" ${displayStyle}>
+                <select class="form-select form-select-sm select-sucursal-fila-edit" name="sucursal_fila[]" data-selected-suc="${sucursal_destino_id}">
+                    ${windowSucursalesOpcionesEdit}
+                </select>
+            </td>
+        `;
+        /* //& Prueba */
+
         return `
             <tr id="edit_addr${index}" class="fila-producto">
                 <td class="text-center align-middle fila-numero">${index + 1}</td>
                 <td class="align-middle"><input type="number" name="cantidad_cot[]" class="form-control edit-qty" step="1" min="1" value="${qty}" required></td>
                 <td class="align-middle"><select class="form-control select-prod-modal" name="productos[]" required>${opciones}</select></td>
+                //& Prueba
+                ${tdSucursal}
+                //& Prueba
                 <td class="align-middle">
                     <div class="modulo-config">
                         <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
@@ -225,17 +278,29 @@ $(document).ready(function () {
                 method: 'GET', dataType: 'json',
                 success: function (data) {
                     $selectSuc.empty();
+                    windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
+
                     if (data.length === 0) {
                         $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
+                        windowSucursalesOpcionesEdit = '<option value="" disabled>Sin sucursales asignadas</option>';
                     } else {
                         $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
                         data.forEach(suc => {
                             $selectSuc.append(`<option value="${suc.id_sucursal}">${suc.nombre_sucursal} (${suc.estado})</option>`);
+                            windowSucursalesOpcionesEdit += `<option value="${suc.id_sucursal}">${suc.nombre_sucursal}</option>`;
                         });
                         if (preseleccion_suc) {
                             $selectSuc.val(preseleccion_suc).trigger('change');
                         }
                     }
+
+                    $('.select-sucursal-fila-edit').each(function() {
+                        let valToSelect = $(this).attr('data-selected-suc');
+                        $(this).html(windowSucursalesOpcionesEdit);
+                        if (valToSelect) {
+                            $(this).val(valToSelect);
+                        }
+                    });
                 }
             });
         } else {
@@ -275,10 +340,14 @@ $(document).ready(function () {
         cargarSolicitantes($(this).val());
     });
 
-    $('#edit_select_solicitante').on('change', function () {
+    /*//° $('#edit_select_solicitante').on('change', function () {
         let usuarioId = $(this).val();
         cargarSucursales(usuarioId, null)
-    });
+    }); */
+
+    /* //& Prueba */
+    $('#edit_select_solicitante').on('change', function () { cargarSucursales($(this).val(), null); });
+    /* //& Prueba */
 
     let previousTipoPrecio = '';
     $('#tipo_precio').on('focus click', function () {
@@ -310,6 +379,11 @@ $(document).ready(function () {
             success: function (res) {
                 let cot = res.cotizacion;
                 let dets = res.detalles;
+
+                /* //& Prueba */
+                isEditMultiSucursal = !cot.Sucursal_id || cot.Sucursal_id == 0;
+                $('#edit_is_multisucursal').val(isEditMultiSucursal ? '1' : '0');
+                /* //& Prueba */
 
                 let isReadOnly = (cot.estatus === 'Autorizada (información completa)' || cot.estatus === 'No autorizada');
                 $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', false);
@@ -354,12 +428,24 @@ $(document).ready(function () {
                 $selEmp.prop('disabled', false);
                 $colSucursal.insertAfter($colSolicitante); // Lo regresa a su lugar normal
 
+                if (isEditMultiSucursal) {
+                    $colSucursal.hide();
+                    $('#edit_select_sucursal').prop('required', false);
+                    $('.col-edit-multisucursal').show();
+                } else {
+                    $colSucursal.show();
+                    $('#edit_select_sucursal').prop('required', true);
+                    $('.col-edit-multisucursal').hide();
+                }
+
                 // 2. Lógica específica para el portal de Clientes (B2B)
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
 
                     // A. Ocultar Status y Tipo de Precio
                     $colPrecio.hide();
                     $colEstatus.hide();
+
+                    if (!isEditMultiSucursal) { $colSucursal.insertAfter($colCliente); }
 
                     // B. MAGIA DE DISEÑO: Movemos "Sucursal" a la fila de arriba (al lado de Cliente)
                     $colSucursal.insertAfter($colCliente);
@@ -385,8 +471,27 @@ $(document).ready(function () {
                 cargarSolicitantes(cot.Empresa_id, cot.Usuario_empresa_id, isReadOnly, cot.Sucursal_id);
 
                 let $tbody = $('#edit_tbody_productos');
-                $tbody.empty();
-                rowCount = 0;
+                $tbody.empty(); rowCount = 0;
+
+                let estadosEncontrados = new Set();
+
+                dets.forEach(item => {
+                    if (preciosProductos[item.Product_id]) {
+                        let estadoBD = preciosProductos[item.Product_id].estado_product || 'N/A';
+                        estadosEncontrados.add(estadoBD.toUpperCase().trim());
+                    }
+                });
+
+                if (estadosEncontrados.size === 1) {
+                    let estadoUnico = Array.from(estadosEncontrados)[0];
+                    if (['NUEVO', 'USADO', 'CALIBRACION'].includes(estadoUnico)) {
+                        $('#edit_filtro_tipo_producto').val(estadoUnico);
+                    } else {
+                        $('#edit_filtro_tipo_producto').val('TODOS');
+                    }
+                } else {
+                    $('#edit_filtro_tipo_producto').val('TODOS'); 
+                }
 
                 // RECONOCIMIENTO INTELIGENTE DE SERVICIOS Y CALIBRACIÓN
                 dets.forEach((item, index) => {
@@ -413,7 +518,7 @@ $(document).ready(function () {
                         }
                     }
 
-                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida, esServicio, item.desglosar === 'Y'));
+                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida, esServicio, item.desglosar === 'Y', item.sucursal_destino_id));
                     calculateRowEdit($(`#edit_addr${index}`));
                     rowCount++;
                 });
@@ -436,10 +541,13 @@ $(document).ready(function () {
     //>>>  4. MATEMÁTICAS Y FILAS DINÁMICAS EN MODAL
     //>>>==============================================
     $("#edit_add_row").click(function () {
-        $("#edit_tbody_productos").append(construirFila(rowCount, '', '', 1, '', false, false));
+        $("#edit_tbody_productos").append(construirFila(rowCount, '', '', 1, '', false, false, false, ''));
 
         // Forzamos el checkbox de calibración encendido por defecto en filas nuevas (que no sean servicios)
         $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
+        if (filtroActual === 'NUEVO' || filtroActual === 'USADO') {
+            $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
+        }
 
         $(`#edit_addr${rowCount} .select-prod-modal`).select2({ dropdownParent: $('#modalEditarCotizacion') });
         rowCount++;
@@ -556,12 +664,17 @@ $(document).ready(function () {
     $('#formEditarCotizacion').on('submit', function (e) {
         e.preventDefault();
 
-        if (!$('#edit_select_sucursal').val()) {
+        /* //°if (!$('#edit_select_sucursal').val()) {
+            alert("Debes seleccionar una sucursal de destino antes de guardar.");
+            return;
+        } */
+
+        if (!isEditMultiSucursal && !$('#edit_select_sucursal').val()) {
             alert("Debes seleccionar una sucursal de destino antes de guardar.");
             return;
         }
 
-        $('#tab_logic_edit tbody tr.fila-producto').each(function () { calculateRowEdit($(this)); });
+            $('#tab_logic_edit tbody tr.fila-producto').each(function () { calculateRowEdit($(this)); });
         calcEditTotal();
 
         let btnSubmit = $(this).find('button[type="submit"]');
@@ -613,5 +726,57 @@ $(document).ready(function () {
                 }
             });
         }
+    });
+
+
+
+    $(document).on('change', '#edit_filtro_tipo_producto', function () {
+        let nuevoFiltro = $(this).val();
+
+        // Recorremos cada fila de producto actual en la tabla
+        $('#edit_tbody_productos tr.fila-producto').each(function () {
+            let $row = $(this);
+            let $selectProd = $row.find('.select-prod-modal');
+            
+            // Guardamos el ID del producto que el usuario ya tenía seleccionado en esta fila
+            let idProductoActual = $selectProd.val(); 
+
+            // Re-generamos las opciones para este producto basándonos en el nuevo filtro
+            let opcionesActualizadas = '<option value="">Selecciona...</option>';
+
+            windowProductos.forEach(p => {
+                let claveM = p.clave_product.toUpperCase();
+                let descM = p.descripcion_product.toUpperCase();
+                let estadoBD = p.estado_product ? p.estado_product.toUpperCase().trim() : 'N/A';
+                
+                let pasaFiltro = false;
+                if (nuevoFiltro === 'TODOS') {
+                    pasaFiltro = true;
+                } else if (nuevoFiltro === estadoBD) {
+                    pasaFiltro = true;
+                } else if (p.id_product == idProductoActual) {
+                    pasaFiltro = true; // ✨ CLAVE: Mantenemos el producto actual para que no se borre de la fila
+                }
+
+                if (pasaFiltro) {
+                    let selected = (p.id_product == idProductoActual) ? 'selected' : '';
+                    let marca = (p.marca_product && p.marca_product !== 'N/A') ? p.marca_product.toUpperCase() : '';
+                    let textoMarca = marca ? ` | Marca: ${marca}` : '';
+                    let isSrv = (estadoBD === 'CALIBRACION');
+                    
+                    opcionesActualizadas += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}${textoMarca}</option>`;
+                }
+            });
+
+            // Re-inyectamos las opciones refrescadas en el select de la fila
+            if ($selectProd.hasClass('select2-hidden-accessible')) {
+                $selectProd.select2('destroy'); // Destruimos Select2 momentáneamente para evitar bugs visuales
+            }
+            
+            $selectProd.html(opcionesActualizadas).val(idProductoActual);
+            
+            // Volvemos a activar Select2 amarrado al contenedor del modal
+            $selectProd.select2({ dropdownParent: $('#modalEditarCotizacion') });
+        });
     });
 });

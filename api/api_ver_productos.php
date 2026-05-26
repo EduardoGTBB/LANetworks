@@ -87,9 +87,15 @@ try {
                 }
             }
 
+            $marca_p = trim($_POST['marca_product'] ?? '');
+            if($marca_p === '') $marca_p = 'N/A';
+
             $datos = [
                 'clave_product'       => $clave_evaluar,
                 'descripcion_product' => trim($_POST['descripcion_product'] ?? ''),
+                'marca_product'       => $marca_p,
+                'tipo_product'        => trim($_POST['tipo_product'] ?? 'N/A'),
+                'estado_product'      => trim($_POST['estado_product'] ?? 'N/A'),
                 'pf_equipo'           => (float)($_POST['pf_equipo'] ?? 0),
                 'pf_calib'            => (float)($_POST['pf_calib'] ?? 0),
                 'pp_equipo'           => (float)($_POST['pp_equipo'] ?? 0),

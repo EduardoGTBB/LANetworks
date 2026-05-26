@@ -65,7 +65,11 @@ try {
             $usuario_id    = (int)($_POST['Usuario_id'] ?? 0);
             $sucursal_id   = (int)($_POST['Sucursal_id'] ?? 0);
 
-            if ($id_cotizacion === 0 || $empresa_id === 0 || $usuario_id === 0 || $sucursal_id === 0) {
+            /* //& Prueba */
+            $is_multi      = ($_POST['is_multisucursal'] ?? '0') === '1';
+            /* //& Prueba */
+
+            /*//° if ($id_cotizacion === 0 || $empresa_id === 0 || $usuario_id === 0 || $sucursal_id === 0) {
                 echo json_encode(['status' => 'error', 'message' => 'Faltan datos obligatorios (Cliente, Solicitante o Sucursal).']);
                 exit;
             }
@@ -73,6 +77,23 @@ try {
             if ($id_cotizacion === 0 || $empresa_id === 0 || $usuario_id === 0) {
                 echo json_encode(['status' => 'error', 'message' => 'Faltan datos obligatorios.']);
                 exit;
+            } */
+            
+            /* //& Prueba */
+
+            if ($id_cotizacion === 0 || $empresa_id === 0 || $usuario_id === 0) {
+                echo json_encode(['status' => 'error', 'message' => 'Faltan datos obligatorios (Cliente o Solicitante).']);
+                exit;
+            }
+
+            if (!$is_multi && $sucursal_id === 0) {
+                echo json_encode(['status' => 'error', 'message' => 'Falta seleccionar la Sucursal Destino global.']);
+                exit;
+            }
+            /* //& Prueba */
+
+            if ($is_multi) {
+                $sucursal_id = null;
             }
 
             $cotizacion_actual = editarCotizacionporID($pdo, $id_cotizacion);
@@ -89,17 +110,33 @@ try {
             $cantidades    = $_POST['cantidad_cot'] ?? [];
             $unitarios     = $_POST['unitario'] ?? [];
             $totales       = $_POST['total'] ?? [];
-            $desglosar_arr = $_POST['desglosar'] ?? []; // <--- NUEVO CAMPO
+            $desglosar_arr = $_POST['desglosar'] ?? [];
+            
+            /* //& Prueba */
+            $sucursales_fila = $_POST['sucursal_fila'] ?? [];
+            /* //& Prueba */
+
             $detalles = [];
 
             for ($i = 0; $i < count($productos_ids); $i++) {
                 if (!empty($productos_ids[$i]) && (int)$cantidades[$i] > 0) {
+
+                    /* //& Prueba */
+                    $sucursal_destino = ($is_multi && !empty($sucursales_fila[$i])) ? (int)$sucursales_fila[$i] : null;
+                    if ($is_multi && empty($sucursal_destino)) {
+                        echo json_encode(['status' => 'error', 'message' => 'Falta seleccionar la Sucursal Destino para uno o más productos en la tabla.']);
+                        exit;
+                    }
+                    /* //& Prueba */
+
+
                     $detalles[] = [
                         'producto_id'      => (int)$productos_ids[$i],
                         'cantidad'         => (int)$cantidades[$i],
                         'precio_unitario'  => (float)$unitarios[$i],
                         'precio_extendido' => (float)$totales[$i],
-                        'desglosar'        => $desglosar_arr[$i] ?? 'N' // <--- GUARDAMOS SI SE DESGLOSA O NO
+                        'desglosar'        => $desglosar_arr[$i] ?? 'N', 
+                        'sucursal_destino_id' => $sucursal_destino
                     ];
                 }
             }

@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-    $('#clave_product, #descripcion_product').on('input', function() {
+    $('#clave_product, #descripcion_product, #marca_product').on('input', function() {
         $(this).val($(this).val().toUpperCase());
     }); 
     
@@ -39,14 +39,28 @@ $(document).ready(function () {
                     let p_publico = prod.pp_equipo ? parseFloat(prod.pp_equipo) : 0;
                     let c_publico = prod.pp_calib ? parseFloat(prod.pp_calib) : 0;
 
+                    let marca = (prod.marca_product && prod.marca_product !== 'N/A') ? prod.marca_product : '<span class="text-muted fst-italic">N/A</span>';
+                    let tipo = (prod.tipo_product && prod.tipo_product !== 'N/A') ? prod.tipo_product : '<span class="text-muted fst-italic">N/A</span>';
+                    let estado = (prod.estado_product && prod.estado_product !== 'N/A') ? prod.estado_product : '<span class="text-muted fst-italic">N/A</span>';
+
+                    let atributos = `
+                        <span class="d-block fs-11"><b>Marca:</b> ${marca}</span>
+                        <span class="d-block fs-11"><b>Tipo:</b> ${tipo}</span>
+                        <span class="d-block fs-11"><b>Estado:</b> ${estado}</span>
+                    `;
+
+                    // hstack gap-3 
                     let tr = `
                         <tr>
-                            <td>
-                                <div class="hstack gap-3">
-                                    <div class="avatar-image avatar-md rounded"><img class="img-fluid" src="assets/images/productos/${foto}" alt="img"></div>
+                            <td class="text-center align-middle">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <div class="avatar-image avatar-lg rounded mb-2">
+                                        <img class="img-fluid" src="assets/images/productos/${foto}" alt="img" style="object-fit: cover;">
+                                    </div>
                                     <div><a href="javascript:void(0);" class="d-block fw-bold">${prod.clave_product}</a></div>
                                 </div>
                             </td>
+                            <td>${atributos}</td>
                             <td><span class="d-block text-truncate" style="max-width: 250px;">${prod.descripcion_product}</span></td>
                             <td><span class="text-primary fw-bold">${formatoMoneda.format(p_farmacia)}</span><br><small class="text-muted">+ ${formatoMoneda.format(c_farmacia)} calib</small></td>
                             <td><span class="text-success fw-bold">${formatoMoneda.format(p_publico)}</span><br><small class="text-muted">+ ${formatoMoneda.format(c_publico)} calib</small></td>
@@ -95,6 +109,9 @@ $(document).ready(function () {
         
         $('#preview_foto_prod').attr('src', 'assets/images/productos/producto.png');
         $('#modalProductos').modal('show');
+        $('#marca_product').val('N/A');
+        $('#tipo_product').val('N/A');
+        $('#estado_product').val('N/A');
     });
 
     // EDITAR PRODUCTO
@@ -125,6 +142,10 @@ $(document).ready(function () {
                     $('#pf_calib').val(res.pf_calib);
                     $('#pp_equipo').val(res.pp_equipo);
                     $('#pp_calib').val(res.pp_calib);
+
+                    $('#marca_product').val(res.marca_product || 'N/A');
+                    $('#tipo_product').val(res.tipo_product || 'N/A');
+                    $('#estado_product').val(res.estado_product || 'N/A');
                     
                     $('#estatus_prod').prop('checked', res.estatus === 'Y');
 

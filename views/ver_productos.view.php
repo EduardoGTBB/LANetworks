@@ -205,7 +205,8 @@
                                         <thead>
                                             <tr>
                                                 <th class="text-center">Clave</th>
-                                                <th>Producto</th>
+                                                <th>Atributos</th>
+                                                <th class="wd-200">Producto</th>
                                                 <th>Precio farmacia</th>
                                                 <th>Precio publico</th>
                                                 <th>Estatus</th>
@@ -316,6 +317,7 @@
                             <input type="number" class="form-control" name="precio_publico" id="precio_publico" step="any" required>
                         </div> -->
                     </div>
+                    
                     <div class="row bg-light p-3 rounded mb-3 border">
                         <h6 class="fw-bold text-primary"><i class="feather-tag me-2"></i>Precios FARMACIA</h6>
                         <div class="col-md-6">
@@ -327,6 +329,7 @@
                             <input type="number" step="0.01" class="form-control" name="pf_calib" id="pf_calib" min="0" required>
                         </div>
                     </div>
+
                     <div class="row bg-light p-3 rounded mb-3 border">
                         <h6 class="fw-bold text-success"><i class="feather-tag me-2"></i>Precios PÚBLICO</h6>
                         <div class="col-md-6">
@@ -336,6 +339,31 @@
                         <div class="col-md-6">
                             <label class="form-label small">Precio Calibración</label>
                             <input type="number" step="0.01" class="form-control" name="pp_calib" id="pp_calib" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="row bg-light p-3 rounded mb-3 border">
+                        <h6 class="fw-bold text-dark"><i class="feather-info me-2"></i>Atributos del Producto</h6>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label small">Marca</label>
+                            <input type="text" class="form-control" name="marca_product" id="marca_product" placeholder="Ej. TAYLOR" value="N/A">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label small">Tipo</label>
+                            <select class="form-select" name="tipo_product" id="tipo_product">
+                                <option value="N/A">N/A</option>
+                                <option value="DIGITAL">DIGITAL</option>
+                                <option value="ANALOGICO">ANALÓGICO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label small">Estado</label>
+                            <select class="form-select" name="estado_product" id="estado_product">
+                                <option value="N/A">N/A</option>
+                                <option value="NUEVO">NUEVO</option>
+                                <option value="USADO">USADO</option>
+                                <option value="CALIBRACION">CALIBRACIÓN</option>
+                            </select>
                         </div>
                     </div>
 

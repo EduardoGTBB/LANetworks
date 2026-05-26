@@ -4,6 +4,17 @@ $(document).ready(function() {
     var uniqueIdCounter = 1; 
     var preciosProductos = {}; 
 
+    /* //& Prueba */
+    var windowProductos = [];
+    var windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
+    if ($.fn.select2) {
+        $('#filtro_estado_producto').select2({
+            theme: 'bootstrap-5', // Ajusta el diseño a tu plantilla
+            minimumResultsForSearch: Infinity // Oculta la lupa de búsqueda para que se vea más limpio
+        });
+    }
+    /* //& Prueba */
+
     $(document).on('change', '.chk-desglosar', function() {
         $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
     });
@@ -38,12 +49,14 @@ $(document).ready(function() {
         }
     });
 
-    $.ajax({
+    /* //° $.ajax({
         url: 'api/api_cotizador.php?action=get_productos',
         method: 'GET', dataType: 'json',
         success: function(data) {
             let $selectProd = $('.product-select'); 
             $selectProd.empty().append('<option value="">Selecciona un producto...</option>');
+            $('#filtro_estado_producto').trigger('change');
+            
             data.forEach(prod => {
                 preciosProductos[prod.id_product] = prod;
                 let claveMayus = prod.clave_product.toUpperCase();
@@ -51,11 +64,97 @@ $(document).ready(function() {
                 
                 // >>> MAGIA: Identificamos si es un Servicio desde que se carga
                 let esServicio = (claveMayus.includes('SERVICIO') || descMayus.includes('SERVICIO'));
+
+                $('#filtro_estado_producto').trigger('change');
                 
                 $selectProd.append(`<option value="${prod.id_product}" data-servicio="${esServicio}">[${claveMayus}] ${descMayus}</option>`);
             });
         }
+    }); */
+    /* //& Prueba */
+    $.ajax({
+        url: 'api/api_cotizador.php?action=get_productos',
+        method: 'GET', dataType: 'json',
+        success: function(data) {
+            windowProductos = data; // Almacenamos todo el catálogo
+            data.forEach(prod => {
+                preciosProductos[prod.id_product] = prod;
+            });
+            
+            // Obligamos al filtro a pintar la lista inicial
+            $('#filtro_estado_producto').trigger('change');
+        }
     });
+
+    $(document).on('change', '#filtro_estado_producto', function() {
+        let filtro = $(this).val();
+        
+        if (!windowProductos || windowProductos.length === 0) return;
+        
+        // Buscamos específicamente los dropdowns de la tabla
+        let $selects = $('.product-select');
+        
+        $selects.each(function() {
+            let $select = $(this);
+            let valorActual = $select.val(); 
+            
+            // Destruir plugin visual temporalmente para limpiar
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.select2('destroy');
+            }
+            
+            $select.html('<option value="">Selecciona un producto...</option>');
+            
+            // Recorremos y pintamos según la base de datos
+            windowProductos.forEach(function(prod) {
+                // Leemos directamente de la columna real (estado_product)
+                let estadoBD = prod.estado_product ? prod.estado_product.toUpperCase().trim() : 'N/A';
+                
+                // Si el filtro es TODOS, o si el estado de la BD coincide con el filtro:
+                if (filtro === 'TODOS' || estadoBD === filtro) {
+                    
+                    let idProd = prod.id_product;
+                    let clave = prod.clave_product || '';
+                    let desc = prod.descripcion_product || '';
+
+                    let marca = (prod.marca_product && prod.marca_product !== 'N/A') ? prod.marca_product.toUpperCase() : '';
+                    let textoMarca = marca ? ` | Marca: ${marca}` : '';
+
+                    /*  let nombreAMostrar = clave ? `[${clave}] ${desc}` : desc; */
+                    let nombreAMostrar = clave ? `[${clave}] ${desc}${textoMarca}` : `${desc}${textoMarca}`;
+                    
+                    let esServicio = (estadoBD === 'CALIBRACION');
+
+                    $select.append(`<option value="${idProd}" data-servicio="${esServicio}">${nombreAMostrar}</option>`);
+                }
+            });
+            
+            // Restaurar selección previa si aplica
+            if (valorActual) {
+                $select.val(valorActual);
+            }
+            
+            // Reactivar Select2
+            $select.select2({ width: '100%' });
+        });
+    });
+
+    $(document).on('change', 'input[name="tipo_sucursal_flujo"]', function() {
+        let tipo = $(this).val();
+        if (tipo === 'multisucursal') {
+            $('#wrapper_selector_sucursal').fadeOut('fast');
+            $('#select_sucursal').val('').trigger('change.select2').prop('required', false);; 
+
+            $('.col-multisucursal').fadeIn('fast');
+        } else {
+            $('#wrapper_selector_sucursal').fadeIn('fast');
+            $('#select_sucursal').prop('required', true);
+
+            $('.col-multisucursal').fadeOut('fast');
+            $('.select-sucursal-fila').val('');
+        }
+    });
+    /* //& Prueba */
 
     // 2. EVENTOS DE DROPDOWNS (SOLICITANTE Y SUCURSALES)
     function cargarSolicitantes(empresaId) {
@@ -100,13 +199,19 @@ $(document).ready(function() {
                     $selectSuc.empty();
                     if(data.length === 0) {
                         $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
+                        windowSucursalesOpciones = '<option value="">Sin sucursales</option>';
                     } else {
                         $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
+                        windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
+
                         data.forEach(suc => {
                             $selectSuc.append(`<option value="${suc.id_sucursal}">${suc.nombre_sucursal} (${suc.estado})</option>`);
+                            windowSucursalesOpciones += `<option value="${suc.id_sucursal}">${suc.nombre_sucursal}</option>`;
                         });
+
                         if(data.length === 1) $selectSuc.val(data[0].id_sucursal).trigger('change');
                     }
+                    $('.select-sucursal-fila').html(windowSucursalesOpciones);
                 }
             });
         } else {
@@ -134,8 +239,12 @@ $(document).ready(function() {
         e.preventDefault();
         var nuevaFila = $("#addr0").clone();
         
+        /* //& Prueba */
+        nuevaFila.find('.select-sucursal-fila').html(windowSucursalesOpciones).val('');
         nuevaFila.attr('id', 'addr' + uniqueIdCounter);
         nuevaFila.find("input[type='text'], input[type='number']").val('');
+
+        /* //& Prueba */
         
         // >>> AJUSTE: Siempre clona las filas con el checkbox APAGADO pero ACTIVO
         nuevaFila.find('.chk-incluir').attr('id', 'chk_incluir_' + uniqueIdCounter).prop('checked', true).prop('disabled', true);
@@ -145,15 +254,17 @@ $(document).ready(function() {
         nuevaFila.find('label[for^="chk_desglosar"]').attr('for', 'chk_desglosar_' + uniqueIdCounter);
 
         nuevaFila.find('.hidden-desglose').val('N');
-
         nuevaFila.find('.info-desglose').html('');
-        nuevaFila.find('.select2-container').remove();
         
-        let $nuevoSelect = nuevaFila.find('select');
+        nuevaFila.find('.select2-container').remove();
+        let $nuevoSelect = nuevaFila.find('.product-select');
         $nuevoSelect.removeClass('select2-hidden-accessible').removeAttr('data-select2-id aria-hidden tabindex').val('');
         $nuevoSelect.find('option').removeAttr('data-select2-id');
 
         $("#tab_logic tbody").append(nuevaFila);
+
+        $('#filtro_estado_producto').trigger('change');
+        
         if ($.fn.select2) { $nuevoSelect.select2({ width: '100%' }); }
         
         uniqueIdCounter++;

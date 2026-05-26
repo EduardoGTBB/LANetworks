@@ -128,18 +128,47 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-6 md-4">
-                                            <label class="form-label text-primary fw-bold">Sucursal de Destino *</label>
-                                            <select class="form-control border-primary" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" required>
-                                                <option value="">Esperando al solicitante...</option>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Tipo de Distribución</label>
+                                            <div class="d-flex gap-4 mt-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="tipo_sucursal_flujo" id="rad_unica" value="unica" checked>
+                                                    <label class="form-check-label fw-semibold" for="rad_unica">
+                                                        🏢 Sucursal Única
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="tipo_sucursal_flujo" id="rad_multi" value="multisucursal">
+                                                    <label class="form-check-label fw-semibold" for="rad_multi">
+                                                        📦 Multi-sucursal (Masivo)
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">¿Qué tipo de producto se cotizará?</label>
+                                            <select class="form-control max-select" name="filtro_estado_producto" id="filtro_estado_producto">
+                                                <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
+                                                <option value="NUEVO">✨ Solo Equipos Nuevos</option>
+                                                <option value="USADO">🔧 Solo Equipos Usados</option>
+                                                <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
                                             </select>
                                         </div>
-                                        <!-- <div class="col-md-6 mb-4">
-                                            <label class="form-label">Cliente</label>
-                                            <select class="form-control" id="select_empresa" name="Empresa_id" data-select2-selector="status" required>
-                                                <option value="">Selecciona un cliente...</option>
+                                        <!-- <div class="col-md-6 md-3">
+                                            <label class="form-label text-primary fw-bold">Sucursal de Destino *</label>
+                                            <select class="form-control border-primary" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" required>
+                                                <option value="">Esperando la sucursal...</option>
                                             </select>
                                         </div> -->
+
+                                        <div class="col-md-6 mb-3" id="wrapper_selector_sucursal">
+                                            <label for="select_sucursal" class="form-label fw-bold">Sucursal Destino</label>
+                                            <select class="form-control border-primary" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" requerid>
+                                                <option value="">Selecciona una sucursal...</option>
+                                            </select>
+                                        </div>
+
                                         <div class="col-md-6 mb-4">
                                             <label class="form-label">Selecciona el precio que se utilizara</span></label>
                                             <select class="form-control" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
@@ -169,6 +198,7 @@
                                                             <th class="text-center wd-80">Item</th>
                                                             <th class="text-center wd-150">Cantidad</th>
                                                             <th class="text-center wd-400">Producto</th>
+                                                            <th class="text-center wd-250 col-multisucursal" style="display:none">Sucursal Destino</th>
                                                             <th class="text-center wd-250">Desglose de Calibración</th>
                                                             <th class="text-center wd-150">Precio unitario</th>
                                                             <th class="text-center wd-200">Total</th>
@@ -184,6 +214,11 @@
                                                                 <select class="form-control product-select" name="productos[]" required data-select2-selector="status">
                                                                     <option value="">Selecciona un producto...</option>
                                                                     <!-- <option value="1">[B-LITIO] Bateria Litio CR-2025</option> -->
+                                                                </select>
+                                                            </td>
+                                                            <td class="col-multisucursal" style="display: none;">
+                                                                <select class="form-select form-select-sm select-sucursal-fila" name="sucursal_fila[]">
+                                                                    <option value="">Selecciona destino...</option>
                                                                 </select>
                                                             </td>
                                                             <!--//>>> INICIO -->
@@ -225,7 +260,7 @@
                                         <div class="col-lg-8 mt-2">
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Notas / Observaciones adicionales:</label>
-                                                <textarea name="comentarios" id="comentarios" class="form-control" rows="4" placeholder="Ej. ENTREGA INMEDIATA. DURABILIDAD DE LA BATERIA 4 AÑOS..."></textarea>
+                                                <textarea name="comentarios" id="comentarios" class="form-control" rows="4"></textarea>
                                                 <small class="text-muted">Estas notas aparecerán en el PDF de la cotización.</small>
                                             </div>
                                         </div>
