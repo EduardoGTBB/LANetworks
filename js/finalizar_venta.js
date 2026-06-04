@@ -1,246 +1,437 @@
 $(document).ready(function () {
     let id_cot = $('#id_cotizacion').val();
-    let dirFiscal = {};
-    let dirSucursal = {};
+    let isSucursalUnica = false;
+    let sucursalesMap = {}; // &Guardamos las direcciones de las sucursales en multisucursal
 
-    // Función auxiliar para comparar si dos direcciones son exactamente iguales
-    function esMismaDireccion(dir1, dir2) {
-        if (!dir1 || !dir2) return false;
-        return (dir1.calle || '').trim() === (dir2.calle || '').trim() &&
-               (dir1.colonia || '').trim() === (dir2.colonia || '').trim() &&
-               (dir1.cp || '').trim() === (dir2.cp || '').trim();
-    }
-
-    // ========================================================
-    // 0. ASEGURAR QUE EL CHECKBOX DE ENVÍO INICIE DESMARCADO
-    // ========================================================
-    $('#check_envio_igual').prop('checked', false);
-
-    // ========================================================
-    // 1. CARGA INICIAL (Jalamos datos de BD)
-    // ========================================================
+    // 1. Cargar datos
     $.ajax({
-        url: 'api/api_finalizar_venta.php?id_cotizacion=' + id_cot,
-        method: 'GET', dataType: 'json',
+        url: 'api/api_finalizar_venta.php?action=get&id_cotizacion=' + id_cot,
+        method: 'GET', dataType: 'json', cache: false,
         success: function (res) {
             if (res.status === 'success' && res.data) {
                 let d = res.data;
 
-                // A) Guardar y Llenar Dirección Fiscal
                 if (d.fiscal && d.fiscal.calle_numero_fiscal) {
-                    dirFiscal = {
-                        calle: d.fiscal.calle_numero_fiscal, colonia: d.fiscal.colonia_fiscal,
-                        localidad: d.fiscal.localidad_fiscal, municipio: d.fiscal.municipio_fiscal,
-                        estado: d.fiscal.estado_fiscal, cp: d.fiscal.cp_fiscal
-                    };
-                } else if (d.empresa_default) {
-                    dirFiscal = {
-                        calle: d.empresa_default.calle_numero, colonia: d.empresa_default.colonia,
-                        localidad: d.empresa_default.localidad, municipio: d.empresa_default.municipio,
-                        estado: d.empresa_default.estado, cp: d.empresa_default.codigo_postal
-                    };
+                    $('#btn_regresar').html('Regresar');
+                } else {
+                    $('#btn_regresar').html('Dejar para después');
                 }
 
-                $('input[name="f_calle"]').val(dirFiscal.calle);
-                $('input[name="f_colonia"]').val(dirFiscal.colonia);
-                $('input[name="f_localidad"]').val(dirFiscal.localidad);
-                $('input[name="f_municipio"]').val(dirFiscal.municipio);
-                $('input[name="f_estado"]').val(dirFiscal.estado);
-                $('input[name="f_cp"]').val(dirFiscal.cp);
+                // Llenar Fiscal
+                if (d.empresa_default) {
+                    $('input[name="f_calle"]').val(d.empresa_default.calle_numero || d.empresa_default.calle || '');
+                    $('input[name="f_colonia"]').val(d.empresa_default.colonia || '');
+                    $('input[name="f_localidad"]').val(d.empresa_default.localidad || '');
+                    $('input[name="f_municipio"]').val(d.empresa_default.municipio || '');
+                    $('input[name="f_estado"]').val(d.empresa_default.estado || '');
+                    $('input[name="f_cp"]').val(d.empresa_default.codigo_postal || d.empresa_default.cp || '');
+                }
 
-                // B) Buscar la sucursal elegida para tener su dirección lista
-                $.ajax({
-                    url: 'api/api_finalizar_venta.php?action=get_sucursales&usuario_id=' + d.Usuario_empresa_id,
-                    method: 'GET', dataType: 'json',
-                    success: function(sucursales) {
-                        let sucElegida = sucursales.find(s => s.id_sucursal == d.Sucursal_id);
-                        if(sucElegida) {
-                            
-                            // CONCATENACIÓN LIMPIA (Solo Calle y Números)
-                            let calleArmada = sucElegida.calle ? sucElegida.calle.trim() : '';
+                if (d.detalles && d.detalles.length > 0) {
+                    isSucursalUnica = !d.es_multisucursal;
+                    construirEquipos(d.detalles);
 
-                            if (sucElegida.num_ext && sucElegida.num_ext.trim() !== '') {
-                                calleArmada += ' No. ' + sucElegida.num_ext.trim();
-                            }
-                            if (sucElegida.num_int && sucElegida.num_int.trim() !== '') {
-                                calleArmada += ' Int. ' + sucElegida.num_int.trim();
-                            }
+                    if (isSucursalUnica) {
+                        $('#alerta_sucursal_unica').removeClass('d-none');
+                        $('#col_envio_gral').removeClass('col-lg-12').addClass('col-lg-6');
+                        $('#lbl_envio_gral').hide();
+                        $('#col_cert_gral').removeClass('d-none');
+                        $('#seccion_desglose_equipos').hide();
 
-                            dirSucursal = {
-                                calle: calleArmada.trim(), 
-                                colonia: sucElegida.colonia || '',
-                                localidad: sucElegida.poblacion || '', 
-                                municipio: sucElegida.municipio || '',
-                                estado: sucElegida.estado || '', 
-                                cp: sucElegida.cp || ''
-                            };
+                        $('#switch_envio_unica').removeClass('d-none');
+                        $('#select_envio_multi').addClass('d-none');
 
-                            $('#nombre_sucursal_label').text(sucElegida.nombre_sucursal);
-                        } else {
-                            $('#nombre_sucursal_label').text('Sucursal no encontrada');
+                        let suc = d.sucursal_global;
+                        let equipo_base = d.detalles[0];
+
+                        // ✨ CAMBIO: Tarjeta Certificado ahora recibe el autollenado de la Sucursal Destino
+                        let tieneCertGuardado = (equipo_base && equipo_base.c_calle && equipo_base.c_calle.trim() !== '');
+                        if (tieneCertGuardado) {
+                            $('#cert_gral_calle').val(equipo_base.c_calle);
+                            $('#cert_gral_colonia').val(equipo_base.c_colonia);
+                            $('#cert_gral_localidad').val(equipo_base.c_localidad);
+                            $('#cert_gral_municipio').val(equipo_base.c_municipio);
+                            $('#cert_gral_estado').val(equipo_base.c_estado);
+                            $('#cert_gral_cp').val(equipo_base.c_cp);
+                        } else if (suc) {
+                            // Carga la Sucursal Destino por default
+                            $('#cert_gral_calle').val(suc.suc_calle || '');
+                            $('#cert_gral_colonia').val(suc.suc_colonia || '');
+                            $('#cert_gral_localidad').val(suc.suc_localidad || '');
+                            $('#cert_gral_municipio').val(suc.suc_municipio || '');
+                            $('#cert_gral_estado').val(suc.suc_estado || '');
+                            $('#cert_gral_cp').val(suc.suc_cp || '');
                         }
 
-                        // >>> INICIO: MEMORIA DE DIRECCIONES GUARDADAS <<<
+                        // ✨ CAMBIO: Tarjeta Envío se queda en blanco si no hay datos guardados previamente
+                        let tieneEnvioGuardado = (equipo_base && equipo_base.e_calle && equipo_base.e_calle.trim() !== '');
+                        if (tieneEnvioGuardado) {
+                            $('#envio_gral_calle').val(equipo_base.e_calle);
+                            $('#envio_gral_colonia').val(equipo_base.e_colonia);
+                            $('#envio_gral_localidad').val(equipo_base.e_localidad);
+                            $('#envio_gral_municipio').val(equipo_base.e_municipio);
+                            $('#envio_gral_estado').val(equipo_base.e_estado);
+                            $('#envio_gral_cp').val(equipo_base.e_cp);
+                        }
+
+                        sincronizarEnvioEquipos();
+                        sincronizarCertEquipos();
+                    } else {
+                        // ✨ MODO MULTISUCURSAL (Aseguramos que la UI sea la correcta)
+                        $('#alerta_sucursal_unica').addClass('d-none');
+                        $('#col_envio_gral').removeClass('col-lg-6').addClass('col-lg-12'); // Expande Envío a pantalla completa
+                        $('#lbl_envio_gral').show();
+                        $('#col_cert_gral').addClass('d-none'); // Oculta Certificado General
+                        $('#seccion_desglose_equipos').show(); // Muestra el acordeón de equipos
+
+                        // ✨ Mostrar Select, Ocultar Switch
+                        $('#switch_envio_unica').addClass('d-none');
+                        $('#select_envio_multi').removeClass('d-none');
+
+                        let $selMulti = $('#select_sucursal_envio_gral');
+                        $selMulti.empty().append('<option value="">Escribir manualmente...</option>');
+
+                        d.detalles.forEach(item => {
+                            if (item.sucursal_destino_id && !sucursalesMap[item.sucursal_destino_id]) {
+                                sucursalesMap[item.sucursal_destino_id] = {
+                                    calle: item.suc_calle || '',
+                                    colonia: item.suc_colonia || '',
+                                    localidad: item.suc_localidad || '',
+                                    municipio: item.suc_municipio || '',
+                                    estado: item.suc_estado || '',
+                                    cp: item.suc_cp || ''
+                                };
+                                let nombreSuc = item.suc_nombre || 'Sucursal ' + item.sucursal_destino_id;
+                                $selMulti.append(`<option value="${item.sucursal_destino_id}">${nombreSuc}</option>`);
+                            }
+                        });
+
+                        // Llenamos el envío general si tiene datos guardados la primera partida (como referencia general)
+                        // LÓGICA ESTRICTA: El envío general va en blanco A MENOS que todas las partidas compartan la misma dirección
+                        let todasIguales = true;
+                        let base_e_calle = (d.detalles[0].e_calle || '').trim();
+                        let base_e_colonia = (d.detalles[0].e_colonia || '').trim();
+                        let base_e_localidad = (d.detalles[0].e_localidad || '').trim();
+                        let base_e_municipio = (d.detalles[0].e_municipio || '').trim();
+                        let base_e_estado = (d.detalles[0].e_estado || '').trim();
+                        let base_e_cp = (d.detalles[0].e_cp || '').trim();
                         
-                        // Extraemos lo que ya estaba en la BD de la cotización
-                        let savedCert = null;
-                        if (d.cert && d.cert.calle_numero_cert) {
-                            savedCert = {
-                                calle: d.cert.calle_numero_cert, colonia: d.cert.colonia_cert,
-                                localidad: d.cert.localidad_cert, municipio: d.cert.municipio_cert,
-                                estado: d.cert.estado, cp: d.cert.cp_cert
-                            };
-                        }
-
-                        let savedEnvio = null;
-                        if (d.envio && d.envio.calle_numero_envio) {
-                            savedEnvio = {
-                                calle: d.envio.calle_numero_envio, colonia: d.envio.colonia_envio,
-                                localidad: d.envio.localidad_envio, municipio: d.envio.municipio_envio,
-                                estado: d.envio.estado_envio, cp: d.envio.cp_envio
-                            };
-                        }
-
-                        // 1. Decidir qué Radio Button de Certificado presionar
-                        if (savedCert) {
-                            if (esMismaDireccion(savedCert, dirSucursal)) {
-                                $('#cert_sucursal').prop('checked', true);
-                            } else if (esMismaDireccion(savedCert, dirFiscal)) {
-                                $('#cert_fiscal').prop('checked', true);
-                            } else {
-                                $('#cert_manual').prop('checked', true);
+                        // Validamos desde la segunda partida en adelante si existen diferencias
+                        for (let i = 1; i < d.detalles.length; i++) {
+                            let item = d.detalles[i];
+                            if (
+                                (item.e_calle || '').trim() !== base_e_calle ||
+                                (item.e_colonia || '').trim() !== base_e_colonia ||
+                                (item.e_localidad || '').trim() !== base_e_localidad ||
+                                (item.e_municipio || '').trim() !== base_e_municipio ||
+                                (item.e_estado || '').trim() !== base_e_estado ||
+                                (item.e_cp || '').trim() !== base_e_cp
+                            ) {
+                                todasIguales = false;
+                                break;
                             }
+                        }
+
+                        // Si todas son exactamente iguales y NO están vacías, las ponemos en el general.
+                        if (todasIguales && base_e_calle !== '') {
+                            $('#envio_gral_calle').val(base_e_calle);
+                            $('#envio_gral_colonia').val(base_e_colonia);
+                            $('#envio_gral_localidad').val(base_e_localidad);
+                            $('#envio_gral_municipio').val(base_e_municipio);
+                            $('#envio_gral_estado').val(base_e_estado);
+                            $('#envio_gral_cp').val(base_e_cp);
                         } else {
-                            $('#cert_sucursal').prop('checked', true); // Default si es nueva
+                            // Si son diferentes o están vacías, mantenemos el panel general limpio
+                            $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').val('');
                         }
+                    }
+                }
+            }
+        },
+        error: function (xhr) {
+            console.error("Error al cargar la API:", xhr.responseText);
+        }
+    });
 
-                        // 2. Decidir si palomear el Checkbox de Envío
-                        if (savedEnvio && savedCert) {
-                            if (esMismaDireccion(savedEnvio, savedCert)) {
-                                $('#check_envio_igual').prop('checked', true);
-                            } else {
-                                $('#check_envio_igual').prop('checked', false);
-                            }
-                        } else if (savedEnvio) {
-                            $('#check_envio_igual').prop('checked', false);
-                        }
+    // 2. Construir Equipos
+    function construirEquipos(detalles) {
+        let html = '';
+        detalles.forEach((item, index) => {
+            let id = item.id_detalle_cot;
 
-                        // 3. Disparar los eventos visuales para que se bloqueen/desbloqueen las cajas
-                        $('input[name="tipo_dir_cert"]:checked, input[name="tipo_dir_certificado"]:checked').trigger('change');
-                        $('#check_envio_igual').trigger('change');
+            let env_calle = (item.e_calle && item.e_calle.trim() !== '') ? item.e_calle : '';
+            let env_colonia = (item.e_colonia && item.e_colonia.trim() !== '') ? item.e_colonia : '';
+            let env_localidad = (item.e_localidad && item.e_localidad.trim() !== '') ? item.e_localidad : '';
+            let env_municipio = (item.e_municipio && item.e_municipio.trim() !== '') ? item.e_municipio : '';
+            let env_estado = (item.e_estado && item.e_estado.trim() !== '') ? item.e_estado : '';
+            let env_cp = (item.e_cp && item.e_cp.trim() !== '') ? item.e_cp : '';
 
-                        // 4. Si habían elegido "Manual", restaurar los datos exactos que escribieron
-                        if (savedCert && $('#cert_manual').is(':checked')) {
-                            llenarInputs('.c-input', savedCert);
-                        }
-                        if (savedEnvio && !$('#check_envio_igual').is(':checked')) {
-                            llenarInputs('.e-input', savedEnvio);
-                        }
+            let cert_calle = (item.c_calle && item.c_calle.trim() !== '') ? item.c_calle : (item.suc_calle || '');
+            let cert_colonia = (item.c_colonia && item.c_colonia.trim() !== '') ? item.c_colonia : (item.suc_colonia || '');
+            let cert_localidad = (item.c_localidad && item.c_localidad.trim() !== '') ? item.c_localidad : (item.suc_localidad || '');
+            let cert_municipio = (item.c_municipio && item.c_municipio.trim() !== '') ? item.c_municipio : (item.suc_municipio || '');
+            let cert_estado = (item.c_estado && item.c_estado.trim() !== '') ? item.c_estado : (item.suc_estado || '');
+            let cert_cp = (item.c_cp && item.c_cp.trim() !== '') ? item.c_cp : (item.suc_cp || '');
 
-                        // MAGIA NUEVA: Si la cotización ya tiene certificado o envío en BD, cambiamos el botón
-                        if (savedCert || savedEnvio) {
-                            $('#btn_regresar').text('Regresar');
-                        }
+            let nombreSucursal = item.suc_nombre ? item.suc_nombre : 'Sin sucursal asignada';
 
-                        // >>> FIN: MEMORIA DE DIRECCIONES GUARDADAS <<<
+            html += `
+            <div class="accordion-item border mb-4 shadow-sm equipo-item" style="border-radius: 8px; overflow: hidden;">
+                <input type="hidden" class="id_detalle_hidden" value="${id}"> 
+                
+                <h2 class="accordion-header" id="heading_${id}">
+                    <button class="accordion-button ${index !== 0 ? 'collapsed' : ''} fw-bold bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_${id}">
+                        <span class="badge bg-primary me-2 px-2 py-1 fs-12">#${index + 1}</span>
+                        [${item.clave_product}] ${item.descripcion_product} <span class="ms-2 text-muted fw-normal">(Cant: ${item.cantidad})</span>
+                    </button>
+                </h2>
+                <div id="collapse_${id}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" data-bs-parent="#contenedor_equipos">
+                    <div class="accordion-body row pt-4">
+                        <div class="col-md-6 border-end">
+                            <div class="d-flex align-items-baseline mb-3">
+                                <h6 class="fw-bold mb-0 me-2" style="color: #d39e00;">Certificado</h6>
+                                <small class="text-muted">(${nombreSucursal})</small>
+                            </div>
+                            <input type="text" class="form-control mb-2 c_calle" value="${cert_calle}" placeholder="Calle y número">
+                            <input type="text" class="form-control mb-2 c_colonia" value="${cert_colonia}" placeholder="Colonia">
+                            <input type="text" class="form-control mb-2 c_localidad" value="${cert_localidad}" placeholder="Localidad">
+                            <input type="text" class="form-control mb-2 c_municipio" value="${cert_municipio}" placeholder="Municipio">
+                            <input type="text" class="form-control mb-2 c_estado" value="${cert_estado}" placeholder="Estado">
+                            <input type="text" class="form-control c_cp" value="${cert_cp}" placeholder="C.P.">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-success mb-0">Envío</h6>
+                                <div class="form-check form-switch m-0 d-flex align-items-center">
+                                    <input class="form-check-input switch-copiar-cert mt-0" type="checkbox" id="switch_cert_${id}" style="transform: scale(1.1); margin-right: 8px;">
+                                    <label class="form-check-label fs-12 text-muted" for="switch_cert_${id}">¿Igual a Certificado?</label>
+                                </div>
+                            </div>
+                            <input type="text" class="form-control mb-2 e_calle" value="${env_calle}" placeholder="Calle y número">
+                            <input type="text" class="form-control mb-2 e_colonia" value="${env_colonia}" placeholder="Colonia">
+                            <input type="text" class="form-control mb-2 e_localidad" value="${env_localidad}" placeholder="Localidad">
+                            <input type="text" class="form-control mb-2 e_municipio" value="${env_municipio}" placeholder="Municipio">
+                            <input type="text" class="form-control mb-2 e_estado" value="${env_estado}" placeholder="Estado">
+                            <input type="text" class="form-control e_cp" value="${env_cp}" placeholder="C.P.">
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        });
+        $('#contenedor_equipos').html(html);
+    }
+
+    //[fn] Switch de Certificado de la Partida
+    $(document).on('change', '.switch-copiar-cert', function () {
+        let $fila = $(this).closest('.accordion-body');
+        if ($(this).is(':checked')) {
+            $fila.find('.e_calle').val($fila.find('.c_calle').val());
+            $fila.find('.e_colonia').val($fila.find('.c_colonia').val());
+            $fila.find('.e_localidad').val($fila.find('.c_localidad').val());
+            $fila.find('.e_municipio').val($fila.find('.c_municipio').val());
+            $fila.find('.e_estado').val($fila.find('.c_estado').val());
+            $fila.find('.e_cp').val($fila.find('.c_cp').val());
+        } else {
+            $fila.find('.e_calle, .e_colonia, .e_localidad, .e_municipio, .e_estado, .e_cp').val('');
+        }
+    });
+
+    $(document).on('input', '.c_calle, .c_colonia, .c_localidad, .c_municipio, .c_estado, .c_cp', function () {
+        let $fila = $(this).closest('.accordion-body');
+        if ($fila.find('.switch-copiar-cert').is(':checked')) {
+            $fila.find('.e_calle').val($fila.find('.c_calle').val());
+            $fila.find('.e_colonia').val($fila.find('.c_colonia').val());
+            $fila.find('.e_localidad').val($fila.find('.c_localidad').val());
+            $fila.find('.e_municipio').val($fila.find('.c_municipio').val());
+            $fila.find('.e_estado').val($fila.find('.c_estado').val());
+            $fila.find('.e_cp').val($fila.find('.c_cp').val());
+        }
+    });
+
+    $(document).on('input', '.e_calle, .e_colonia, .e_localidad, .e_municipio, .e_estado, .e_cp', function () {
+        let $fila = $(this).closest('.accordion-body');
+        if ($fila.find('.switch-copiar-cert').is(':checked')) {
+            $fila.find('.switch-copiar-cert').prop('checked', false);
+        }
+    });
+
+    // 3. Comportamiento de Switches Generales
+    $('#check_cert_igual_fiscal').change(function () {
+        if ($(this).is(':checked')) {
+            $('#cert_gral_calle').val($('input[name="f_calle"]').val());
+            $('#cert_gral_colonia').val($('input[name="f_colonia"]').val());
+            $('#cert_gral_localidad').val($('input[name="f_localidad"]').val());
+            $('#cert_gral_municipio').val($('input[name="f_municipio"]').val());
+            $('#cert_gral_estado').val($('input[name="f_estado"]').val());
+            $('#cert_gral_cp').val($('input[name="f_cp"]').val());
+
+            // Si el switch de envío también está prendido, hace cascada
+            if (isSucursalUnica && $('#check_envio_igual_cert').is(':checked')) {
+                $('#check_envio_igual_cert').trigger('change');
+            }
+
+        } else {
+            $('#cert_gral_calle, #cert_gral_colonia, #cert_gral_localidad, #cert_gral_municipio, #cert_gral_estado, #cert_gral_cp').val('');
+            if (isSucursalUnica && $('#check_envio_igual_cert').is(':checked')) {
+                $('#check_envio_igual_cert').trigger('change');
+            }
+        }
+        //$('#envio_gral_calle').trigger('input');
+        sincronizarCertEquipos();
+    });
+
+    $('#check_envio_igual_cert').change(function () {
+        if ($(this).is(':checked')) {
+            $('#envio_gral_calle').val($('#cert_gral_calle').val());
+            $('#envio_gral_colonia').val($('#cert_gral_colonia').val());
+            $('#envio_gral_localidad').val($('#cert_gral_localidad').val());
+            $('#envio_gral_municipio').val($('#cert_gral_municipio').val());
+            $('#envio_gral_estado').val($('#cert_gral_estado').val());
+            $('#envio_gral_cp').val($('#cert_gral_cp').val());
+        } else {
+            $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').val('');
+        }
+        sincronizarCertEquipos();
+        //$('#envio_gral_calle').trigger('input');
+    });
+
+    // Select Envío General -> Copia de Sucursal Seleccionada (Solo Multisucursal)
+    $('#select_sucursal_envio_gral').change(function() {
+        let val = $(this).val();
+        if (val && sucursalesMap[val]) {
+            let s = sucursalesMap[val];
+            $('#envio_gral_calle').val(s.calle);
+            $('#envio_gral_colonia').val(s.colonia);
+            $('#envio_gral_localidad').val(s.localidad);
+            $('#envio_gral_municipio').val(s.municipio);
+            $('#envio_gral_estado').val(s.estado);
+            $('#envio_gral_cp').val(s.cp);
+        } else {
+            $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').val('');
+        }
+        sincronizarEnvioEquipos();
+    });
+
+
+    // Enlazamos eventos input
+    $('#cert_gral_calle, #cert_gral_colonia, #cert_gral_localidad, #cert_gral_municipio, #cert_gral_estado, #cert_gral_cp').on('input', function () {
+        sincronizarEnvioEquipos();
+
+        // Apagamos el switch de "Igual a fiscal" si el usuario edita
+        if ($('#check_cert_igual_fiscal').is(':checked')) {
+            $('#check_cert_igual_fiscal').prop('checked', false);
+        }
+        
+        if ($('#check_envio_igual_cert').is(':checked')) {
+            $('#envio_gral_calle').val($('#cert_gral_calle').val());
+            $('#envio_gral_colonia').val($('#cert_gral_colonia').val());
+            $('#envio_gral_localidad').val($('#cert_gral_localidad').val());
+            $('#envio_gral_municipio').val($('#cert_gral_municipio').val());
+            $('#envio_gral_estado').val($('#cert_gral_estado').val());
+            $('#envio_gral_cp').val($('#cert_gral_cp').val());
+            sincronizarCertEquipos();
+        }
+    });
+
+    $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').on('input', function () {
+        sincronizarEnvioEquipos();
+        if (isSucursalUnica && $('#check_envio_igual_cert').is(':checked')) {
+            $('#check_envio_igual_cert').prop('checked', false);
+        }
+        
+        if (!isSucursalUnica && $('#select_sucursal_envio_gral').val() !== "") {
+            $('#select_sucursal_envio_gral').val('');
+        }
+    });
+
+    function sincronizarEnvioEquipos() {
+        /* $('.e_calle').val($('#envio_gral_calle').val());
+        $('.e_colonia').val($('#envio_gral_colonia').val());
+        $('.e_localidad').val($('#envio_gral_localidad').val());
+        $('.e_municipio').val($('#envio_gral_municipio').val());
+        $('.e_estado').val($('#envio_gral_estado').val());
+        $('.e_cp').val($('#envio_gral_cp').val()); */
+        if (isSucursalUnica || !isSucursalUnica) { // Siempre actualiza en cualquiera de los dos modos
+            $('.e_calle').val($('#envio_gral_calle').val());
+            $('.e_colonia').val($('#envio_gral_colonia').val());
+            $('.e_localidad').val($('#envio_gral_localidad').val());
+            $('.e_municipio').val($('#envio_gral_municipio').val());
+            $('.e_estado').val($('#envio_gral_estado').val());
+            $('.e_cp').val($('#envio_gral_cp').val());
+        }
+    }
+
+    function sincronizarCertEquipos() {
+        if (isSucursalUnica) {
+            $('.c_calle').val($('#cert_gral_calle').val());
+            $('.c_colonia').val($('#cert_gral_colonia').val());
+            $('.c_localidad').val($('#cert_gral_localidad').val());
+            $('.c_municipio').val($('#cert_gral_municipio').val());
+            $('.c_estado').val($('#cert_gral_estado').val());
+            $('.c_cp').val($('#cert_gral_cp').val());
+        }
+    }
+
+    // 4. Guardar JSON
+    $('#formFormalizar').on('submit', function (e) {
+        e.preventDefault();
+
+        if (isSucursalUnica) {
+            sincronizarCertEquipos();
+            sincronizarEnvioEquipos();
+        }
+        let payloadEquipos = [];
+
+        $('.equipo-item').each(function () {
+            let idDetalle = $(this).find('.id_detalle_hidden').val();
+            if (idDetalle) {
+                payloadEquipos.push({
+                    id_detalle: parseInt(idDetalle),
+                    cert: {
+                        calle: $(this).find('.c_calle').val(), colonia: $(this).find('.c_colonia').val(),
+                        localidad: $(this).find('.c_localidad').val(), municipio: $(this).find('.c_municipio').val(),
+                        estado: $(this).find('.c_estado').val(), cp: $(this).find('.c_cp').val()
+                    },
+                    envio: {
+                        calle: $(this).find('.e_calle').val(), colonia: $(this).find('.e_colonia').val(),
+                        localidad: $(this).find('.e_localidad').val(), municipio: $(this).find('.e_municipio').val(),
+                        estado: $(this).find('.e_estado').val(), cp: $(this).find('.e_cp').val()
                     }
                 });
             }
-        }
-    });
+        });
 
-    // ========================================================
-    // 2. LÓGICA DE RADIOS (DIRECCIÓN CERTIFICADO)
-    // ========================================================
-    $('input[name="tipo_dir_cert"], input[name="tipo_dir_certificado"]').on('change', function() {
-        let tipo = $(this).val();
+        let dataEnvio = {
+            id_cotizacion: parseInt($('#id_cotizacion').val()),
+            fiscal: {
+                calle: $('input[name="f_calle"]').val(), colonia: $('input[name="f_colonia"]').val(),
+                localidad: $('input[name="f_localidad"]').val(), municipio: $('input[name="f_municipio"]').val(),
+                estado: $('input[name="f_estado"]').val(), cp: $('input[name="f_cp"]').val()
+            },
+            equipos: payloadEquipos
+        };
 
-        if (tipo === 'sucursal') {
-            llenarInputs('.c-input', dirSucursal);
-            $('.c-input').prop('readonly', true);       
-            $('#bloque_cert_manual').slideDown();
-        } else if (tipo === 'fiscal') {
-            llenarInputs('.c-input', dirFiscal);
-            $('.c-input').prop('readonly', true);       
-            $('#bloque_cert_manual').slideDown();
-        } else if (tipo === 'manual') {
-            limpiarInputs('.c-input');
-            $('.c-input').prop('readonly', false);      
-            $('#bloque_cert_manual').slideDown();
-        }
-
-        if($('#check_envio_igual').is(':checked')) {
-            $('#check_envio_igual').trigger('change');
-        }
-    });
-
-    // ========================================================
-    // 3. LÓGICA DE CHECKBOX (DIRECCIÓN ENVÍO)
-    // ========================================================
-    $('#check_envio_igual').on('change', function() {
-        if($(this).is(':checked')) {
-            let certData = {
-                calle: $('input[name="c_calle"]').val(), colonia: $('input[name="c_colonia"]').val(),
-                localidad: $('input[name="c_localidad"]').val(), municipio: $('input[name="c_municipio"]').val(),
-                estado: $('input[name="c_estado"]').val(), cp: $('input[name="c_cp"]').val()
-            };
-            llenarInputs('.e-input', certData);
-            $('.e-input').prop('readonly', true);        
-            $('#bloque_envio_manual').slideDown();
-        } else {
-            limpiarInputs('.e-input');
-            $('.e-input').prop('readonly', false);       
-            $('#bloque_envio_manual').slideDown();
-        }
-    });
-
-    // Sincronizar en tiempo real
-    $('.c-input').on('keyup', function () { 
-        if ($('#check_envio_igual').is(':checked')) {
-            let name = $(this).attr('name').replace('c_', 'e_');
-            $('input[name="'+name+'"]').val($(this).val());
-        }
-    });
-
-    // ========================================================
-    // 4. FUNCIONES AUXILIARES
-    // ========================================================
-    function llenarInputs(clase, data) {
-        let prefix = (clase === '.c-input') ? 'c_' : 'e_';
-        $('input[name="'+prefix+'calle"]').val(data.calle || '');
-        $('input[name="'+prefix+'colonia"]').val(data.colonia || '');
-        $('input[name="'+prefix+'localidad"]').val(data.localidad || '');
-        $('input[name="'+prefix+'municipio"]').val(data.municipio || '');
-        $('input[name="'+prefix+'estado"]').val(data.estado || '');
-        $('input[name="'+prefix+'cp"]').val(data.cp || '');
-    }
-
-    function limpiarInputs(clase) { $(clase).val(''); }
-
-    // ========================================================
-    // 5. GUARDAR DATOS
-    // ========================================================
-    $('#formFormalizar').on('submit', function (e) {
-        e.preventDefault();
         let btnSubmit = $(this).find('button[type="submit"]');
         let textoOriginal = btnSubmit.text();
         btnSubmit.prop('disabled', true).html('Guardando...');
-        let urlOrigen = $('#url_origen').val();
 
         $.ajax({
             url: 'api/api_finalizar_venta.php',
-            type: 'POST', data: $(this).serialize(),
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(dataEnvio),
             success: function (res) {
                 if (res.status === 'success') {
                     alert(res.message);
-                    window.location.href = urlOrigen; 
+                    window.location.href = $('#url_origen').val();
                 } else {
                     alert("Error: " + res.message);
                     btnSubmit.prop('disabled', false).text(textoOriginal);
                 }
             },
-            error: function () {
-                alert("Ocurrió un error al guardar.");
+            error: function (xhr) {
+                alert("Error de conexión. Revisa la consola.");
+                console.log(xhr.responseText);
                 btnSubmit.prop('disabled', false).text(textoOriginal);
             }
         });

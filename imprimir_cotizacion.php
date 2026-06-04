@@ -40,17 +40,25 @@ if (!$cot) {
     exit("Cotización no encontrada");
 }
 
+$es_multisucursal = empty($cot['Sucursal_id']);
+
+
+
 // 2. Detalles de la cotización - Manteniendo tu lógica PDO original
 $sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product,
            pf.pf_equipo, pf.pf_calibracion,
            pp.pp_equipo, pp.pp_calibracion,
            s_dest.nombre_sucursal AS nombre_sucursal_destino,
-           s_dest.estado AS estado_sucursal_destino
+           s_dest.estado AS estado_sucursal_destino,
+           c_dir.calle_numero_cert, c_dir.colonia_cert, c_dir.municipio_cert, c_dir.estado as estado_cert, c_dir.cp_cert,
+           e_dir.calle_numero_envio, e_dir.colonia_envio, e_dir.municipio_envio, e_dir.estado_envio, e_dir.cp_envio
            FROM detalle_cotizacion d
            JOIN productos p ON d.Product_id = p.id_product
            LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
            LEFT JOIN sucursales s_dest ON d.sucursal_destino_id = s_dest.id_sucursal
+           LEFT JOIN domicilio_cert_calib c_dir ON d.id_dom_cert = c_dir.id_domicilio_cert
+           LEFT JOIN domicilio_envio e_dir ON d.id_dom_envio = e_dir.id_domicilio_envio
            WHERE d.Cotizacion_id = ?";
 $stmtDet = $pdo->prepare($sqlDet);
 $stmtDet->execute([$id_cot]);
@@ -250,7 +258,7 @@ $serie = "COTLAN";
                 // 1. Preparamos el texto de la plaza una sola vez
                 $plaza_completa = 'Sin especificar';
                 if ($es_multisucursal) {
-                    $plaza_completa = 'DISTRIBUCIÓN MULTISUCURSAL';
+                    $plaza_completa = !empty($cot['municipio']) ? mb_strtoupper(htmlspecialchars($cot['municipio']), 'UTF-8') : 'DISTRIBUCIÓN MULTISUCURSAL';
                 } elseif (!empty($cot['nombre_sucursal'])) {
                     $estado_texto = !empty($cot['sucursal_estado']) ? htmlspecialchars($cot['sucursal_estado']) . ', ' : '';
                     $plaza_completa = $estado_texto . htmlspecialchars($cot['nombre_sucursal']);
@@ -287,7 +295,7 @@ $serie = "COTLAN";
             </div>
         </div>
 
-        <?php if ($dir_cert || $dir_envio): ?>
+        <?php if (!$es_multisucursal && ($dir_cert || $dir_envio)): ?>
             <div class="row mb-4">
                 <?php if ($dir_cert): ?>
                     <div class="col-6">
@@ -326,12 +334,7 @@ $serie = "COTLAN";
                         <tr>
                             <th width="10%">CANTIDAD</th>
                             <th width="10%">CLAVE</th>
-                            <?php if ($es_multisucursal): ?>
-                                <th width="33%">DESCRIPCIÓN</th>
-                                <th width="20%">SUCURSAL DESTINO</th>
-                            <?php else: ?>
-                                <th width="45%">DESCRIPCIÓN</th>
-                            <?php endif; ?>
+                            <th width="45%">DESCRIPCIÓN</th>
                             <th width="10%">P/U</th>
                             <th width="10%">IMPORTE</th>
                         </tr>
@@ -344,7 +347,6 @@ $serie = "COTLAN";
                                 <!-- <td class="text-start px-2">?php echo htmlspecialchars($d['descripcion_product']); ?></td> -->
                                 <td class="text-start px-2 py-2">
                                     <?php echo nl2br(htmlspecialchars($d['descripcion_product'])); ?>
-
                                     <?php
                                     // Si el desglose está activo, mostramos los precios
                                     if (isset($d['desglosar']) && $d['desglosar'] === 'Y'):
@@ -370,16 +372,33 @@ $serie = "COTLAN";
                                             <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
+
+                                    <?php
+                                    // ✨ AQUÍ ESTÁ LA MAGIA: Si es multisucursal, inyectamos las direcciones debajo de la descripción
+                                    if ($es_multisucursal && (!empty($d['calle_numero_cert']) || !empty($d['calle_numero_envio']))):
+                                    ?>
+                                        <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed #ccc;">
+                                            <span style="font-size: 9px; color: #444; display: block; line-height: 1.2;">
+                                                <strong style="color: #000;">📍 Certificado (<?php echo htmlspecialchars($d['nombre_sucursal_destino']); ?>):</strong>
+                                                <?php echo htmlspecialchars($d['calle_numero_cert'] . ', ' . $d['colonia_cert'] . ', ' . $d['municipio_cert'] . ', ' . $d['estado_cert'] . ' C.P. ' . $d['cp_cert']); ?>
+                                            </span>
+                                            <span style="font-size: 9px; color: #444; display: block; line-height: 1.2; margin-top: 2px;">
+                                                <strong style="color: #000;">🚚 Envío:</strong>
+                                                <?php echo htmlspecialchars($d['calle_numero_envio'] . ', ' . $d['colonia_envio'] . ', ' . $d['municipio_envio'] . ', ' . $d['estado_envio'] . ' C.P. ' . $d['cp_envio']); ?>
+                                            </span>
+                                        </div>
+                                    <?php endif; ?>
+
                                 </td>
 
-                                <?php if ($es_multisucursal): ?>
+                                <!-- ?php if ($es_multisucursal): ?>
                                     <td class="text-center px-2 py-2" style="font-size: 9px; font-weight: bold; color: #333;">
-                                        <?php echo htmlspecialchars($d['nombre_sucursal_destino'] ?? 'POR ASIGNAR'); ?>
-                                        <?php if (!empty($d['estado_sucursal_destino'])): ?>
-                                            <br><span style="font-weight: normal; color: #666;">(<?php echo htmlspecialchars($d['estado_sucursal_destino']); ?>)</span>
-                                        <?php endif; ?>
+                                        <php echo htmlspecialchars($d['nombre_sucursal_destino'] ?? 'POR ASIGNAR'); ?>
+                                        <php if (!empty($d['estado_sucursal_destino'])): ?>
+                                            <br><span style="font-weight: normal; color: #666;">(<php echo htmlspecialchars($d['estado_sucursal_destino']); ?>)</span>
+                                        <php endif; ?>
                                     </td>
-                                <?php endif; ?>
+                                <php endif; ?> -->
 
                                 <td class="text-end px-2"><?php echo number_format($d['precio_unitario'], 2); ?></td>
                                 <td class="text-end px-2"><?php echo number_format($d['precio_extendido'], 2); ?></td>
@@ -524,7 +543,7 @@ $serie = "COTLAN";
             </div>
         </footer>
 
-        <?php if ($es_multisucursal && !empty($direcciones_multisucursal)): ?>
+        <!-- ?php if ($es_multisucursal && !empty($direcciones_multisucursal)): ?>
             <div class="page-break"></div>
             <div class="row mt-5 mb-4">
                 <div class="col-12 text-center">
@@ -543,13 +562,13 @@ $serie = "COTLAN";
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($direcciones_multisucursal as $dir): ?>
+                            ?php foreach ($direcciones_multisucursal as $dir): ?>
                                 <tr>
                                     <td class="text-start px-2 fw-bold" style="font-size: 10px;">
-                                        <?php echo htmlspecialchars($dir['nombre_sucursal']); ?>
+                                        ?php echo htmlspecialchars($dir['nombre_sucursal']); ?>
                                     </td>
                                     <td class="text-start px-2" style="font-size: 10px; line-height: 1.4;">
-                                        <?php
+                                        ?php
                                         $direccion = htmlspecialchars($dir['calle']);
                                         if (!empty($dir['num_ext'])) $direccion .= " NO. " . htmlspecialchars($dir['num_ext']);
                                         if (!empty($dir['num_int'])) $direccion .= " INT. " . htmlspecialchars($dir['num_int']);
@@ -560,7 +579,7 @@ $serie = "COTLAN";
                                         ?>
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
+                            ?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
@@ -573,13 +592,13 @@ $serie = "COTLAN";
                     </div>
                 </div>
             </div>
-        <?php endif; ?>
+        ?php endif; ?> -->
     </div>
-    <script>
+    <!-- <script>
         window.onload = function() {
             window.print();
         }
-    </script>
+    </script> -->
 
     </div>
 

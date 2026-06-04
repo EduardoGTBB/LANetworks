@@ -420,6 +420,7 @@ $(document).ready(function () {
                 let $colEstatus = $('#fila_estatus_lan');
                 let $colCliente = $('#edit_select_empresa').closest('div[class^="col-"]');
                 let $colSucursal = $('#edit_select_sucursal').closest('div[class^="col-"]');
+                let $colTipoProd = $('#edit_filtro_tipo_producto').closest('div[class^="col-"]');
 
                 // 1. Restauramos el diseño original por si está entrando un administrador
                 $colSolicitante.removeClass('col-md-12').addClass('col-md-4');
@@ -427,6 +428,7 @@ $(document).ready(function () {
                 $colEstatus.show();
                 $selEmp.prop('disabled', false);
                 $colSucursal.insertAfter($colSolicitante); // Lo regresa a su lugar normal
+                
 
                 if (isEditMultiSucursal) {
                     $colSucursal.hide();
@@ -445,13 +447,16 @@ $(document).ready(function () {
                     $colPrecio.hide();
                     $colEstatus.hide();
 
-                    if (!isEditMultiSucursal) { $colSucursal.insertAfter($colCliente); }
+                    if (!isEditMultiSucursal) { 
+                        $colSucursal.insertAfter($colCliente); 
+                    }
 
                     // B. MAGIA DE DISEÑO: Movemos "Sucursal" a la fila de arriba (al lado de Cliente)
                     $colSucursal.insertAfter($colCliente);
 
                     // C. Hacemos que "Solicitante" ocupe todo el ancho de la fila de abajo
-                    $colSolicitante.removeClass('col-md-4').addClass('col-md-12');
+                    $colSolicitante.removeClass('col-md-4').addClass('col-md-6');
+                    $colTipoProd.removeClass('col-md-4').addClass('col-md-6');
 
                     // D. Bloqueamos alterar la Empresa
                     $selEmp.prop('disabled', true);
