@@ -14,7 +14,17 @@
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
                             <li class="breadcrumb-item">Cotizaciones</li>
-                            <li class="breadcrumb-item">Direcciones Cotizacion #<?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></li>
+                            <?php
+                                // Buscamos el folio especial en la base de datos usando el ID
+                                $stmtF = $pdo->prepare("SELECT folio_especial FROM cotizacion WHERE id_cotizacion = ?");
+                                $stmtF->execute([$id_cotizacion]);
+                                $folioEspecial = $stmtF->fetchColumn();
+                                
+                                // Si tiene folio con letras (ej. 00004-U) lo usa, si no, formatea el ID a 5 dígitos
+                                $folioAMostrar = $folioEspecial ? $folioEspecial : str_pad((string)$id_cotizacion, 5, '0', STR_PAD_LEFT);
+                            ?>
+                            <li class="breadcrumb-item">Direcciones Cotización <strong>#<?php echo $folioAMostrar; ?></strong></li>
+                            <!-- <li class="breadcrumb-item">Direcciones Cotizacion #?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></li> -->
                         </ul>
                         <!-- <h5 class="m-b-10">Formalizar Venta #?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></h5> -->
                     </div>
@@ -100,16 +110,23 @@
                                     <h5 class="mb-0 text-white"><i class="feather-truck me-2"></i>Dirección de Envío <span id="lbl_envio_gral">(General)</span></h5>
                                 </div>
                                 <div class="card-body">
-                                    <div id="switch_envio_unica" class="form-check form-switch mb-4 border-bottom pb-3">
-                                        <input class="form-check-input" type="checkbox" id="check_envio_igual_cert" style="transform: scale(1.3); margin-right: 10px;">
-                                        <label class="form-check-label fw-bold text-dark h6" for="check_envio_igual_cert">¿La dirección es la misma de certificado?</label>
-                                    </div>
+                                    <div class="row align-items-center mb-4 border-bottom pb-3">
+                                        <div class="col-12 d-none" id="switch_envio_unica">
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input" type="checkbox" id="check_envio_igual_cert" style="transform: scale(1.3); margin-right: 10px;">
+                                                <label class="form-check-label fw-bold text-dark h6 mb-0" for="check_envio_igual_cert" style="cursor: pointer;">¿Igual a certificado?</label>
+                                            </div>
+                                        </div>
 
-                                    <div id="select_envio_multi" class="mb-4 border-bottom pb-3 d-none">
-                                        <label class="fw-bold text-dark h6 mb-2">Llenar con sucursal destino:</label>
-                                        <select class="form-select border-success text-success" id="select_sucursal_envio_gral">
-                                            <option value="">Escribir manualmente...</option>
-                                        </select>
+                                        <div class="col-12 d-none" id="div_selector_contacto_gral">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="flex-grow-1">
+                                                    <select class="form-select form-select-sm border-success text-success fw-bold shadow-sm" id="selector_contacto_gral">
+                                                        <option value="">Seleccionar plaza o contacto...</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="row">

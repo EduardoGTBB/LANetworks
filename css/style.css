@@ -84,7 +84,8 @@ span.select2.select2-container.form-control {
     padding: 0 !important;
     border: none !important;
     background: transparent !important;
-    background-image: none !important; /* Quita la flechita nativa del select de Bootstrap */
+    background-image: none !important;
+    /* Quita la flechita nativa del select de Bootstrap */
 }
 
 /* 2. LA CAJA GRIS REAL (Donde está el borde) */
@@ -96,7 +97,8 @@ span.select2.select2-container.form-control {
     border: 1px solid #ced4da !important;
     border-radius: 4px !important;
     background-color: #fff !important;
-    overflow: hidden !important; /* CRÍTICO: Fuerza a la caja gris a envolver absolutamente todo su contenido */
+    overflow: hidden !important;
+    /* CRÍTICO: Fuerza a la caja gris a envolver absolutamente todo su contenido */
 }
 
 /* 3. EL CONTENEDOR INTERNO UL (Flexbox) */
@@ -108,7 +110,8 @@ span.select2.select2-container.form-control {
     width: 100% !important;
     height: auto !important;
     margin: 0 !important;
-    padding: 0 0 2px 0 !important; /* Respiro en la parte inferior para que el textarea no choque */
+    padding: 0 0 2px 0 !important;
+    /* Respiro en la parte inferior para que el textarea no choque */
     gap: 6px !important;
     list-style: none !important;
 }
@@ -118,19 +121,24 @@ span.select2.select2-container.form-control {
     margin: 0 !important;
     padding: 3px 8px !important;
     display: inline-flex !important;
-    flex-direction: row-reverse !important; /* MAGIA: Mueve la "x" a la derecha */
+    flex-direction: row-reverse !important;
+    /* MAGIA: Mueve la "x" a la derecha */
     align-items: center !important;
-    background-color: #f0f2f5 !important; /* Fondo gris claro limpio */
+    background-color: #f0f2f5 !important;
+    /* Fondo gris claro limpio */
     border: 1px solid #ced4da !important;
     border-radius: 4px !important;
-    gap: 12px !important; /* Espacio perfecto entre el nombre y la X */
+    gap: 12px !important;
+    /* Espacio perfecto entre el nombre y la X */
 }
+
 .select2-container--default .select2-selection--multiple .select2-selection__choice__display {
     padding: 0 !important;
     margin: 0 !important;
     font-size: 13px !important;
     color: #495057 !important;
 }
+
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
     position: relative !important;
     color: #6c757d !important;
@@ -145,6 +153,7 @@ span.select2.select2-container.form-control {
     align-items: center !important;
     justify-content: center !important;
 }
+
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
     color: #dc3545 !important;
     background: transparent !important;
@@ -195,7 +204,20 @@ span.select2.select2-container.form-control {
     color: #adb5bd !important;
     -webkit-text-fill-color: #adb5bd !important;
     text-align: left !important;
+
 }
 
+/* 8. Borde de la caja de búsqueda SOLO afectará al modal de Plazas */
+#modalPlaza .select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 1px solid #ced4da !important;
+    border-radius: 5px !important;
+    padding: 6px 10px !important;
+    background-color: #fdfdfd !important;
+}
 
-
+/* 9. Efecto Focus SOLO afectará al modal de Plazas */
+#modalPlaza .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    border-color: #17c653 !important;
+    box-shadow: 0 0 0 0.25rem rgba(23, 198, 83, 0.25) !important;
+    outline: none !important;
+}

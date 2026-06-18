@@ -1,9 +1,9 @@
 <?php
 
 /**
- * controlador: imprimir_cotizacion.php
- * Formato: LA NETWORKS & SMART TECHNOLOGIES - Optimizado para Bootstrap 5
- */
+ *  controlador: imprimir_cotizacion.php
+ *  Formato: LA NETWORKS & SMART TECHNOLOGIES - Optimizado para Bootstrap 5
+ **/
 session_start();
 
 require 'api/config.php';
@@ -23,14 +23,15 @@ if (!$id_cot) {
 $sql = "SELECT c.*, e.*, dem.calle_numero, dem.colonia, dem.localidad, dem.codigo_postal, dem.municipio, dem.estado, 
         CONCAT(usu.nombre, ' ', usu.apellido_pat, ' ', usu.apellido_mat) as cliente, 
         CONCAT(u.admin_nombre, ' ', u.admin_apell_pat) as vendedor,
-        s.nombre_sucursal, s.estado as sucursal_estado
+        s.nombre_sucursal, s.estado as sucursal_estado,
+        pl.nombre_plaza
     FROM cotizacion c
     JOIN empresa e ON c.Empresa_id = e.id_empresa
-    -- JOIN domicilio_empresa dem ON e.id_empresa = dem.id_domicilio_empresa
     JOIN domicilio_empresa dem ON e.id_empresa = dem.Empresa_id
     LEFT JOIN usuarios_admin u ON c.Usuario_admin_id = u.id_user_admin
     JOIN usuarios usu ON c.Usuario_empresa_id = usu.id_usuario
     LEFT JOIN sucursales s ON c.Sucursal_id = s.id_sucursal
+    LEFT JOIN plazas pl ON s.Plaza_id = pl.id_plaza
     WHERE c.id_cotizacion = ?";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$id_cot]);
@@ -42,8 +43,6 @@ if (!$cot) {
 
 $es_multisucursal = empty($cot['Sucursal_id']);
 
-
-
 // 2. Detalles de la cotización - Manteniendo tu lógica PDO original
 $sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product,
            pf.pf_equipo, pf.pf_calibracion,
@@ -51,30 +50,120 @@ $sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product,
            s_dest.nombre_sucursal AS nombre_sucursal_destino,
            s_dest.estado AS estado_sucursal_destino,
            c_dir.calle_numero_cert, c_dir.colonia_cert, c_dir.municipio_cert, c_dir.estado as estado_cert, c_dir.cp_cert,
-           e_dir.calle_numero_envio, e_dir.colonia_envio, e_dir.municipio_envio, e_dir.estado_envio, e_dir.cp_envio
+           e_dir.calle_numero_envio, e_dir.colonia_envio, e_dir.municipio_envio, e_dir.estado_envio, e_dir.cp_envio,
+           pl.nombre_plaza
            FROM detalle_cotizacion d
            JOIN productos p ON d.Product_id = p.id_product
            LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
            LEFT JOIN sucursales s_dest ON d.sucursal_destino_id = s_dest.id_sucursal
+           LEFT JOIN plazas pl ON s_dest.Plaza_id = pl.id_plaza
            LEFT JOIN domicilio_cert_calib c_dir ON d.id_dom_cert = c_dir.id_domicilio_cert
            LEFT JOIN domicilio_envio e_dir ON d.id_dom_envio = e_dir.id_domicilio_envio
            WHERE d.Cotizacion_id = ?";
+
 $stmtDet = $pdo->prepare($sqlDet);
 $stmtDet->execute([$id_cot]);
 $detalles = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
 
-$stmtCert = $pdo->prepare("SELECT * FROM domicilio_cert_calib WHERE Cotizacion_id = ?");
+/* $stmtCert = $pdo->prepare("SELECT * FROM domicilio_cert_calib WHERE Cotizacion_id = ?");
 $stmtCert->execute([$id_cot]);
 $dir_cert = $stmtCert->fetch(PDO::FETCH_ASSOC);
 
 $stmtEnvio = $pdo->prepare("SELECT * FROM domicilio_envio WHERE Cotizacion_id = ?");
 $stmtEnvio->execute([$id_cot]);
-$dir_envio = $stmtEnvio->fetch(PDO::FETCH_ASSOC);
+$dir_envio = $stmtEnvio->fetch(PDO::FETCH_ASSOC); */
 
-$folio = $cot['id_cotizacion']; // O usar str_pad($cot['id_cotizacion'], 4, "0", STR_PAD_LEFT);
+$titulo_cotizacion = "COTIZACIÓN";
+if (isset($cot['categoria'])) {
+    if ($cot['categoria'] == 'Nuevo') {
+        $titulo_cotizacion = "COTIZACIÓN DE EQUIPOS NUEVOS";
+    } elseif ($cot['categoria'] == 'Usado') {
+        $titulo_cotizacion = "COTIZACIÓN DE EQUIPOS USADOS";
+    } elseif ($cot['categoria'] == 'Calibracion') {
+        $titulo_cotizacion = "COTIZACIÓN DE SERVICIO DE CALIBRACIÓN";
+    }
+}
+
+
+/* $folio = $cot['id_cotizacion']; // O usar str_pad($cot['id_cotizacion'], 4, "0", STR_PAD_LEFT); */
+$folio = !empty($cot['folio_especial']) ? $cot['folio_especial'] : str_pad((string)$cot['id_cotizacion'], 5, "0", STR_PAD_LEFT);
 $serie = "COTLAN";
 
+
+/* $plaza_completa = 'Sin especificar';
+if ($es_multisucursal) {
+    // Buscamos cuántas plazas distintas están involucradas
+    $sqlPlazas = "SELECT DISTINCT pl.nombre_plaza
+                  FROM detalle_cotizacion d
+                  JOIN sucursales s ON d.sucursal_destino_id = s.id_sucursal
+                  JOIN plazas pl ON s.Plaza_id = pl.id_plaza
+                  WHERE d.Cotizacion_id = ?";
+    $stmtPlazas = $pdo->prepare($sqlPlazas);
+    $stmtPlazas->execute([$id_cot]);
+    $plazas_multi = $stmtPlazas->fetchAll(PDO::FETCH_COLUMN);
+
+    if (count($plazas_multi) == 1) {
+        $plaza_completa = mb_strtoupper($plazas_multi[0], 'UTF-8');
+    } elseif (count($plazas_multi) > 1) {
+        $plaza_completa = 'DISTRIBUCIÓN MULTISUCURSAL (' . count($plazas_multi) . ' PLAZAS)';
+    } else {
+        $plaza_completa = 'DISTRIBUCIÓN MULTISUCURSAL';
+    }
+} elseif (!empty($cot['nombre_plaza'])) {
+    $plaza_completa = mb_strtoupper(htmlspecialchars($cot['nombre_plaza']), 'UTF-8');
+} else {
+    $plaza_completa = !empty($cot['nombre_sucursal']) ? htmlspecialchars($cot['nombre_sucursal']) : 'Sin especificar';
+} */
+
+// Evaluamos si el vendedor es un admin
+if ($cot['Usuario_admin_id'] > 0) {
+    $nombre_vendedor = htmlspecialchars($cot['vendedor']);
+} else {
+    // Es un usuario de la empresa
+    $nombre_vendedor = htmlspecialchars($cot['cliente']);
+}
+
+$dir_cert = null;
+$dir_envio = null;
+
+if (!$es_multisucursal && !empty($detalles)) {
+    $d = $detalles[0];
+    if (!empty($d['calle_numero_cert'])) {
+        $dir_cert = $d;
+    }
+    if (!empty($d['calle_numero_envio'])) {
+        $dir_envio = $d;
+    }
+}
+
+// Generamos el consolidado de envíos único por si es multisucursal
+$envios_multisucursal = [];
+if ($es_multisucursal) {
+    foreach ($detalles as $d) {
+        if (!empty($d['calle_numero_envio'])) {
+            $key_envio = trim($d['calle_numero_envio']) . '|' . trim($d['cp_envio']);
+            if (!isset($envios_multisucursal[$key_envio])) {
+                $envios_multisucursal[$key_envio] = [
+                    'plaza' => !empty($d['nombre_plaza']) ? mb_strtoupper($d['nombre_plaza'], 'UTF-8') : 'MATRIZ REGIONAL',
+                    'texto' => htmlspecialchars($d['calle_numero_envio']) . ', Col. ' . htmlspecialchars($d['colonia_envio']) . ', C.P. ' . htmlspecialchars($d['cp_envio']) . ', ' . htmlspecialchars($d['municipio_envio']) . ', ' . htmlspecialchars($d['estado_envio'])
+                ];
+            }
+        }
+    }
+}
+/* $envios_agrupados = [];
+if ($es_multisucursal) {
+    foreach ($detalles as $d) {
+        if (!empty($d['calle_numero_envio'])) {
+            $dir_key = htmlspecialchars($d['calle_numero_envio'] . ', COL. ' . $d['colonia_envio'] . ' - ' . $d['municipio_envio'] . ', ' . $d['estado_envio'] . ' CP: ' . $d['cp_envio']);
+            if (!isset($envios_agrupados[$dir_key])) {
+                $envios_agrupados[$dir_key] = [];
+            }
+            $envios_agrupados[$dir_key][] = "[" . htmlspecialchars($d['clave_product']) . "] " . htmlspecialchars($d['descripcion_product']) . " (Cant: " . $d['cantidad'] . ")";
+        }
+    }
+} */
 ?>
 
 <!DOCTYPE html>
@@ -218,71 +307,70 @@ $serie = "COTLAN";
         <?php endif; ?>
 
         <div class="row mb-4">
+            <!-- <div class="col-12 text center">
+                <p class="m-0" style="font-size:16px; color:#00a3f0;"><strong>?php echo $titulo_cotizacion; ?></strong></p>
+            </div> -->
             <div class="col-6">
-                <p class="m-0" style="font-size:16px;"><strong>COTIZACIÓN</strong></p>
+                <p class="m-0" style="font-size:16px; color:#00a3f0;"><strong><?php echo $titulo_cotizacion; ?></strong></p>
+                <!-- <p class="m-0" style="font-size:16px;"><strong>COTIZACIÓN</strong></p> -->
                 <p class="m-0"><strong>Serie:</strong> <span><?php echo $serie; ?></span> <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?> <strong>Folio:</strong> <?php else: ?> <strong>Folio:</strong> <?php endif; ?> <span><?php echo $folio; ?></span></p>
                 <p class="m-0"><strong>Fecha de elaboración:</strong> <?php echo date('d/m/Y', strtotime($cot['fecha_cot'])); ?></p>
                 <p class="m-0 text-danger"><strong>Fecha de vencimiento:</strong> <?php echo date('d/m/Y', strtotime($cot['fecha_cot'] . ' + 30 days')); ?></p>
                 <p class="m-0"><strong>Moneda:</strong> Pesos</p>
             </div>
+
             <div class="col-6 text-end">
-                <!-- ?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
-                    <p class="m-0"><strong>PLAZA:</strong> 
-                        !-- Sin especificar ?php /echo htmlspecialchars($cot['municipio']); ?> ?php /echo htmlspecialchars($cot['vendedor']); ?> --
-                        ?php echo htmlspecialchars($cot['nombre_sucursal'] ?? 'Sin especificar'); ?>
-                    </p>
-                ?php else: ?
-                    <p class="m-0"><strong>Atención a:</strong> ?php echo $cot['cliente']; ?></p>
-                    <p class="m-0"><strong>PLAZA:</strong> 
-                        !-- Sin especificar --
-                        ?php echo htmlspecialchars($cot['nombre_sucursal'] ?? 'Sin especificar'); ?>
-                    </p>
-                ?php endif; ?> -->
-                <?php
-
-                $es_multisucursal = empty($cot['Sucursal_id']);
-                /* //& Prueba */
-                $direcciones_multisucursal = [];
-                if ($es_multisucursal) {
-                    // 3. Extraer direcciones únicas de las sucursales de destino
-                    $sqlDirs = "SELECT DISTINCT s.id_sucursal, s.nombre_sucursal, s.calle, s.num_ext, s.num_int, s.colonia, s.cp, s.municipio, s.estado 
-                FROM detalle_cotizacion d
-                JOIN sucursales s ON d.sucursal_destino_id = s.id_sucursal
-                WHERE d.Cotizacion_id = ?";
-                    $stmtDirs = $pdo->prepare($sqlDirs);
-                    $stmtDirs->execute([$id_cot]);
-                    $direcciones_multisucursal = $stmtDirs->fetchAll(PDO::FETCH_ASSOC);
-                }
-                /* //& Prueba */
-
+                <!-- ?php
                 // 1. Preparamos el texto de la plaza una sola vez
                 $plaza_completa = 'Sin especificar';
                 if ($es_multisucursal) {
-                    $plaza_completa = !empty($cot['municipio']) ? mb_strtoupper(htmlspecialchars($cot['municipio']), 'UTF-8') : 'DISTRIBUCIÓN MULTISUCURSAL';
+                    $plaza_completa = mb_strtoupper(htmlspecialchars($cot['nombre_plaza']), 'UTF-8'); 'DISTRIBUCIÓN MULTISUCURSAL';
+                } elseif (!empty($cot['nombre_sucursal'])) {
+                    /* $estado_texto = !empty($cot['sucursal_estado']) ? htmlspecialchars($cot['sucursal_estado']) . ', ' : '';
+                    $plaza_completa = $estado_texto . htmlspecialchars($cot['nombre_plaza']); */
+                    $plaza_completa = mb_strtoupper(htmlspecialchars($cot['nombre_plaza']), 'UTF-8');
+                }
+                ?> -->
+                <?php
+                $plaza_completa = 'Sin especificar';
+                
+                if ($es_multisucursal) {
+                    // Buscamos cuántas plazas distintas están involucradas en los detalles
+                    $sqlPlazas = "SELECT DISTINCT pl.nombre_plaza
+                                  FROM detalle_cotizacion d
+                                  JOIN sucursales s ON d.sucursal_destino_id = s.id_sucursal
+                                  JOIN plazas pl ON s.Plaza_id = pl.id_plaza
+                                  WHERE d.Cotizacion_id = ? AND pl.nombre_plaza IS NOT NULL";
+                    $stmtPlazas = $pdo->prepare($sqlPlazas);
+                    $stmtPlazas->execute([$id_cot]);
+                    $plazas_multi = $stmtPlazas->fetchAll(PDO::FETCH_COLUMN);
+
+                    if (count($plazas_multi) == 1) {
+                        // Si todas las sucursales de la lista pertenecen a la misma plaza, muestra su nombre
+                        $plaza_completa = mb_strtoupper($plazas_multi[0], 'UTF-8');
+                    } elseif (count($plazas_multi) > 1) {
+                        // Si van a diferentes estados o regiones
+                        $plaza_completa = 'DISTRIBUCIÓN MULTISUCURSAL (' . count($plazas_multi) . ' PLAZAS)';
+                    } else {
+                        $plaza_completa = 'DISTRIBUCIÓN MULTISUCURSAL';
+                    }
+                } elseif (!empty($cot['nombre_plaza'])) {
+                    $plaza_completa = mb_strtoupper(htmlspecialchars($cot['nombre_plaza']), 'UTF-8');
                 } elseif (!empty($cot['nombre_sucursal'])) {
                     $estado_texto = !empty($cot['sucursal_estado']) ? htmlspecialchars($cot['sucursal_estado']) . ', ' : '';
-                    $plaza_completa = $estado_texto . htmlspecialchars($cot['nombre_sucursal']);
+                    $plaza_completa = mb_strtoupper($estado_texto . htmlspecialchars($cot['nombre_sucursal']), 'UTF-8');
                 }
                 ?>
 
-                <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
-                    <p class="m-0"><strong>Atención a:</strong> <?php echo $cot['cliente']; ?></p>
-                    <p class="m-0"><strong>PLAZA:</strong>
-                        <?php echo $plaza_completa; ?>
-                    </p>
-                <?php else: ?>
-                    <p class="m-0"><strong>Atención a:</strong> <?php echo $cot['cliente']; ?></p>
-                    <p class="m-0"><strong>PLAZA:</strong>
-                        <?php echo $plaza_completa; ?>
-                    </p>
-                <?php endif; ?>
+
+                <p class="m-0"><strong>Atención a:</strong> <?php echo $cot['cliente']; ?></p>
+                <p class="m-0"><strong>PLAZA:</strong><?php echo $plaza_completa; ?></p>
+
             </div>
         </div>
 
         <div class="row mb-4">
             <div class="col-12 small" style="line-height: 1.5; font-size: 10px;">
-                <!--<p class="m-0"><strong>PLAZA:</strong> PACHUCA, <?php //echo htmlspecialchars($cot['vendedor']); 
-                                                                    ?></p>-->
                 <p class="m-0"><strong>Razón Social:</strong> <?php echo htmlspecialchars($cot['razon_social'] ?? $cot['nombre_empresa']); ?></p>
                 <p class="m-0">
                     <strong>Dirección:</strong>
@@ -295,17 +383,15 @@ $serie = "COTLAN";
             </div>
         </div>
 
-        <?php if (!$es_multisucursal && ($dir_cert || $dir_envio)): ?>
-            <div class="row mb-4">
+        <div class="row mb-4">
+            <?php if (!$es_multisucursal): ?>
                 <?php if ($dir_cert): ?>
                     <div class="col-6">
-                        <div style="background-color: #f4f6f9; border-left: 4px solid #00a3f0; padding: 8px 12px; border-radius: 3px; font-size: 10px; line-height: 1.4;">
-                            <p class="m-0" style="color: #00a3f0; font-size: 11px;"><strong>■ DIRECCIÓN EN CERTIFICADO</strong></p>
+                        <div style="background-color: #f4f6f9; border-left: 4px solid #00a3f0; padding: 6px 10px; border-radius: 3px; font-size: 9px; line-height: 1.3;">
+                            <p class="m-0" style="color: #00a3f0; font-size: 10px;"><strong>■ DIRECCIÓN EN CERTIFICADO</strong></p>
                             <p class="m-0 mt-1">
-                                <strong>Calle:</strong> <?php echo htmlspecialchars($dir_cert['calle_numero_cert']); ?>,
-                                <strong>Col.</strong> <?php echo htmlspecialchars($dir_cert['colonia_cert']); ?><br>
-                                <strong>CP:</strong> <?php echo htmlspecialchars($dir_cert['cp_cert']); ?>,
-                                <?php echo htmlspecialchars($dir_cert['municipio_cert'] . ', ' . $dir_cert['estado']); ?>
+                                <?php echo htmlspecialchars($dir_cert['calle_numero_cert'] . ', Col. ' . $dir_cert['colonia_cert']); ?><br>
+                                <strong>CP:</strong> <?php echo htmlspecialchars($dir_cert['cp_cert'] . ', ' . $dir_cert['municipio_cert'] . ', ' . $dir_cert['estado_cert']); ?>
                             </p>
                         </div>
                     </div>
@@ -313,19 +399,31 @@ $serie = "COTLAN";
 
                 <?php if ($dir_envio): ?>
                     <div class="col-6">
-                        <div style="background-color: #f4f6f9; border-left: 4px solid #00a3f0; padding: 8px 12px; border-radius: 3px; font-size: 10px; line-height: 1.4;">
-                            <p class="m-0" style="color: #00a3f0; font-size: 11px;"><strong>■ DIRECCIÓN DE ENVÍO</strong></p>
+                        <div style="background-color: #f4f6f9; border-left: 4px solid #28a745; padding: 6px 10px; border-radius: 3px; font-size: 9px; line-height: 1.3;">
+                            <p class="m-0 text-success" style="font-size: 10px;"><strong>■ DIRECCIÓN DE ENVÍO</strong></p>
                             <p class="m-0 mt-1">
-                                <strong>Calle:</strong> <?php echo htmlspecialchars($dir_envio['calle_numero_envio']); ?>,
-                                <strong>Col.</strong> <?php echo htmlspecialchars($dir_envio['colonia_envio']); ?><br>
-                                <strong>CP:</strong> <?php echo htmlspecialchars($dir_envio['cp_envio']); ?>,
-                                <?php echo htmlspecialchars($dir_envio['municipio_envio'] . ', ' . $dir_envio['estado_envio']); ?>
+                                <?php echo htmlspecialchars($dir_envio['calle_numero_envio'] . ', Col. ' . $dir_envio['colonia_envio']); ?><br>
+                                <strong>CP:</strong> <?php echo htmlspecialchars($dir_envio['cp_envio'] . ', ' . $dir_envio['municipio_envio'] . ', ' . $dir_envio['estado_envio']); ?>
                             </p>
                         </div>
                     </div>
                 <?php endif; ?>
-            </div>
-        <?php endif; ?>
+
+            <?php else: ?>
+                <?php if (!empty($envios_multisucursal)): ?>
+                    <div class="col-12">
+                        <div style="background-color: #f4f6f9; border-left: 4px solid #28a745; padding: 8px 12px; border-radius: 4px; font-size: 9px; line-height: 1.4;">
+                            <p class="m-0 text-success" style="font-size: 10px; font-weight: bold; margin-bottom: 4px;">■ Dirección de Envio</p>
+                            <?php foreach ($envios_multisucursal as $ev): ?>
+                                <div style="margin-bottom: 3px;">
+                                    📍 <strong><?php echo $ev['plaza']; ?>:</strong> <?php echo $ev['texto']; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
 
         <div class="row mb-3">
             <div class="col-12">
@@ -382,10 +480,10 @@ $serie = "COTLAN";
                                                 <strong style="color: #000;">📍 Certificado (<?php echo htmlspecialchars($d['nombre_sucursal_destino']); ?>):</strong>
                                                 <?php echo htmlspecialchars($d['calle_numero_cert'] . ', ' . $d['colonia_cert'] . ', ' . $d['municipio_cert'] . ', ' . $d['estado_cert'] . ' C.P. ' . $d['cp_cert']); ?>
                                             </span>
-                                            <span style="font-size: 9px; color: #444; display: block; line-height: 1.2; margin-top: 2px;">
+                                            <!-- <span style="font-size: 9px; color: #444; display: block; line-height: 1.2; margin-top: 2px;">
                                                 <strong style="color: #000;">🚚 Envío:</strong>
-                                                <?php echo htmlspecialchars($d['calle_numero_envio'] . ', ' . $d['colonia_envio'] . ', ' . $d['municipio_envio'] . ', ' . $d['estado_envio'] . ' C.P. ' . $d['cp_envio']); ?>
-                                            </span>
+                                                ?php echo htmlspecialchars($d['calle_numero_envio'] . ', ' . $d['colonia_envio'] . ', ' . $d['municipio_envio'] . ', ' . $d['estado_envio'] . ' C.P. ' . $d['cp_envio']); ?>
+                                            </span> -->
                                         </div>
                                     <?php endif; ?>
 
@@ -423,13 +521,13 @@ $serie = "COTLAN";
         <div class="row mt-3 align-items-center">
 
             <!--  <div class="col-7">
-                <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+                ?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
                     <div class="notes-box text-center small rounded">
                         CON EL FIN DE BRINDARLE ATENCION OPORTUNA<br>
                         FAVOR DE ENVIAR LOS DOMICILIOS, PARA ELABORACION<br>
                         DE CERTIFICADOS Y DE ENVIO DE EQUIPOS
                     </div>
-                <?php endif; ?>
+                ?php endif; ?>
             </div> -->
 
             <div class="col-5 ms-auto">
@@ -594,12 +692,6 @@ $serie = "COTLAN";
             </div>
         ?php endif; ?> -->
     </div>
-    <!-- <script>
-        window.onload = function() {
-            window.print();
-        }
-    </script> -->
-
     </div>
 
     <script>

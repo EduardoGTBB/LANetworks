@@ -264,6 +264,12 @@
                             <label class="form-label">Nombre Sucursal <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="nombre_sucursal" id="nombre_sucursal" placeholder="Ej. Narvarte Oriente" required>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Asociar a Plaza</label>
+                            <select class="form-control" name="Plaza_id" id="Plaza_id" data-select2-selector="status">
+                            </select>
+                            <!-- <small class="text-muted">Si es una sucursal de Veracruz, puedes dejarlo en blanco ("Selecciona...") para activar el Método Híbrido.</small> -->
+                        </div>
                     </div>
 
                     <hr class="my-3">

@@ -259,7 +259,7 @@
 
                         <div class="col-md-4 mb-4">
                             <label class="form-label fw-bold">¿Qué tipo de producto se cotizará?</label>
-                            <select class="form-control max-select" id="edit_filtro_tipo_producto">
+                            <select class="form-control max-select" name="categoria" id="edit_filtro_tipo_producto">
                                 <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
                                 <option value="NUEVO">✨ Solo Equipos Nuevos</option>
                                 <option value="USADO">🔧 Solo Equipos Usados</option>

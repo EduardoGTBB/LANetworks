@@ -6,10 +6,8 @@ $(document).ready(function () {
     let preciosProductos = {};
     let rowCount = 0;
 
-    /* //& Prueba */
     let windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
     let isEditMultiSucursal = false;
-    /* //& Prueba */
 
     //>>>==========================================
     //>>> 1. CARGA INICIAL DE DATOS MAESTROS
@@ -33,7 +31,7 @@ $(document).ready(function () {
         
         if (val === 'Autorizada (información completa)' && tieneDir === 0) {
             alert("No puedes marcar la cotización como 'Autorizada' sin antes registrar las direcciones de Certificado y Envío.");
-            $(this).val('Por aprobar').trigger('change.select2');; // Lo regresamos a "Por revisar"
+            $(this).val('Por aprobar').trigger('change.select2'); 
         }
     });
 
@@ -41,15 +39,22 @@ $(document).ready(function () {
         $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
     });
 
-    /* //& Prueba */
     $(document).on('change', '.select-sucursal-fila-edit', function() {
         $(this).attr('data-selected-suc', $(this).val());
     });
-    /* //& Prueba */
 
     //>>> ==============================================
     //>>> 2. CARGAR TABLA PRINCIPAL CON DATATABLES
     //>>> ==============================================
+
+    {/* <td>
+        <div class="hstack gap-3">
+            <div><a class="d-block fw-bold">${folioVisual}</a></div>
+            <div class="avatar-image avatar-md rounded">
+                img class="img-fluid" src="assets/images/gallery/icono_cot.jpg">
+            </div>
+        </div>
+    </td> */}
     function cargarTablaPrincipal() {
         $.ajax({
             url: 'api/api_ver_cotizaciones.php?action=leer',
@@ -72,7 +77,7 @@ $(document).ready(function () {
                 }
 
                 data.forEach(function (cot) {
-                    let folio = cot.id_cotizacion.toString().padStart(4, '0');
+                    let folioVisual = cot.folio_especial ? cot.folio_especial : cot.id_cotizacion.toString().padStart(5, '0');
 
                     let nombreSol = cot.nombre ? cot.nombre : 'Admin';
                     let apellidoSol = cot.apellido_pat ? cot.apellido_pat : '';
@@ -89,27 +94,20 @@ $(document).ready(function () {
                     let btnCompletarVenta = '';
                     let yaTieneDirecciones = parseInt(cot.tiene_dir) || 0;
 
-                    if (estatusTexto === 'Autorizada (sin dirección)' || estatusTexto === 'Por aprobar' || (estatusTexto === 'Guardado' && yaTieneDirecciones === 0)) {
-
-                        let colorIcon = (estatusTexto === 'Por aprobar') ? 'text-primary' : 'text-warning';
-                        let latido = (estatusTexto !== 'Por aprobar') ? 'style="animation: pulse 2s infinite;"' : '';
-                        let claseFondo = (estatusTexto === 'Por aprobar') ? 'bg-soft-light border border-light' : 'bg-soft-warning border border-warning';
+                    if (estatusTexto !== 'Autorizada (información completa)' && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
+                        let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || (estatusTexto === 'Por aprobar' && yaTieneDirecciones === 0));
+                        let colorIcon = urgeDireccion ? 'text-warning' : 'text-primary';
+                        let latido = urgeDireccion ? 'style="animation: pulse 2s infinite;"' : '';
+                        let claseFondo = urgeDireccion ? 'bg-soft-warning border border-warning' : 'bg-soft-light border border-light';
 
                         btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md ${claseFondo}" ${latido}>
-                                                <abbr title="${estatusTexto === 'Por aprobar' ? 'Revisar datos' : '¡Faltan Direcciones! Haz clic aquí.'}" style="text-decoration:none;">
+                                                <abbr title="${urgeDireccion ? '¡Faltan Direcciones! Haz clic aquí.' : 'Gestionar Direcciones'}" style="text-decoration:none;">
                                                     <i class="feather-map-pin ${colorIcon}"></i>
                                                 </abbr>
                                             </a>`;
                     }
 
                     let btnEliminar = '';
-                    let cotizacionCerrada = (estatusTexto === 'Autorizada (información completa)' || estatusTexto === 'No autorizada');
-                    // &Candado para solo admin eliminar
-                    /* if (!cotizacionCerrada || USER_PERFIL === 'admin') {
-                        btnEliminar = `<a href="#" class="avatar-text avatar-md btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2 text-danger"></i></abbr></a>`;
-                    } else {
-                        btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md" style="opacity: 0.4; cursor: not-allowed;"><abbr title="Bloqueado: Solo administradores pueden eliminarla" style="text-decoration:none;"><i class="feather-lock text-muted"></i></abbr></a>`;
-                    } */
                     if (estatusTexto.includes('Autorizada') || estatusTexto === 'No autorizada' || estatusTexto === 'Ganada' || estatusTexto === 'Perdida') {
                         btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md" style="opacity: 0.4; cursor: not-allowed; pointer-events: none;"><abbr title="No se puede eliminar en este estatus" style="text-decoration:none;"><i class="feather-trash-2 text-muted"></i></abbr></a>`;
                     } else {
@@ -119,11 +117,12 @@ $(document).ready(function () {
                     let tr = `
                         <tr>
                             <td>
-                                <div class="hstack gap-3">
-                                    <div><a class="d-block fw-bold">#${folio}</a></div>
-                                    <div class="avatar-image avatar-md rounded"><img class="img-fluid" src="assets/images/gallery/icono_cot.jpg"></div>
+                                <div class="d-flex flex-column align-items-center justify-content-center gap-1 text-center">
+                                    <div class="avatar-image avatar-sm rounded bg-soft-light d-flex align-items-center justify-content-center">
+                                        <img class="img-fluid" src="assets/images/gallery/icono_cot.jpg" style="max-height: 24px;">
+                                    </div>
+                                    <a class="d-block fw-bold mb-0 text-dark fs-14">${folioVisual}</a>
                                 </div>
-                            </td>
                             <td><span class="d-block fw-bold">${cot.fecha_cot}</span></td>
                             <td>
                                 <span class="d-block fw-bold text-uppercase">${razonSoc}</span>
@@ -135,7 +134,7 @@ $(document).ready(function () {
                                 <div class="hstack gap-2 justify-content-center">
                                     ${btnCompletarVenta}
                                     <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md"><abbr title="Imprimir" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>
-                                    <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folio}"><abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>
+                                    <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>
                                     ${btnEliminar}
                                 </div>
                             </td>
@@ -174,10 +173,8 @@ $(document).ready(function () {
     //>>>           3. MODAL DE EDICIÓN
     //>>>============================================== 
 
-    //& "esServicio" y deshabilita dinámicamente
-    function construirFila(index, prod_id = '', precio = '', qty = 1, total = '', isCalib = true, esServicio = false, isDesglose = false, sucursal_destino_id = '') {
+    function construirFila(index, id_detalle_cot = 0, prod_id = '', precio = '', qty = 1, total = '', isCalib = true, esServicio = false, isDesglose = false, sucursal_destino_id = '') {
         let opciones = '<option value="">Selecciona...</option>';
-
         let filtroActual = $('#edit_filtro_tipo_producto').val() || 'TODOS';
 
         windowProductos.forEach(p => {
@@ -185,17 +182,10 @@ $(document).ready(function () {
             let descM = p.descripcion_product.toUpperCase();
             let estadoBD = p.estado_product ? p.estado_product.toUpperCase().trim() : 'N/A';
             
-            // 🧠 INTELIGENCIA CORREGIDA:
             let pasaFiltro = false;
-            
-            // Si es una fila nueva, evaluamos qué seleccionó el vendedor en el filtro de arriba.
-            if (filtroActual === 'TODOS') {
-                pasaFiltro = true; // Si es TODOS, pasan todos
-            } else if (filtroActual === estadoBD) {
-                pasaFiltro = true; // Coincidencia exacta (NUEVO, USADO, etc.)
-            } else if (p.id_product == prod_id) {
-                pasaFiltro = true; // ✨ CLAVE: Se respeta el producto que ya estaba guardado en la fila
-            }
+            if (filtroActual === 'TODOS') pasaFiltro = true; 
+            else if (filtroActual === estadoBD) pasaFiltro = true; 
+            else if (p.id_product == prod_id) pasaFiltro = true; 
 
             if (pasaFiltro) {
                 let selected = (p.id_product == prod_id) ? 'selected' : '';
@@ -205,23 +195,14 @@ $(document).ready(function () {
                 
                 opciones += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}${textoMarca}</option>`;
             }
-
-            /* let marca = (p.marca_product && p.marca_product !== 'N/A') ? p.marca_product.toUpperCase() : '';
-            let textoMarca = marca ? ` | Marca: ${marca}` : '';
-
-            let isSrv = (claveM.includes('SERVICIO') || descM.includes('SERVICIO'));
-            opciones += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}${textoMarca} </option>`;  */
         });
 
-        // Si es servicio, apagamos los checks y los bloqueamos
         let checkedAttr = (isCalib && !esServicio) ? 'checked' : '';
         let disabledAttr = esServicio ? 'disabled' : '';
-
         let checkedDesglose = (isDesglose && !esServicio) ? 'checked' : '';
         let valDesglose = (isDesglose && !esServicio) ? 'Y' : 'N';
-
-        /* //& Prueba */
         let displayStyle = isEditMultiSucursal ? '' : 'style="display: none;"';
+
         let tdSucursal = `
             <td class="align-middle col-edit-multisucursal" ${displayStyle}>
                 <select class="form-select form-select-sm select-sucursal-fila-edit" name="sucursal_fila[]" data-selected-suc="${sucursal_destino_id}">
@@ -229,30 +210,26 @@ $(document).ready(function () {
                 </select>
             </td>
         `;
-        /* //& Prueba */
 
         return `
             <tr id="edit_addr${index}" class="fila-producto">
                 <td class="text-center align-middle fila-numero">${index + 1}</td>
-                <td class="align-middle"><input type="number" name="cantidad_cot[]" class="form-control edit-qty" step="1" min="1" value="${qty}" required></td>
+                <td class="align-middle">
+                    <input type="hidden" name="id_detalle[]" value="${id_detalle_cot}">
+                    <input type="number" name="cantidad_cot[]" class="form-control edit-qty" step="1" min="1" value="${qty}" required>
+                </td>
                 <td class="align-middle"><select class="form-control select-prod-modal" name="productos[]" required>${opciones}</select></td>
-                //& Prueba
                 ${tdSucursal}
-                //& Prueba
                 <td class="align-middle">
                     <div class="modulo-config">
                         <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
                             <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="edit_chk_incluir_${index}" ${checkedAttr} ${disabledAttr} style="cursor: pointer;">
-                            <label class="form-check-label fs-12 fw-bold text-dark text-start" for="edit_chk_incluir_${index}" style="cursor: pointer; padding-top: 2px;">
-                                Incluir Calibración
-                            </label>
+                            <label class="form-check-label fs-12 fw-bold text-dark text-start" for="edit_chk_incluir_${index}" style="cursor: pointer; padding-top: 2px;">Incluir Calibración</label>
                         </div>
                         <div class="form-check d-flex justify-content-center align-items-center gap-2">
                             <input type="hidden" name="desglosar[]" class="hidden-desglose" value="${valDesglose}">
                             <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="edit_chk_desglosar_${index}" ${checkedDesglose} ${disabledAttr} style="cursor: pointer;">
-                            <label class="form-check-label fs-11 text-muted text-start" for="edit_chk_desglosar_${index}" style="cursor: pointer; padding-top: 2px;">
-                                Desglosar
-                            </label>
+                            <label class="form-check-label fs-11 text-muted text-start" for="edit_chk_desglosar_${index}" style="cursor: pointer; padding-top: 2px;">Desglosar</label>
                         </div>
                     </div>
                     <div class="info-desglose text-center mt-2"></div>
@@ -336,42 +313,28 @@ $(document).ready(function () {
         });
     }
 
-    $('#edit_select_empresa').on('change', function () {
-        cargarSolicitantes($(this).val());
-    });
-
-    /*//° $('#edit_select_solicitante').on('change', function () {
-        let usuarioId = $(this).val();
-        cargarSucursales(usuarioId, null)
-    }); */
-
-    /* //& Prueba */
+    $('#edit_select_empresa').on('change', function () { cargarSolicitantes($(this).val()); });
     $('#edit_select_solicitante').on('change', function () { cargarSucursales($(this).val(), null); });
-    /* //& Prueba */
 
     let previousTipoPrecio = '';
-    $('#tipo_precio').on('focus click', function () {
-        previousTipoPrecio = $(this).val();
-    }).on('change', function () {
+    $('#tipo_precio').on('focus click', function () { previousTipoPrecio = $(this).val(); }).on('change', function () {
         let nuevoPrecio = $(this).val();
         if (previousTipoPrecio && nuevoPrecio && previousTipoPrecio !== nuevoPrecio) {
             if (confirm("ATENCIÓN: Cambiar la lista de precios recalculará de forma automática todas las partidas. ¿Deseas continuar?")) {
                 previousTipoPrecio = nuevoPrecio;
-                $('#tab_logic_edit tbody tr.fila-producto').each(function () {
-                    calculateRowEdit($(this));
-                });
+                $('#tab_logic_edit tbody tr.fila-producto').each(function () { calculateRowEdit($(this)); });
                 calcEditTotal();
-            } else {
-                $(this).val(previousTipoPrecio);
-            }
+            } else { $(this).val(previousTipoPrecio); }
         }
     });
 
     //& EDITAR EL MODAL Y LLENAR DATOS
     $(document).on('click', '.btn-editar-modal', function (e) {
         e.preventDefault();
+        window.productoAgregadoEnEdicion = false; // ✨ BANDERA APAGADA
         let id_cot = $(this).data('id');
-        $('#modal_folio_badge').text('#' + $(this).data('folio'));
+        let folioVisualModal = $(this).data('folio');
+        $('#modal_folio_badge').text(folioVisualModal.includes('-') ? folioVisualModal : '#' + folioVisualModal);
 
         $.ajax({
             url: 'api/api_ver_cotizaciones.php?action=get_cotizacion&id=' + id_cot,
@@ -380,10 +343,8 @@ $(document).ready(function () {
                 let cot = res.cotizacion;
                 let dets = res.detalles;
 
-                /* //& Prueba */
                 isEditMultiSucursal = !cot.Sucursal_id || cot.Sucursal_id == 0;
                 $('#edit_is_multisucursal').val(isEditMultiSucursal ? '1' : '0');
-                /* //& Prueba */
 
                 let isReadOnly = (cot.estatus === 'Autorizada (información completa)' || cot.estatus === 'No autorizada');
                 $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', false);
@@ -409,12 +370,9 @@ $(document).ready(function () {
                 $('#edit_estatus').data('tiene-dir', cot.tiene_dir ? parseInt(cot.tiene_dir) : 0);
 
                 let estatusBD = cot.estatus ? cot.estatus : 'Guardado';
-                if (estatusBD === 'Autorizada (sin dirección)') {
-                    estatusBD = 'Autorizada (información completa)';
-                }
+                if (estatusBD === 'Autorizada (sin dirección)') estatusBD = 'Autorizada (información completa)';
                 $('#edit_estatus').val(estatusBD).trigger('change');
 
-                // Variables de nuestras columnas para poder moverlas de lugar
                 let $colSolicitante = $('#edit_select_solicitante').closest('div[class^="col-"]');
                 let $colPrecio = $('#tipo_precio').closest('div[class^="col-"]');
                 let $colEstatus = $('#fila_estatus_lan');
@@ -422,13 +380,11 @@ $(document).ready(function () {
                 let $colSucursal = $('#edit_select_sucursal').closest('div[class^="col-"]');
                 let $colTipoProd = $('#edit_filtro_tipo_producto').closest('div[class^="col-"]');
 
-                // 1. Restauramos el diseño original por si está entrando un administrador
                 $colSolicitante.removeClass('col-md-12').addClass('col-md-4');
                 $colPrecio.show();
                 $colEstatus.show();
                 $selEmp.prop('disabled', false);
-                $colSucursal.insertAfter($colSolicitante); // Lo regresa a su lugar normal
-                
+                $colSucursal.insertAfter($colSolicitante); 
 
                 if (isEditMultiSucursal) {
                     $colSucursal.hide();
@@ -440,28 +396,15 @@ $(document).ready(function () {
                     $('.col-edit-multisucursal').hide();
                 }
 
-                // 2. Lógica específica para el portal de Clientes (B2B)
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-
-                    // A. Ocultar Status y Tipo de Precio
                     $colPrecio.hide();
                     $colEstatus.hide();
-
-                    if (!isEditMultiSucursal) { 
-                        $colSucursal.insertAfter($colCliente); 
-                    }
-
-                    // B. MAGIA DE DISEÑO: Movemos "Sucursal" a la fila de arriba (al lado de Cliente)
+                    if (!isEditMultiSucursal) { $colSucursal.insertAfter($colCliente); }
                     $colSucursal.insertAfter($colCliente);
-
-                    // C. Hacemos que "Solicitante" ocupe todo el ancho de la fila de abajo
                     $colSolicitante.removeClass('col-md-4').addClass('col-md-6');
                     $colTipoProd.removeClass('col-md-4').addClass('col-md-6');
-
-                    // D. Bloqueamos alterar la Empresa
                     $selEmp.prop('disabled', true);
 
-                    // E. Forzamos los valores ocultos para que el POST no falle
                     if ($('#hidden_edit_empresa').length === 0) {
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
@@ -475,46 +418,33 @@ $(document).ready(function () {
 
                 cargarSolicitantes(cot.Empresa_id, cot.Usuario_empresa_id, isReadOnly, cot.Sucursal_id);
 
+                let catBD = cot.categoria ? cot.categoria.toUpperCase().trim() : 'NUEVO';
+                if (['NUEVO', 'USADO', 'CALIBRACION'].includes(catBD)) {
+                    $('#edit_filtro_tipo_producto').val(catBD).trigger('change');
+                } else {
+                    $('#edit_filtro_tipo_producto').val('TODOS').trigger('change');
+                }
+                
+                $('#edit_filtro_tipo_producto').css({
+                    'pointer-events': 'none',
+                    'background-color': '#e9ecef',
+                    'opacity': '1'
+                });
+
                 let $tbody = $('#edit_tbody_productos');
                 $tbody.empty(); rowCount = 0;
 
-                let estadosEncontrados = new Set();
-
-                dets.forEach(item => {
-                    if (preciosProductos[item.Product_id]) {
-                        let estadoBD = preciosProductos[item.Product_id].estado_product || 'N/A';
-                        estadosEncontrados.add(estadoBD.toUpperCase().trim());
-                    }
-                });
-
-                if (estadosEncontrados.size === 1) {
-                    let estadoUnico = Array.from(estadosEncontrados)[0];
-                    if (['NUEVO', 'USADO', 'CALIBRACION'].includes(estadoUnico)) {
-                        $('#edit_filtro_tipo_producto').val(estadoUnico);
-                    } else {
-                        $('#edit_filtro_tipo_producto').val('TODOS');
-                    }
-                } else {
-                    $('#edit_filtro_tipo_producto').val('TODOS'); 
-                }
-
-                // RECONOCIMIENTO INTELIGENTE DE SERVICIOS Y CALIBRACIÓN
                 dets.forEach((item, index) => {
                     let isCalibIncluida = true;
                     let esServicio = false;
 
                     if (preciosProductos[item.Product_id]) {
                         let pData = preciosProductos[item.Product_id];
-
-                        // 1. Detectar si la calibración iba incluida analizando el precio
                         let precioSoloEquipo = (cot.tipo_precio === 'Farmacia') ? parseFloat(pData.pf_equipo) : parseFloat(pData.pp_equipo);
                         let precioGuardado = parseFloat(item.precio_unitario);
 
-                        if (Math.abs(precioGuardado - precioSoloEquipo) < 0.01) {
-                            isCalibIncluida = false;
-                        }
-
-                        // 2. Detectar si es un Servicio
+                        if (Math.abs(precioGuardado - precioSoloEquipo) < 0.01) isCalibIncluida = false;
+                        
                         let claveM = pData.clave_product.toUpperCase();
                         let descM = pData.descripcion_product.toUpperCase();
                         if (claveM.includes('SERVICIO') || descM.includes('SERVICIO')) {
@@ -523,7 +453,7 @@ $(document).ready(function () {
                         }
                     }
 
-                    $tbody.append(construirFila(index, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida, esServicio, item.desglosar === 'Y', item.sucursal_destino_id));
+                    $tbody.append(construirFila(index, item.id_detalle_cot, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida, esServicio, item.desglosar === 'Y', item.sucursal_destino_id));
                     calculateRowEdit($(`#edit_addr${index}`));
                     rowCount++;
                 });
@@ -546,9 +476,9 @@ $(document).ready(function () {
     //>>>  4. MATEMÁTICAS Y FILAS DINÁMICAS EN MODAL
     //>>>==============================================
     $("#edit_add_row").click(function () {
-        $("#edit_tbody_productos").append(construirFila(rowCount, '', '', 1, '', false, false, false, ''));
-
-        // Forzamos el checkbox de calibración encendido por defecto en filas nuevas (que no sean servicios)
+        $("#edit_tbody_productos").append(construirFila(rowCount, 0, '', '', 1, '', false, false, false, ''));
+        window.productoAgregadoEnEdicion = true; // ✨ BANDERA ENCENDIDA
+        let filtroActual = $('#edit_filtro_tipo_producto').val();
         $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
         if (filtroActual === 'NUEVO' || filtroActual === 'USADO') {
             $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
@@ -570,9 +500,12 @@ $(document).ready(function () {
         }
     });
 
+    // ✨ RASTREADOR PROTEGIDO: Solo alteramos el texto visible del td sin destruir el input hidden
     function recalcularNumerosFila() {
         $('#edit_tbody_productos tr.fila-producto').each(function (index) {
-            $(this).find('.fila-numero').text(index + 1);
+            $(this).find('.fila-numero').contents().filter(function() {
+                return this.nodeType === 3; // Selecciona solo el texto (los números)
+            }).replaceWith(index + 1);
         });
     }
 
@@ -597,7 +530,6 @@ $(document).ready(function () {
         let qty = parseFloat(row.find('.edit-qty').val()) || 0;
         let tipoPrecio = $('#tipo_precio').val();
 
-        // MAGIA: Detectar si es servicio leyendo la opción del select
         let optionSelected = prodSelect.find('option:selected');
         let esServicio = optionSelected.data('servicio') === true || optionSelected.data('servicio') === 'true';
 
@@ -669,17 +601,12 @@ $(document).ready(function () {
     $('#formEditarCotizacion').on('submit', function (e) {
         e.preventDefault();
 
-        /* //°if (!$('#edit_select_sucursal').val()) {
-            alert("Debes seleccionar una sucursal de destino antes de guardar.");
-            return;
-        } */
-
         if (!isEditMultiSucursal && !$('#edit_select_sucursal').val()) {
             alert("Debes seleccionar una sucursal de destino antes de guardar.");
             return;
         }
 
-            $('#tab_logic_edit tbody tr.fila-producto').each(function () { calculateRowEdit($(this)); });
+        $('#tab_logic_edit tbody tr.fila-producto').each(function () { calculateRowEdit($(this)); });
         calcEditTotal();
 
         let btnSubmit = $(this).find('button[type="submit"]');
@@ -700,12 +627,21 @@ $(document).ready(function () {
                     $('#modalEditarCotizacion').modal('hide');
                     $('.modal-backdrop').remove();
 
-                    cargarTablaPrincipal();
-                    alert(res.message);
+                    let estatusSeleccionado = $('#edit_estatus').val();
 
+                    if (estatusSeleccionado.includes('Autorizada') || window.productoAgregadoEnEdicion) {
+                        alert("Cambios guardados. Serás redirigido para verificar las direcciones de los equipos.");
+                        
+                        // Reseteamos la bandera por seguridad
+                        window.productoAgregadoEnEdicion = false; 
+                        
+                        window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val() + '&editado=1';
+                    } else {
+                        alert("Cambios guardados exitosamente.");
+                        cargarTablaPrincipal();
+                    }
                 } else {
                     alert("Error: " + res.message);
-                    btnSubmit.prop('disabled', false).text(textoOriginal);
                 }
             },
             error: function () {
@@ -733,20 +669,14 @@ $(document).ready(function () {
         }
     });
 
-
-
     $(document).on('change', '#edit_filtro_tipo_producto', function () {
         let nuevoFiltro = $(this).val();
 
-        // Recorremos cada fila de producto actual en la tabla
         $('#edit_tbody_productos tr.fila-producto').each(function () {
             let $row = $(this);
             let $selectProd = $row.find('.select-prod-modal');
-            
-            // Guardamos el ID del producto que el usuario ya tenía seleccionado en esta fila
             let idProductoActual = $selectProd.val(); 
 
-            // Re-generamos las opciones para este producto basándonos en el nuevo filtro
             let opcionesActualizadas = '<option value="">Selecciona...</option>';
 
             windowProductos.forEach(p => {
@@ -760,7 +690,7 @@ $(document).ready(function () {
                 } else if (nuevoFiltro === estadoBD) {
                     pasaFiltro = true;
                 } else if (p.id_product == idProductoActual) {
-                    pasaFiltro = true; // ✨ CLAVE: Mantenemos el producto actual para que no se borre de la fila
+                    pasaFiltro = true;
                 }
 
                 if (pasaFiltro) {
@@ -773,14 +703,11 @@ $(document).ready(function () {
                 }
             });
 
-            // Re-inyectamos las opciones refrescadas en el select de la fila
             if ($selectProd.hasClass('select2-hidden-accessible')) {
-                $selectProd.select2('destroy'); // Destruimos Select2 momentáneamente para evitar bugs visuales
+                $selectProd.select2('destroy'); 
             }
             
             $selectProd.html(opcionesActualizadas).val(idProductoActual);
-            
-            // Volvemos a activar Select2 amarrado al contenedor del modal
             $selectProd.select2({ dropdownParent: $('#modalEditarCotizacion') });
         });
     });

@@ -1,12 +1,20 @@
 $(document).ready(function () {
 
-    // Inicializar Select2 Múltiple
+    // Inicializar Select2 Múltiple para Usuarios
     $('#usuarios_multi').select2({
         placeholder: "Selecciona usuarios...",
         allowClear: true,
         width: '100%',
         dropdownParent: $('#modalSucursal .modal-content')
     });
+
+    // ✨ Inicializar Select2 para Plazas
+   /*  $('#Plaza_id').select2({
+        placeholder: "Selecciona plaza (Opcional)...",
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#modalSucursal .modal-content')
+    }); */
 
     $('#nombre_sucursal, #calle, #num_ext, #num_int, #entre_calle, #y_calle, #colonia, #poblacion, #municipio, #estado').on('input', function() {
         $(this).val($(this).val().toUpperCase());
@@ -19,6 +27,19 @@ $(document).ready(function () {
         success: function (data) {
             data.forEach(emp => {
                 $('#Empresa_id').append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`);
+            });
+        }
+    });
+
+    // ✨ 1.2 Cargar Plazas para el Select
+    $.ajax({
+        url: 'api/api_ver_plazas.php?action=leer',
+        method: 'GET', dataType: 'json',
+        success: function (data) {
+            let $selectPlaza = $('#Plaza_id');
+            $selectPlaza.empty().append('<option value="">Selecciona plaza (Opcional)...</option>');
+            data.forEach(p => {
+                $selectPlaza.append(`<option value="${p.id_plaza}">${p.nombre_plaza}</option>`);
             });
         }
     });
@@ -39,7 +60,7 @@ $(document).ready(function () {
                     $select.empty();
                     if (users.length > 0) {
                         users.forEach(u => {
-                    let newOption = new Option(`${u.nombre} ${u.apellido_pat} ${u.apellido_mat || ''}`.trim() , u.id_usuario, false, false);
+                            let newOption = new Option(`${u.nombre} ${u.apellido_pat} ${u.apellido_mat || ''}`.trim() , u.id_usuario, false, false);
                             $select.append(newOption);
                         });
                     }
@@ -57,7 +78,6 @@ $(document).ready(function () {
             success: function (data) {
                 let tbody = $('#all_surc');
 
-                // DESTRUCCIÓN SEGURA: Evita el error rojo de "Cannot reinitialise"
                 if ($.fn.DataTable.isDataTable('#proposalList')) {
                     $('#proposalList').DataTable().clear().destroy();
                 }
@@ -99,13 +119,11 @@ $(document).ready(function () {
                     tbody.append(tr);
                 });
 
-                // INICIALIZAR DATATABLES CON EL BUSCADOR NATIVO
                 if ($.fn.DataTable) {
                     $('#proposalList').DataTable({
                         language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
                         lengthChange: false,
-                        searching: true, // <--- 1. Activamos las búsquedas
-                        // 2. Modificamos el DOM para crear el espacio de la barra de búsqueda (la letra 'f')
+                        searching: true,
                         dom: "<'row mb-3'<'col-sm-12 col-md-6 d-flex justify-content-start'f><'col-sm-12 col-md-6'>>" +
                             "<'table-responsive'tr>" +
                             "<'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
@@ -118,7 +136,6 @@ $(document).ready(function () {
         });
     }
 
-    // Ejecutar carga
     cargarTabla();
 
     // 4. Nuevo
@@ -129,6 +146,10 @@ $(document).ready(function () {
         $('#sucursal_id').val('');
         $('#bloque_estatus_suc').hide();
         $('#usuarios_multi').val(null).trigger('change');
+        
+        // ✨ Resetea la Plaza también
+        $('#Plaza_id').val('').trigger('change'); 
+        
         $('#modalSucursalLabel').text('Nueva Sucursal');
         $('#modalSucursal').modal('show');
     });
@@ -161,6 +182,9 @@ $(document).ready(function () {
                     $('#estado').val(s.estado);
                     $('#estatus_suc').prop('checked', s.estatus === 'Y');
                     $('#bloque_estatus_suc').show();
+
+                    // ✨ Asigna la plaza desde la BD
+                    $('#Plaza_id').val(s.Plaza_id).trigger('change');
 
                     $('#Empresa_id').val(s.Empresa_id).trigger('change');
                     $.ajax({

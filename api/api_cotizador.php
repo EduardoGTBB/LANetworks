@@ -53,6 +53,15 @@ try {
         $division    = trim($_POST['division'] ?? '');
         $tipo_precio = trim($_POST['tipo_precio'] ?? '');
 
+        $categoria_raw = trim($_POST['categoria'] ?? 'TODOS');
+        $categoria_limpia = 'Nuevo'; // Por defecto si mandan TODOS
+        
+        if ($categoria_raw === 'USADO') {
+            $categoria_limpia = 'Usado';
+        } elseif ($categoria_raw === 'CALIBRACION') {
+            $categoria_limpia = 'Calibracion';
+        }
+
         /* //& Prueba */
         $tipo_sucursal_flujo = $_POST['tipo_sucursal_flujo'] ?? 'unica';
 
@@ -104,6 +113,7 @@ try {
             'comentarios'   => trim($_POST['comentarios'] ?? ''),
             'precio_iva'    => (float)($_POST['total_amount'] ?? 0),
             'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 0),
+            'categoria'     => $categoria_limpia,
             'tipo_precio'   => $tipo_precio,
             'division'      => $division,
             'estatus'        => $es_cliente ? 'Guardado' : 'Guardado'

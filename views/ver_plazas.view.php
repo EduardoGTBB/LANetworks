@@ -3,6 +3,8 @@
 <body>
     <?php include('views/include/sidebar.php'); ?>
     <?php include('views/include/header.php'); ?>
+
+    <!--! ================================================================ !-->
     <!--! [Start] Main Content !-->
     <!--! ================================================================ !-->
     <main class="nxl-container">
@@ -11,11 +13,11 @@
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
-                        <h5 class="m-b-10">Ventas</h5>
+                        <h5 class="m-b-10">Clientes</h5>
                     </div>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
-                        <li class="breadcrumb-item">Todas las cotizaciones</li>
+                        <li class="breadcrumb-item">Plazas</li>
                     </ul>
                 </div>
                 <div class="page-header-right ms-auto">
@@ -27,56 +29,92 @@
                             </a>
                         </div>
                         <!--<div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
-                            <div class="dropdown filter-dropdown">
-                                <a class="btn btn-md btn-light-brand" data-bs-toggle="dropdown" data-bs-offset="0, 10" data-bs-auto-close="outside">
-                                    <i class="feather-filter me-2"></i>
-                                    <span>Filter</span>
+                            <a href="javascript:void(0);" class="btn btn-icon btn-light-brand" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                <i class="feather-bar-chart"></i>
+                            </a>
+                            <div class="dropdown">
+                                <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown" data-bs-offset="0, 12" data-bs-auto-close="outside">
+                                    <i class="feather-filter"></i>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end">
-                                    <div class="dropdown-item">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="Role" checked="checked">
-                                            <label class="custom-control-label c-pointer" for="Role">Role</label>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-item">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="Team" checked="checked">
-                                            <label class="custom-control-label c-pointer" for="Team">Team</label>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-item">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="Email" checked="checked">
-                                            <label class="custom-control-label c-pointer" for="Email">Email</label>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-item">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="Member" checked="checked">
-                                            <label class="custom-control-label c-pointer" for="Member">Member</label>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-item">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="Recommendation" checked="checked">
-                                            <label class="custom-control-label c-pointer" for="Recommendation">Recommendation</label>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown-divider"></div>
                                     <a href="javascript:void(0);" class="dropdown-item">
-                                        <i class="feather-plus me-3"></i>
-                                        <span>Create New</span>
+                                        <i class="feather-eye me-3"></i>
+                                        <span>All</span>
                                     </a>
                                     <a href="javascript:void(0);" class="dropdown-item">
-                                        <i class="feather-filter me-3"></i>
-                                        <span>Manage Filter</span>
+                                        <i class="feather-send me-3"></i>
+                                        <span>Sent</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="feather-book-open me-3"></i>
+                                        <span>Open</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="feather-archive me-3"></i>
+                                        <span>Draft</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="feather-bell me-3"></i>
+                                        <span>Revised</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="feather-shield-off me-3"></i>
+                                        <span>Declined</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="feather-check me-3"></i>
+                                        <span>Accepted</span>
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="feather-briefcase me-3"></i>
+                                        <span>Leads</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="feather-wifi-off me-3"></i>
+                                        <span>Expired</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="feather-users me-3"></i>
+                                        <span>Customers</span>
                                     </a>
                                 </div>
                             </div>
-                            <a href="javascript:void(0);" class="btn btn-md btn-primary">
+                            <div class="dropdown">
+                                <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown" data-bs-offset="0, 12" data-bs-auto-close="outside">
+                                    <i class="feather-paperclip"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="bi bi-filetype-pdf me-3"></i>
+                                        <span>PDF</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="bi bi-filetype-csv me-3"></i>
+                                        <span>CSV</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="bi bi-filetype-xml me-3"></i>
+                                        <span>XML</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="bi bi-filetype-txt me-3"></i>
+                                        <span>Text</span>
+                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="bi bi-filetype-exe me-3"></i>
+                                        <span>Excel</span>
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="javascript:void(0);" class="dropdown-item">
+                                        <i class="bi bi-printer me-3"></i>
+                                        <span>Print</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <a href="proposal-create.html" class="btn btn-primary">
                                 <i class="feather-plus me-2"></i>
-                                <span>Add widget</span>
+                                <span>New Proposal</span>
                             </a>
                         </div>-->
                     </div>
@@ -87,107 +125,112 @@
                     </div>
                 </div>
             </div>
+            <div id="collapseOne" class="accordion-collapse collapse page-header-collapse">
+                <div class="accordion-body pb-2">
+                    <div class="row">
+                        <div class="col-xxl-3 col-md-6">
+                            <div class="card stretch stretch-full">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <a href="javascript:void(0);" class="fw-bold d-block">
+                                            <span class="d-block">Paid</span>
+                                            <span class="fs-20 fw-bold d-block">78/100</span>
+                                        </a>
+                                        <div class="progress-1"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-md-6">
+                            <div class="card stretch stretch-full">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <a href="javascript:void(0);" class="fw-bold d-block">
+                                            <span class="d-block">Unpaid</span>
+                                            <span class="fs-20 fw-bold d-block">38/50</span>
+                                        </a>
+                                        <div class="progress-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-md-6">
+                            <div class="card stretch stretch-full">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <a href="javascript:void(0);" class="fw-bold d-block">
+                                            <span class="d-block">Overdue</span>
+                                            <span class="fs-20 fw-bold d-block">15/30</span>
+                                        </a>
+                                        <div class="progress-3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-md-6">
+                            <div class="card stretch stretch-full">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <a href="javascript:void(0);" class="fw-bold d-block">
+                                            <span class="d-block">Draft</span>
+                                            <span class="fs-20 fw-bold d-block">3/10</span>
+                                        </a>
+                                        <div class="progress-4"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- [ page-header ] end -->
             <!-- [ Main Content ] start -->
             <div class="main-content">
                 <div class="row">
-
+                    <div class="col-lg-12 mb-3">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5>Lista de Plazas</h5>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <a style="font-size:14px;" class="btn-lg btn-primary" id="btnNuevaPlaza" href="# "><i class="feather-plus-circle"></i>&nbsp; Agregar Plaza</a>
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-lg-12">
                         <div class="card stretch stretch-full">
-                            <div class="card-header">
-                                <h5 class="card-title">Lista de cotizaciones</h5>
-                                <div class="card-header-action">
-                                    <div class="card-header-btn">
-                                        <div data-bs-toggle="tooltip" title="Delete">
-                                            <a href="javascript:void(0);" class="avatar-text avatar-xs bg-danger" data-bs-toggle="remove"> </a>
-                                        </div>
-                                        <div data-bs-toggle="tooltip" title="Refresh">
-                                            <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning" data-bs-toggle="refresh"> </a>
-                                        </div>
-                                        <div data-bs-toggle="tooltip" title="Maximize/Minimize">
-                                            <a href="javascript:void(0);" class="avatar-text avatar-xs bg-success" data-bs-toggle="expand"> </a>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown">
-                                        <a href="javascript:void(0);" class="avatar-text avatar-sm" data-bs-toggle="dropdown" data-bs-offset="25, 25">
-                                            <div data-bs-toggle="tooltip" title="Options">
-                                                <i class="feather-more-vertical"></i>
-                                            </div>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-end">
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-at-sign"></i>New</a>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-calendar"></i>Event</a>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-bell"></i>Snoozed</a>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-trash-2"></i>Deleted</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-settings"></i>Settings</a>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-life-buoy"></i>Tips & Tricks</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body custom-card-action p-0">
-
-                                <table class="table table-hover mb-0 w-100" id="tableAllCotizaciones">
+                            <div class="card-body p-0">
+                                <!-- <div class="table-responsive"> -->
+                                <table class="table table-hover" id="tablePlazas">
                                     <thead>
                                         <tr>
-                                            <th>Folio #</th>
-                                            <th>Fecha</th>
-                                            <th>Cliente</th>
-                                            <th>Importe</th>
+                                            <th>Nombre Plaza</th>
+                                            <th class="text-center">Direcciones Activas</th>
+                                            <th>Contacto</th>
+                                            <th>Dirección</th>
+                                            <th>Ubicación</th>
+    
                                             <th>Estatus</th>
                                             <th class="text-center">Acciones</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="tabla-cotizaciones">
-                                        <tr>
+                                    <tbody id="tabla_plazas">
+                                        <tr class="single-item">
                                             <td>
                                                 <div class="hstack gap-3">
-                                                    <!--<div class="avatar-image avatar-lg rounded">
-                                                                <img class="img-fluid" src="assets/images/gallery/icono_cot.jpg" alt="">
-                                                        </div>
-                                                        <div>
-                                                            <a href="javascript:void(0);" class="d-block">01</a>
-                                                            !--<span class="fs-12 text-muted">Electronics </span>--
-                                                        </div> -->
                                                     <div class="spinner-border text-primary mt-3" role="status">
                                                         <span class="visually-hidden">Cargando...</span>
                                                     </div>
-                                                    <p class="mt-2">Cargando cotizaciones...</p>
+                                                    <p class="mt-2">Cargando plazas...</p>
                                                 </div>
                                             </td>
-                                            <!--<td>
-                                                    03/02/2026
-                                                </td>
-                                                <td>
-                                                    COMERCIALIZADORA FARMACEUTICA DE CHIAPAS
-                                                </td>
-                                                <td class="text-dark fw-bold">$6,085.82</td>
-                                                <td>
-                                                    <span class="badge bg-soft-success text-success">Aprobado</span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <div class="hstack gap-2 justify-content-center">
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Imprimir cotización" style="text-decoration:none;"><i class="feather-printer"></i></abbr>
-                                                        </a>
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Editar cotización" style="text-decoration:none;"><i class="feather-edit"></i></abbr>
-                                                        </a>
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr>
-                                                        </a>
-                                                    </div>
-                                                </td> -->
                                         </tr>
                                     </tbody>
                                 </table>
-
+                                <!-- </div> -->
                             </div>
                         </div>
                     </div>
-                    <!-- [Recent Orders] end -->
-                    <!-- [] start -->
                 </div>
             </div>
             <!-- [ Main Content ] end -->
@@ -196,163 +239,258 @@
         <?php include('views/include/footer.php'); ?>
     </main>
 
-    <div class="modal fade-scale" id="modalEditarCotizacion" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
-            <div class="modal-content bg-white">
+    <div class="modal fade" id="modalPlaza" tabindex="-1" aria-labelledby="modalPlazaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <form id="formPlaza" class="modal-content bg-white">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold text-primary">Editar cotización <span id="modal_folio_badge" class="badge bg-soft-primary text-primary ms-2"></span></h5>
+                    <h5 class="modal-title fw-bold text-primary" id="modalPlazaLabel">Nueva Plaza</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-
-                <form id="formEditarCotizacion" class="modal-body custom-card-action">
-                    <input type="hidden" name="action" value="editar">
-                    <input type="hidden" name="id_cotizacion" id="edit_id_cotizacion" value="">
-                    <input type="hidden" name="is_multisucursal" id="edit_is_multisucursal" value="0">
+                <div class="modal-body">
+                    <input type="hidden" name="action" id="action" value="guardar">
+                    <input type="hidden" name="id_plaza" id="id_plaza" value="">
 
                     <div class="row">
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">División de LAN</label>
-                            <select class="form-control" id="division" name="division" data-select2-selector="status" required>
-                                <option value="">Selecciona una división...</option>
-                                <option value="LA NETWORKS & TECHNOLOGIES">LA NETWORKS & TECHNOLOGIES, SA DE CV</option>
-                                <option value="LA NETWORKS ANALITICAL">LA NETWORKS ANALITICAL, SA DE CV</option>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Pertenece a la Empresa: <span class="text-danger">*</span></label>
+                            <select class="form-control" id="Empresa_id" name="Empresa_id" data-select2-selector="status" required>
+                                <option value="">Selecciona una empresa...</option>
                             </select>
                         </div>
-
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Cliente <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_select_empresa" name="Empresa_id" data-select2-selector="status" required>
-                                <option value="">Cargando clientes...</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Estatus de la cotización <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_estatus" name="estatus" data-select2-selector="status" required>
-                                <option value="Guardado">Guardado (En proceso)</option>
-                                <option value="Por aprobar">Por aprobar (Revisión)</option>
-                                <option value="Autorizada (información completa)">Autorizada (Aprobada)</option>
-                                <option value="No autorizada">No autorizada (Rechazada)</option>
-                            </select>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nombre de la Plaza<span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="nombre_plaza" id="nombre_plaza" required>
                         </div>
                     </div>
+
+                    <hr class="my-3">
+                    <h6 class="fw-bold text-primary mb-3">Domicilio Plazas</h6>
+
+                    <!-- <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Calle <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="calle" id="calle" required>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">No. Exterior</label>
+                            <input type="text" class="form-control" name="num_ext" id="num_ext">
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">No. Interior</label>
+                            <input type="text" class="form-control" name="num_int" id="num_int">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Entre Calle</label>
+                            <input type="text" class="form-control" name="entre_calle" id="entre_calle">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Y Calle</label>
+                            <input type="text" class="form-control" name="y_calle" id="y_calle">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Colonia <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="colonia" id="colonia" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Localidad</label>
+                            <input type="text" class="form-control" name="localidad" id="localidad">
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Municipio <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="municipio" id="municipio" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Estado <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="estado" id="estado" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">C.P. <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="cp" id="cp" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Teléfono de Contacto</label>
+                            <input type="text" class="form-control" name="telefono" id="telefono" placeholder="Opcional">
+                        </div>
+                    </div> -->
                     <div class="row">
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Solicitante <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_select_solicitante" name="Usuario_id" data-select2-selector="status" required>
-                                <option value="">Selecciona un cliente primero...</option>
-                            </select>
-                        </div>
+                        <div class="col-md-6 border-end">
+                            <div class="p-3 bg-white rounded shadow-sm border">
+                                <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="feather-map-pin me-2"></i>Contacto y Domicilio 1 (Principal)</h6>
 
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Sucursal de Destino <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_select_sucursal" name="Sucursal_id" data-select2-selector="status" required>
-                                <option value="">Esperando al solicitante...</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Selecciona el precio que se utilizara</span></label>
-                            <select class="form-control" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
-                                <option value="">Selecciona el tipo de precio...</option>
-                                <option value="Farmacia">Farmacia</option>
-                                <option value="Público">Público</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label fw-bold">¿Qué tipo de producto se cotizará?</label>
-                            <select class="form-control max-select" name="categoria" id="edit_filtro_tipo_producto">
-                                <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
-                                <option value="NUEVO">✨ Solo Equipos Nuevos</option>
-                                <option value="USADO">🔧 Solo Equipos Usados</option>
-                                <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
-                            </select>
-                        </div>
-                        
-                    </div>
-
-                    <hr class="mt-0 mb-3">
-
-                    <div class="row mb-4">
-                        <div class="col-lg-12">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <h5 class="fw-bold mb-0">Productos cotizados:</h5>
-                                    <span class="fs-12 text-muted">Edita cantidades, precios o agrega nuevos</span>
+                                <div class="mb-3">
+                                    <label class="form-label">Contacto No.1<span class="text-danger">*</span></label>
+                                    <select class="form-select mayusculas" name="atencion_a_1" id="atencion_a_1" required>
+                                        <option value="">Seleccione un contacto...</option>
+                                    </select>
                                 </div>
-                                <div class="gap-2">
-                                    <!-- <button type="button" id="edit_delete_row" class="btn btn-sm bg-soft-danger text-danger">Eliminar último</button> -->
-                                    <button type="button" id="edit_add_row" class="btn btn-sm btn-primary">Agregar producto</button>
+                                <div class="mb-3">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" class="form-control mayusculas" name="telefono_1" id="telefono_1">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Calle <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control mayusculas" name="calle_1" id="calle_1" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 mb-3"><label class="form-label">No. Ext.</label><input type="text" class="form-control mayusculas" name="num_ext_1" id="num_ext_1"></div>
+                                    <div class="col-6 mb-3"><label class="form-label">No. Int.</label><input type="text" class="form-control mayusculas" name="num_int_1" id="num_int_1"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Entre Calle</label>
+                                    <input type="text" class="form-control mayusculas" name="entre_calle_1" id="entre_calle_1">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Y Calle</label>
+                                    <input type="text" class="form-control mayusculas" name="y_calle_1" id="y_calle_1">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Colonia <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control mayusculas" name="colonia_1" id="colonia_1">
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 mb-3"><label class="form-label">Localidad</label><input type="text" class="form-control mayusculas" name="localidad_1" id="localidad_1"></div>
+                                    <div class="col-6 mb-3"><label class="form-label">C.P. <span class="text-danger">*</span></label><input type="text" class="form-control mayusculas" name="cp_1" id="cp_1"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 mb-3"><label class="form-label">Municipio <span class="text-danger">*</span></label><input type="text" class="form-control mayusculas" name="municipio_1" id="municipio_1"></div>
+                                    <div class="col-6 mb-3"><label class="form-label">Estado <span class="text-danger">*</span></label><input type="text" class="form-control mayusculas" name="estado_1" id="estado_1"></div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="table-responsive">
-                                <table class="table table-bordered overflow-hidden" id="tab_logic_edit">
-                                    <thead>
-                                        <tr class="single-item">
-                                            <th class="text-center wd-70">Ítem</th>
-                                            <th class="text-center wd-150">Cantidad</th>
-                                            <th class="text-center wd-450">Producto</th>
-                                            <th class="text-center wd-250 col-edit-multisucursal" style="display:none">Sucursal Destino</th>
-                                            <th class="text-center wd-250">Desglose de Calibración</th>
-                                            <th class="text-center wd-150">Precio U.</th>
-                                            <th class="text-center wd-200">Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="edit_tbody_productos">
-                                    </tbody>
-                                </table>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded shadow-sm border" style="opacity: 0.9;">
+                                <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3"><i class="feather-map me-2"></i>Contacto y Domicilio 2 (Opcional)</h6>
+                                <div class="d-flex justify-content-center gap-4 align-items-center">
+                                    <div class="form-check form-switch m-0 d-flex align-items-center border-start ps-3">
+                                        <input class="form-check-input mt-0 switch-clonador me-2" type="checkbox" id="switchCopiarContacto" style="transform: scale(1.1);">
+                                        <label class="form-check-label text-muted mb-0" for="switchCopiarContacto" style="cursor: pointer;">Copiar Contacto</label>
+                                    </div>
+                                    <div class="form-check form-switch m-0 d-flex align-items-center border-start ps-3">
+                                        <input class="form-check-input mt-0 switch-clonador me-2" type="checkbox" id="switchCopiarUbicacion" style="transform: scale(1.1);">
+                                        <label class="form-check-label text-muted mb-0" for="switchCopiarUbicacion" style="cursor: pointer;">Copiar Dirección</label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Contacto No.2</label>
+                                    <select class="form-select mayusculas" name="atencion_a_2" id="atencion_a_2">
+                                        <option value="">Seleccione un contacto...</option>
+                                    </select>
+                                </div>
+                                 <div class="mb-3">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" class="form-control mayusculas" name="telefono_2" id="telefono_2">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Calle</label>
+                                    <input type="text" class="form-control mayusculas" name="calle_2" id="calle_2">
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 mb-3"><label class="form-label">No. Ext.</label><input type="text" class="form-control mayusculas" name="num_ext_2" id="num_ext_2"></div>
+                                    <div class="col-6 mb-3"><label class="form-label">No. Int.</label><input type="text" class="form-control mayusculas" name="num_int_2" id="num_int_2"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Entre Calle</label>
+                                    <input type="text" class="form-control mayusculas" name="entre_calle_2" id="entre_calle_2">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Y Calle</label>
+                                    <input type="text" class="form-control mayusculas" name="y_calle_2" id="y_calle_2">
+                                </div>
+                                <div class="mb-3"><label class="form-label">Colonia</label><input type="text" class="form-control mayusculas" name="colonia_2" id="colonia_2"></div>
+                                <div class="row">
+                                    <div class="col-6 mb-3"><label class="form-label">Localidad</label><input type="text" class="form-control mayusculas" name="localidad_2" id="localidad_2"></div>
+                                    <div class="col-6 mb-3"><label class="form-label">C.P.</label><input type="text" class="form-control mayusculas" name="cp_2" id="cp_2"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 mb-3"><label class="form-label">Municipio</label><input type="text" class="form-control mayusculas" name="municipio_2" id="municipio_2"></div>
+                                    <div class="col-6 mb-3"><label class="form-label">Estado</label><input type="text" class="form-control mayusculas" name="estado_2" id="estado_2"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row mb-4 "><!-- d-flex justify-content-end -->
-                        <div class="col-lg-8 mt-2 text-start">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Notas / Observaciones adicionales:</label>
-                                <textarea name="comentarios" id="edit_comentarios" class="form-control" rows="4"></textarea>
-                                <small class="text-muted">Estas notas aparecerán en el PDF de la cotización.</small>
+                    <div id="bloque_estatus_suc" class="row mt-3">
+                        <div class="col-md-12">
+                            <hr>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="estatus" name="estatus" value="Y" checked>
+                                <label class="form-check-label" for="estatus">Plaza Activa</label>
                             </div>
                         </div>
-                        
-                        <div class="col-lg-4 mt-2">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    <tr class="single-item">
-                                        <th class="fs-10 text-dark text-uppercase">Sub Total</th>
-                                        <td class="w-50"><input type="number" name="sub_total" class="form-control border-0 bg-transparent p-0" id="edit_sub_total" readonly></td>
-                                    </tr>
-                                    <tr class="single-item">
-                                        <th class="fs-10 text-dark text-uppercase">IVA</th>
-                                        <td class="w-50">
-                                            <div class="input-group mb-2 mb-sm-0">
-                                                <input type="number" name="porcentaje_iva" id="edit_tax" class="form-control border-0 bg-transparent p-0" value="16">
-                                                <div class="input-group-addon">%</div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr class="single-item">
-                                        <th class="fs-10 text-dark text-uppercase bg-gray-100">Total</th>
-                                        <td class="bg-gray-100 w-50"><input type="number" name="total_amount" id="edit_total_amount" class="form-control border-0 bg-transparent p-0 fw-700 text-dark" readonly></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
-
-                    <div class="row mt-3">
-                        <div class="col-lg-12 d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Actualizar Cambios</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Plaza</button>
+                </div>
+            </form>
         </div>
     </div>
     <!--! ================================================================ !-->
     <!--! [End] Main Content !-->
+    <!--! ================================================================ !-->
+    <!--! ================================================================ !-->
+    <!--! [Start] Sent Proposal l !-->
+    <!--! ================================================================ !-->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="proposalSent">
+        <div class="offcanvas-header ht-80 px-4 border-bottom border-gray-5">
+            <div>
+                <h2 class="fs-16 fw-bold text-truncate-1-line">Sent Proposal</h2>
+                <small class="fs-12 text-muted">Sent proposal to your client's</small>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="py-3 px-4 d-flex justify-content-between align-items-center border-bottom border-bottom-dashed border-gray-5 bg-gray-100">
+            <div>
+                <span class="fw-bold text-dark">Date:</span>
+                <span class="fs-11 fw-medium text-muted">25 MAY, 2023</span>
+            </div>
+            <div>
+                <span class="fw-bold text-dark">Proposal No:</span>
+                <span class="fs-12 fw-bold text-primary c-pointer">#NXL369852</span>
+            </div>
+        </div>
+        <div class="offcanvas-body">
+            <div class="form-group mb-4">
+                <label class="form-label">From: <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" value="wrapcode.info@gmail.com" placeholder="Clients..." readonly="" required>
+            </div>
+            <div class="form-group mb-4">
+                <label class="form-label">To: <span class="text-danger">*</span></label>
+                <input class="form-control" name="tomailcontent" value="wrapcode.info@gmail.com" placeholder="To..." required>
+            </div>
+            <div class="form-group mb-4">
+                <label class="form-label">Subject: <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" placeholder="Subject..." required>
+            </div>
+            <div class="form-group mb-4">
+                <label class="form-label">URL: </label>
+                <input type="url" class="form-control" placeholder="URL...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Messages:</label>
+                <div data-editor-target="editor" class="ht-200"></div>
+            </div>
+        </div>
+        <div class="px-4 gap-2 d-flex align-items-center ht-80 border border-end-0 border-gray-2">
+            <a href="javascript:void(0);" class="btn btn-primary w-50" data-alert-target="#alertMessage">Sent Proposal</a>
+            <a href="javascript:void(0);" class="btn btn-danger w-50" data-bs-dismiss="offcanvas">Cancel</a>
+        </div>
+    </div>
+    <!--! ================================================================ !-->
+    <!--! [End] Sent Proposal !-->
     <!--! ================================================================ !-->
     <!--! ================================================================ !-->
     <!--! [Start] Search Modal !-->
@@ -873,25 +1011,25 @@
     <!--! BEGIN: Vendors JS !-->
     <script src="assets/vendors/js/vendors.min.js"></script>
     <!-- vendors.min.js {always must need to be top} -->
-    <script src="assets/vendors/js/apexcharts.min.js"></script>
+    <script src="assets/vendors/js/circle-progress.min.js"></script>
     <script src="assets/vendors/js/dataTables.min.js"></script>
     <script src="assets/vendors/js/dataTables.bs5.min.js"></script>
+    <script src="assets/vendors/js/tagify.min.js"></script>
+    <script src="assets/vendors/js/tagify-data.min.js"></script>
+    <script src="assets/vendors/js/quill.min.js"></script>
     <script src="assets/vendors/js/select2.min.js"></script>
     <script src="assets/vendors/js/select2-active.min.js"></script>
-    <script src="assets/vendors/js/jquery.time-to.min.js "></script>
+
     <!--! END: Vendors JS !-->
     <!--! BEGIN: Apps Init  !-->
     <script src="assets/js/common-init.min.js"></script>
-    <script src="assets/js/widgets-tables-init.min.js"></script>
+    <!-- <script src="assets/js/proposal-init.min.js"></script> -->
     <!--! END: Apps Init !-->
     <!--! BEGIN: Theme Customizer  !-->
     <script src="assets/js/theme-customizer-init.min.js"></script>
-    <!--! END: Theme Customizer !-->
-    <script src="js/ver_cotizaciones_all.js"></script>
 
-    <!-- <script>
-        const ES_CLIENTE_PORTAL = ?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
-    </script> -->
+    <script src="js/ver_plazas.js"></script>
+    <!--! END: Theme Customizer !-->
 </body>
 
 </html>

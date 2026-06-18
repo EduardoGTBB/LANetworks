@@ -1,9 +1,21 @@
 $(document).ready(function () {
     let id_cot = $('#id_cotizacion').val();
     let isSucursalUnica = false;
-    let sucursalesMap = {}; // &Guardamos las direcciones de las sucursales en multisucursal
+    let sucursalesMap = {};
 
-    // 1. Cargar datos
+    // 1. Limpiar y preparar el contenedor del selector de Plazas en Envío General
+    if ($('#div_selector_contacto_gral').length === 0) {
+        let htmlContactoGral = `
+            <div class="mb-4 border-bottom pb-3 d-none" id="div_selector_contacto_gral">
+                <label class="fw-bold text-dark h6 mb-2"><i class="feather-map-pin me-1 text-success"></i>Contacto / Dirección de Plaza:</label>
+                <select class="form-select border-success text-success fw-bold shadow-sm" id="selector_contacto_gral">
+                </select>
+            </div>
+        `;
+        $('#select_envio_multi').replaceWith(htmlContactoGral);
+    }
+
+    // 2. Cargar datos de la Cotización
     $.ajax({
         url: 'api/api_finalizar_venta.php?action=get&id_cotizacion=' + id_cot,
         method: 'GET', dataType: 'json', cache: false,
@@ -31,20 +43,32 @@ $(document).ready(function () {
                     isSucursalUnica = !d.es_multisucursal;
                     construirEquipos(d.detalles);
 
+                    let doms_plaza = [];
+                    let doms_map = new Map();
+
+                    d.detalles.forEach(item => {
+                        let parsed = [];
+                        try { parsed = JSON.parse(item.domicilios_plaza_json || '[]'); } catch(e){}
+                        parsed.forEach(dom => {
+                            let key = dom.id_plaza_domicilio || dom.calle_formateada;
+                            if(!doms_map.has(key)) {
+                                dom.nombre_plaza = item.nombre_plaza || 'Plaza';
+                                doms_map.set(key, dom);
+                                doms_plaza.push(dom);
+                            }
+                        });
+                    });
+
+                    let equipo_base = d.detalles[0];
+
                     if (isSucursalUnica) {
                         $('#alerta_sucursal_unica').removeClass('d-none');
                         $('#col_envio_gral').removeClass('col-lg-12').addClass('col-lg-6');
                         $('#lbl_envio_gral').hide();
                         $('#col_cert_gral').removeClass('d-none');
                         $('#seccion_desglose_equipos').hide();
-
-                        $('#switch_envio_unica').removeClass('d-none');
-                        $('#select_envio_multi').addClass('d-none');
-
+                        
                         let suc = d.sucursal_global;
-                        let equipo_base = d.detalles[0];
-
-                        // ✨ CAMBIO: Tarjeta Certificado ahora recibe el autollenado de la Sucursal Destino
                         let tieneCertGuardado = (equipo_base && equipo_base.c_calle && equipo_base.c_calle.trim() !== '');
                         if (tieneCertGuardado) {
                             $('#cert_gral_calle').val(equipo_base.c_calle);
@@ -54,7 +78,6 @@ $(document).ready(function () {
                             $('#cert_gral_estado').val(equipo_base.c_estado);
                             $('#cert_gral_cp').val(equipo_base.c_cp);
                         } else if (suc) {
-                            // Carga la Sucursal Destino por default
                             $('#cert_gral_calle').val(suc.suc_calle || '');
                             $('#cert_gral_colonia').val(suc.suc_colonia || '');
                             $('#cert_gral_localidad').val(suc.suc_localidad || '');
@@ -62,8 +85,90 @@ $(document).ready(function () {
                             $('#cert_gral_estado').val(suc.suc_estado || '');
                             $('#cert_gral_cp').val(suc.suc_cp || '');
                         }
+                    } else {
+                        $('#alerta_sucursal_unica').addClass('d-none');
+                        $('#col_envio_gral').removeClass('col-lg-6').addClass('col-lg-12'); 
+                        $('#lbl_envio_gral').show();
+                        $('#col_cert_gral').addClass('d-none'); 
+                        $('#seccion_desglose_equipos').show(); 
 
-                        // ✨ CAMBIO: Tarjeta Envío se queda en blanco si no hay datos guardados previamente
+                        let $selMulti = $('#select_sucursal_envio_gral');
+                        if($selMulti.length > 0) {
+                            $selMulti.empty().append('<option value="">Escribir manualmente...</option>');
+                            d.detalles.forEach(item => {
+                                if (item.sucursal_destino_id && !sucursalesMap[item.sucursal_destino_id]) {
+                                    sucursalesMap[item.sucursal_destino_id] = {
+                                        calle: item.suc_calle || '',
+                                        colonia: item.suc_colonia || '',
+                                        localidad: item.suc_localidad || '',
+                                        municipio: item.suc_municipio || '',
+                                        estado: item.suc_estado || '',
+                                        cp: item.suc_cp || ''
+                                    };
+                                    let nombreSuc = item.suc_nombre || 'Sucursal ' + item.sucursal_destino_id;
+                                    $selMulti.append(`<option value="${item.sucursal_destino_id}">${nombreSuc}</option>`);
+                                }
+                            });
+                        }
+                    }
+
+                    // ==========================================
+                    // LÓGICA INTELIGENTE: SWITCH vs SELECTOR
+                    // ==========================================
+                    if (doms_plaza.length > 1 || (!isSucursalUnica && doms_plaza.length > 0)) {
+                        $('#switch_envio_unica').addClass('d-none');
+                        $('#div_selector_contacto_gral').removeClass('d-none');
+
+                        let options = '<option value="">Escribir manualmente...</option>';
+                        if (isSucursalUnica) {
+                            options += '<option value="CERTIFICADO" class="fw-bold text-dark">🚚 Usar la misma dirección del Certificado</option>';
+                        }
+                        
+                        options += '<optgroup label="Plazas Disponibles">';
+                        doms_plaza.forEach((d, i) => {
+                            let text = `Atn: ${d.atencion_a} - ${d.calle_formateada}`;
+                            if (!isSucursalUnica) text = `[${d.nombre_plaza}] ` + text;
+                            options += `<option value="${i}">${text}</option>`;
+                        });
+                        options += '</optgroup>';
+                        
+                        $('#selector_contacto_gral').html(options);
+
+                        $('#selector_contacto_gral').off('change').on('change', function() {
+                            let val = $(this).val();
+                            
+                            if (val === 'CERTIFICADO') {
+                                $('#envio_gral_calle').val($('#cert_gral_calle').val());
+                                $('#envio_gral_colonia').val($('#cert_gral_colonia').val());
+                                $('#envio_gral_localidad').val($('#cert_gral_localidad').val());
+                                $('#envio_gral_municipio').val($('#cert_gral_municipio').val());
+                                $('#envio_gral_estado').val($('#cert_gral_estado').val());
+                                $('#envio_gral_cp').val($('#cert_gral_cp').val());
+                            } else if (val !== '') {
+                                let dt = doms_plaza[val];
+                                $('#envio_gral_calle').val(dt.calle_formateada);
+                                $('#envio_gral_colonia').val(dt.colonia);
+                                $('#envio_gral_localidad').val(dt.localidad || dt.municipio);
+                                $('#envio_gral_municipio').val(dt.municipio);
+                                $('#envio_gral_estado').val(dt.estado);
+                                $('#envio_gral_cp').val(dt.cp);
+                            } else {
+                                $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').val('');
+                            }
+                            sincronizarEnvioEquipos();
+                        });
+
+                    } else {
+                        $('#div_selector_contacto_gral').addClass('d-none');
+                        if (isSucursalUnica) {
+                            $('#switch_envio_unica').removeClass('d-none');
+                        }
+                    }
+
+                    // ==========================================
+                    // ✨ MAGIA DE AUTOLLENADO IGNORANDO LOS EN BLANCO Y SELECCIONANDO EL DROPDOWN
+                    // ==========================================
+                    if (isSucursalUnica) {
                         let tieneEnvioGuardado = (equipo_base && equipo_base.e_calle && equipo_base.e_calle.trim() !== '');
                         if (tieneEnvioGuardado) {
                             $('#envio_gral_calle').val(equipo_base.e_calle);
@@ -72,78 +177,96 @@ $(document).ready(function () {
                             $('#envio_gral_municipio').val(equipo_base.e_municipio);
                             $('#envio_gral_estado').val(equipo_base.e_estado);
                             $('#envio_gral_cp').val(equipo_base.e_cp);
-                        }
+                            sincronizarEnvioEquipos(); 
 
-                        sincronizarEnvioEquipos();
+                            // Seleccionamos el dropdown si coincide
+                            if ($('#selector_contacto_gral').length > 0) {
+                                let indexPlaza = doms_plaza.findIndex(dt => dt.calle_formateada.trim() === equipo_base.e_calle.trim() && dt.cp.trim() === equipo_base.e_cp.trim());
+                                if (indexPlaza !== -1) {
+                                    $('#selector_contacto_gral').val(indexPlaza);
+                                } else if (equipo_base.c_calle && equipo_base.e_calle.trim() === equipo_base.c_calle.trim()) {
+                                    $('#selector_contacto_gral').val('CERTIFICADO');
+                                    $('#check_envio_igual_cert').prop('checked', true);
+                                }
+                            }
+
+                        } else if (doms_plaza.length === 1) {
+                            let dt = doms_plaza[0];
+                            $('#envio_gral_calle').val(dt.calle_formateada);
+                            $('#envio_gral_colonia').val(dt.colonia);
+                            $('#envio_gral_localidad').val(dt.localidad || dt.municipio);
+                            $('#envio_gral_municipio').val(dt.municipio);
+                            $('#envio_gral_estado').val(dt.estado);
+                            $('#envio_gral_cp').val(dt.cp);
+                            sincronizarEnvioEquipos(); 
+                            if ($('#selector_contacto_gral').length > 0) $('#selector_contacto_gral').val(0);
+                        }
                         sincronizarCertEquipos();
+
                     } else {
-                        // ✨ MODO MULTISUCURSAL (Aseguramos que la UI sea la correcta)
-                        $('#alerta_sucursal_unica').addClass('d-none');
-                        $('#col_envio_gral').removeClass('col-lg-6').addClass('col-lg-12'); // Expande Envío a pantalla completa
-                        $('#lbl_envio_gral').show();
-                        $('#col_cert_gral').addClass('d-none'); // Oculta Certificado General
-                        $('#seccion_desglose_equipos').show(); // Muestra el acordeón de equipos
-
-                        // ✨ Mostrar Select, Ocultar Switch
-                        $('#switch_envio_unica').addClass('d-none');
-                        $('#select_envio_multi').removeClass('d-none');
-
-                        let $selMulti = $('#select_sucursal_envio_gral');
-                        $selMulti.empty().append('<option value="">Escribir manualmente...</option>');
-
-                        d.detalles.forEach(item => {
-                            if (item.sucursal_destino_id && !sucursalesMap[item.sucursal_destino_id]) {
-                                sucursalesMap[item.sucursal_destino_id] = {
-                                    calle: item.suc_calle || '',
-                                    colonia: item.suc_colonia || '',
-                                    localidad: item.suc_localidad || '',
-                                    municipio: item.suc_municipio || '',
-                                    estado: item.suc_estado || '',
-                                    cp: item.suc_cp || ''
-                                };
-                                let nombreSuc = item.suc_nombre || 'Sucursal ' + item.sucursal_destino_id;
-                                $selMulti.append(`<option value="${item.sucursal_destino_id}">${nombreSuc}</option>`);
-                            }
-                        });
-
-                        // Llenamos el envío general si tiene datos guardados la primera partida (como referencia general)
-                        // LÓGICA ESTRICTA: El envío general va en blanco A MENOS que todas las partidas compartan la misma dirección
-                        let todasIguales = true;
-                        let base_e_calle = (d.detalles[0].e_calle || '').trim();
-                        let base_e_colonia = (d.detalles[0].e_colonia || '').trim();
-                        let base_e_localidad = (d.detalles[0].e_localidad || '').trim();
-                        let base_e_municipio = (d.detalles[0].e_municipio || '').trim();
-                        let base_e_estado = (d.detalles[0].e_estado || '').trim();
-                        let base_e_cp = (d.detalles[0].e_cp || '').trim();
+                        let primerValido = d.detalles.find(item => item.e_calle && item.e_calle.trim() !== '');
                         
-                        // Validamos desde la segunda partida en adelante si existen diferencias
-                        for (let i = 1; i < d.detalles.length; i++) {
-                            let item = d.detalles[i];
-                            if (
-                                (item.e_calle || '').trim() !== base_e_calle ||
-                                (item.e_colonia || '').trim() !== base_e_colonia ||
-                                (item.e_localidad || '').trim() !== base_e_localidad ||
-                                (item.e_municipio || '').trim() !== base_e_municipio ||
-                                (item.e_estado || '').trim() !== base_e_estado ||
-                                (item.e_cp || '').trim() !== base_e_cp
-                            ) {
-                                todasIguales = false;
-                                break;
+                        if (primerValido) {
+                            let todasIguales = true;
+                            for (let i = 0; i < d.detalles.length; i++) {
+                                let item = d.detalles[i];
+                                if (item.e_calle && item.e_calle.trim() !== '') {
+                                    if (item.e_calle.trim() !== primerValido.e_calle.trim() || item.e_cp.trim() !== primerValido.e_cp.trim()) {
+                                        todasIguales = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (todasIguales) {
+                                $('#envio_gral_calle').val(primerValido.e_calle);
+                                $('#envio_gral_colonia').val(primerValido.e_colonia);
+                                $('#envio_gral_localidad').val(primerValido.e_localidad);
+                                $('#envio_gral_municipio').val(primerValido.e_municipio);
+                                $('#envio_gral_estado').val(primerValido.e_estado);
+                                $('#envio_gral_cp').val(primerValido.e_cp);
+                                
+                                sincronizarEnvioEquipos(); 
+
+                                // Seleccionamos el dropdown si coincide
+                                if ($('#selector_contacto_gral').length > 0) {
+                                    let indexPlaza = doms_plaza.findIndex(dt => dt.calle_formateada.trim() === primerValido.e_calle.trim() && dt.cp.trim() === primerValido.e_cp.trim());
+                                    if (indexPlaza !== -1) {
+                                        $('#selector_contacto_gral').val(indexPlaza);
+                                    }
+                                }
                             }
                         }
+                    }
 
-                        // Si todas son exactamente iguales y NO están vacías, las ponemos en el general.
-                        if (todasIguales && base_e_calle !== '') {
-                            $('#envio_gral_calle').val(base_e_calle);
-                            $('#envio_gral_colonia').val(base_e_colonia);
-                            $('#envio_gral_localidad').val(base_e_localidad);
-                            $('#envio_gral_municipio').val(base_e_municipio);
-                            $('#envio_gral_estado').val(base_e_estado);
-                            $('#envio_gral_cp').val(base_e_cp);
-                        } else {
-                            // Si son diferentes o están vacías, mantenemos el panel general limpio
-                            $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').val('');
-                        }
+                    // ==========================================
+                    // 🚀 RADAR: ALERTA DE EQUIPOS NUEVOS O EN BLANCO
+                    // ==========================================
+                    let equiposSinDir = d.detalles.filter(item => !item.e_calle || item.e_calle.trim() === '');
+                    let numSinDir = equiposSinDir.length;
+
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const vieneDeEdicion = urlParams.has('editado');
+
+                    if (numSinDir > 0 && vieneDeEdicion) {
+                        let msjExtra = isSucursalUnica 
+                            ? "El sistema ha pre-llenado la información en base a los otros equipos. Por favor verifícala y <strong>da clic en Guardar</strong> para registrar los equipos nuevos."
+                            : "Por favor, revisa la información precargada o asigna manualmente la dirección a los equipos faltantes y haz clic en <strong>Guardar</strong>.";
+                        
+                        $('#col_cert_gral').closest('.row.mt-4').before(`
+                            <div class="alert alert-danger mb-4 border-0 border-start border-5 border-danger shadow-sm">
+                                <i class="feather-alert-triangle me-2" style="font-size: 1.1rem;"></i> 
+                                <strong>¡Acción Requerida!</strong> Detectamos <strong>${numSinDir}</strong> equipo(s) recién agregado(s) sin dirección asignada. 
+                                <br><span class="ms-4">${msjExtra}</span>
+                            </div>
+                        `);
+
+                        equiposSinDir.forEach(item => {
+                            let $equipoUI = $('#heading_' + item.id_detalle_cot).closest('.equipo-item');
+                            $equipoUI.addClass('border-danger border-2 shadow-sm');
+                            $equipoUI.find('.accordion-button').addClass('text-danger bg-soft-danger');
+                            $('#collapse_' + item.id_detalle_cot).collapse('show');
+                        });
                     }
                 }
             }
@@ -153,7 +276,7 @@ $(document).ready(function () {
         }
     });
 
-    // 2. Construir Equipos
+    // 3. Construir Equipos
     function construirEquipos(detalles) {
         let html = '';
         detalles.forEach((item, index) => {
@@ -221,7 +344,7 @@ $(document).ready(function () {
         $('#contenedor_equipos').html(html);
     }
 
-    //[fn] Switch de Certificado de la Partida
+    // 4. Comportamiento de Switches Particulares y Generales
     $(document).on('change', '.switch-copiar-cert', function () {
         let $fila = $(this).closest('.accordion-body');
         if ($(this).is(':checked')) {
@@ -255,7 +378,6 @@ $(document).ready(function () {
         }
     });
 
-    // 3. Comportamiento de Switches Generales
     $('#check_cert_igual_fiscal').change(function () {
         if ($(this).is(':checked')) {
             $('#cert_gral_calle').val($('input[name="f_calle"]').val());
@@ -265,18 +387,15 @@ $(document).ready(function () {
             $('#cert_gral_estado').val($('input[name="f_estado"]').val());
             $('#cert_gral_cp').val($('input[name="f_cp"]').val());
 
-            // Si el switch de envío también está prendido, hace cascada
             if (isSucursalUnica && $('#check_envio_igual_cert').is(':checked')) {
                 $('#check_envio_igual_cert').trigger('change');
             }
-
         } else {
             $('#cert_gral_calle, #cert_gral_colonia, #cert_gral_localidad, #cert_gral_municipio, #cert_gral_estado, #cert_gral_cp').val('');
             if (isSucursalUnica && $('#check_envio_igual_cert').is(':checked')) {
                 $('#check_envio_igual_cert').trigger('change');
             }
         }
-        //$('#envio_gral_calle').trigger('input');
         sincronizarCertEquipos();
     });
 
@@ -291,11 +410,9 @@ $(document).ready(function () {
         } else {
             $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').val('');
         }
-        sincronizarCertEquipos();
-        //$('#envio_gral_calle').trigger('input');
+        sincronizarEnvioEquipos();
     });
 
-    // Select Envío General -> Copia de Sucursal Seleccionada (Solo Multisucursal)
     $('#select_sucursal_envio_gral').change(function() {
         let val = $(this).val();
         if (val && sucursalesMap[val]) {
@@ -312,15 +429,9 @@ $(document).ready(function () {
         sincronizarEnvioEquipos();
     });
 
-
-    // Enlazamos eventos input
     $('#cert_gral_calle, #cert_gral_colonia, #cert_gral_localidad, #cert_gral_municipio, #cert_gral_estado, #cert_gral_cp').on('input', function () {
-        sincronizarEnvioEquipos();
-
-        // Apagamos el switch de "Igual a fiscal" si el usuario edita
-        if ($('#check_cert_igual_fiscal').is(':checked')) {
-            $('#check_cert_igual_fiscal').prop('checked', false);
-        }
+        sincronizarCertEquipos();
+        if ($('#check_cert_igual_fiscal').is(':checked')) $('#check_cert_igual_fiscal').prop('checked', false);
         
         if ($('#check_envio_igual_cert').is(':checked')) {
             $('#envio_gral_calle').val($('#cert_gral_calle').val());
@@ -329,36 +440,23 @@ $(document).ready(function () {
             $('#envio_gral_municipio').val($('#cert_gral_municipio').val());
             $('#envio_gral_estado').val($('#cert_gral_estado').val());
             $('#envio_gral_cp').val($('#cert_gral_cp').val());
-            sincronizarCertEquipos();
+            sincronizarEnvioEquipos();
         }
     });
 
     $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').on('input', function () {
         sincronizarEnvioEquipos();
-        if (isSucursalUnica && $('#check_envio_igual_cert').is(':checked')) {
-            $('#check_envio_igual_cert').prop('checked', false);
-        }
-        
-        if (!isSucursalUnica && $('#select_sucursal_envio_gral').val() !== "") {
-            $('#select_sucursal_envio_gral').val('');
-        }
+        if (isSucursalUnica && $('#check_envio_igual_cert').is(':checked')) $('#check_envio_igual_cert').prop('checked', false);
+        if (!isSucursalUnica && $('#select_sucursal_envio_gral').val() !== "") $('#select_sucursal_envio_gral').val('');
     });
 
     function sincronizarEnvioEquipos() {
-        /* $('.e_calle').val($('#envio_gral_calle').val());
+        $('.e_calle').val($('#envio_gral_calle').val());
         $('.e_colonia').val($('#envio_gral_colonia').val());
         $('.e_localidad').val($('#envio_gral_localidad').val());
         $('.e_municipio').val($('#envio_gral_municipio').val());
         $('.e_estado').val($('#envio_gral_estado').val());
-        $('.e_cp').val($('#envio_gral_cp').val()); */
-        if (isSucursalUnica || !isSucursalUnica) { // Siempre actualiza en cualquiera de los dos modos
-            $('.e_calle').val($('#envio_gral_calle').val());
-            $('.e_colonia').val($('#envio_gral_colonia').val());
-            $('.e_localidad').val($('#envio_gral_localidad').val());
-            $('.e_municipio').val($('#envio_gral_municipio').val());
-            $('.e_estado').val($('#envio_gral_estado').val());
-            $('.e_cp').val($('#envio_gral_cp').val());
-        }
+        $('.e_cp').val($('#envio_gral_cp').val());
     }
 
     function sincronizarCertEquipos() {
@@ -372,7 +470,7 @@ $(document).ready(function () {
         }
     }
 
-    // 4. Guardar JSON
+    // 5. Guardar JSON
     $('#formFormalizar').on('submit', function (e) {
         e.preventDefault();
 

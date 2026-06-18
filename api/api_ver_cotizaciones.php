@@ -17,9 +17,7 @@ header('Content-Type: application/json; charset=utf-8');
 try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Identificamos si la sesión actual es de un cliente
     $es_cliente = isset($_SESSION['id_usuario_cliente']);
-    // $admin_id = (int)$_SESSION['id_user_admin'];
 
     // ==========================================
     // GET: Leer lista o buscar cotización específica
@@ -28,7 +26,6 @@ try {
         $action = $_GET['action'] ?? 'leer';
 
         if ($action === 'leer') {
-            // Evaluamos a quién le estamos respondiendo
             if ($es_cliente) {
                 $cliente_id = (int)$_SESSION['id_usuario_cliente'];
                 echo json_encode(obtenerCotizacionesCliente($pdo, $cliente_id));
@@ -40,10 +37,9 @@ try {
             if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin') {
                 echo json_encode(obtenerTodasLasCotizaciones($pdo));
             } else {
-                echo json_encode([]); // Si se cuela un operativo, mandamos vacío
+                echo json_encode([]); 
             }
         } elseif ($action === 'get_cotizacion') {
-            // Buscamos al padre y a los hijos para rellenar el modal
             $id = (int)($_GET['id'] ?? 0);
             $cotizacion = editarCotizacionporID($pdo, $id);
             $detalles = obtenerdetallesCotizacionID($pdo, $id);
@@ -65,21 +61,7 @@ try {
             $usuario_id    = (int)($_POST['Usuario_id'] ?? 0);
             $sucursal_id   = (int)($_POST['Sucursal_id'] ?? 0);
 
-            /* //& Prueba */
             $is_multi      = ($_POST['is_multisucursal'] ?? '0') === '1';
-            /* //& Prueba */
-
-            /*//° if ($id_cotizacion === 0 || $empresa_id === 0 || $usuario_id === 0 || $sucursal_id === 0) {
-                echo json_encode(['status' => 'error', 'message' => 'Faltan datos obligatorios (Cliente, Solicitante o Sucursal).']);
-                exit;
-            }
-
-            if ($id_cotizacion === 0 || $empresa_id === 0 || $usuario_id === 0) {
-                echo json_encode(['status' => 'error', 'message' => 'Faltan datos obligatorios.']);
-                exit;
-            } */
-            
-            /* //& Prueba */
 
             if ($id_cotizacion === 0 || $empresa_id === 0 || $usuario_id === 0) {
                 echo json_encode(['status' => 'error', 'message' => 'Faltan datos obligatorios (Cliente o Solicitante).']);
@@ -90,7 +72,6 @@ try {
                 echo json_encode(['status' => 'error', 'message' => 'Falta seleccionar la Sucursal Destino global.']);
                 exit;
             }
-            /* //& Prueba */
 
             if ($is_multi) {
                 $sucursal_id = null;
@@ -105,32 +86,29 @@ try {
                 exit;
             }
 
-            // Mapeamos los arrays
+            // ✨ AQUÍ CAPTURAMOS EL RASTREADOR OCULTO
+            $ids_detalles  = $_POST['id_detalle'] ?? []; 
+            
             $productos_ids = $_POST['productos'] ?? [];
             $cantidades    = $_POST['cantidad_cot'] ?? [];
             $unitarios     = $_POST['unitario'] ?? [];
             $totales       = $_POST['total'] ?? [];
             $desglosar_arr = $_POST['desglosar'] ?? [];
-            
-            /* //& Prueba */
             $sucursales_fila = $_POST['sucursal_fila'] ?? [];
-            /* //& Prueba */
 
             $detalles = [];
 
             for ($i = 0; $i < count($productos_ids); $i++) {
                 if (!empty($productos_ids[$i]) && (int)$cantidades[$i] > 0) {
 
-                    /* //& Prueba */
                     $sucursal_destino = ($is_multi && !empty($sucursales_fila[$i])) ? (int)$sucursales_fila[$i] : null;
                     if ($is_multi && empty($sucursal_destino)) {
                         echo json_encode(['status' => 'error', 'message' => 'Falta seleccionar la Sucursal Destino para uno o más productos en la tabla.']);
                         exit;
                     }
-                    /* //& Prueba */
-
 
                     $detalles[] = [
+                        'id_detalle'       => (int)($ids_detalles[$i] ?? 0), // ✨ LO INYECTAMOS AL ARRAY
                         'producto_id'      => (int)$productos_ids[$i],
                         'cantidad'         => (int)$cantidades[$i],
                         'precio_unitario'  => (float)$unitarios[$i],
@@ -143,7 +121,7 @@ try {
 
             $estatus_nuevo = trim($_POST['estatus'] ?? 'Guardado');
 
-            // --- NUEVO CANDADO DE DIRECCIONES ---
+            // --- CANDADO DE DIRECCIONES ---
             if ($estatus_nuevo === 'Autorizada (información completa)') {
                 $stmtCheckDir = $pdo->prepare("SELECT COUNT(*) FROM domicilio_fiscal WHERE Cotizacion_id = ?");
                 $stmtCheckDir->execute([$id_cotizacion]);
@@ -166,8 +144,7 @@ try {
                 'tipo_precio'   => trim($_POST['tipo_precio'] ?? ''),
                 'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 16),
                 'estatus'       => $estatus_nuevo,
-                'comentarios'   => trim($_POST['comentarios'] ?? ''),
-                'mostrar_desglose' => isset($_POST['mostrar_desglose']) ? 'Si' : 'No' // <--- Capturamos el checkbox
+                'comentarios'   => trim($_POST['comentarios'] ?? '')
             ];
 
             updateCotizacion($pdo, $id_cotizacion, $datosCotizacion, $detalles);
@@ -175,13 +152,11 @@ try {
         } elseif ($action === 'eliminar') {
             $id = (int)($_POST['id_cotizacion'] ?? 0);
 
-            // --- NUEVO CANDADO DE ELIMINACIÓN ---
             $cotizacion_actual = editarCotizacionporID($pdo, $id);
             
             if ($cotizacion_actual) {
                 $estatus_actual = $cotizacion_actual['estatus'];
 
-                // Usamos strpos para que detecte "Autorizada" sin importar lo que diga entre paréntesis
                 if (strpos($estatus_actual, 'Autorizada') !== false || $estatus_actual === 'No autorizada') {
                     echo json_encode([
                         'status' => 'error',
@@ -189,20 +164,6 @@ try {
                     ]);
                     exit;
                 }
-
-                // 2. Candado de perfil-Solo admins borran Ganadas/Perdidas
-                /* //*if (in_array($estatus_actual, ['Ganada', 'Perdida'])) {
-                    // Verificamos si el usuario activo NO es un administrador
-                    $es_admin = isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin';
-
-                    if (!$es_admin) {
-                        echo json_encode([
-                            'status' => 'error',
-                            'message' => 'Operación denegada. Las cotizaciones Ganadas o Perdidas solo pueden ser eliminadas por un Administrador.'
-                        ]);
-                        exit;
-                    }
-                } */
             }
 
             borrarCotizacion($pdo, $id);
@@ -214,3 +175,4 @@ try {
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Error BD: ' . $e->getMessage()]);
 }
+?>

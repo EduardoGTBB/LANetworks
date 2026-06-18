@@ -148,19 +148,19 @@
 
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label fw-bold">¿Qué tipo de producto se cotizará?</label>
-                                            <select class="form-control max-select" name="filtro_estado_producto" id="filtro_estado_producto">
+                                            <!-- <select class="form-control max-select" name="filtro_estado_producto" id="filtro_estado_producto">
+                                                <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
+                                                <option value="NUEVO">✨ Solo Equipos Nuevos</option>
+                                                <option value="USADO">🔧 Solo Equipos Usados</option>
+                                                <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
+                                            </select> -->
+                                            <select name="categoria" id="filtro_estado_producto" class="form-control max-select">
                                                 <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
                                                 <option value="NUEVO">✨ Solo Equipos Nuevos</option>
                                                 <option value="USADO">🔧 Solo Equipos Usados</option>
                                                 <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
                                             </select>
                                         </div>
-                                        <!-- <div class="col-md-6 md-3">
-                                            <label class="form-label text-primary fw-bold">Sucursal de Destino *</label>
-                                            <select class="form-control border-primary" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" required>
-                                                <option value="">Esperando la sucursal...</option>
-                                            </select>
-                                        </div> -->
 
                                         <div class="col-md-6 mb-3" id="wrapper_selector_sucursal">
                                             <label for="select_sucursal" class="form-label fw-bold">Sucursal Destino</label>

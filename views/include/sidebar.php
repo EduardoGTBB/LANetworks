@@ -97,6 +97,7 @@
                         <li class="nxl-item"><a class="nxl-link" href="ver_clientes.php">Empresas</a></li>
                         <li class="nxl-item"><a class="nxl-link" href="ver_usuarios_cli.php">Usuarios</a></li>
                         <li class="nxl-item"><a class="nxl-link" href="ver_sucursales_cli.php">Sucursales</a></li>
+                        <li class="nxl-item"><a class="nxl-link" href="ver_plazas.php">Plazas</a></li>
                     </ul>
                 </li>
                 <?php endif; ?>
