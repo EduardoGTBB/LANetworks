@@ -14,7 +14,7 @@
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
                             <li class="breadcrumb-item">Cotizaciones</li>
-                            <?php
+                            <!-- ?php
                                 // Buscamos el folio especial en la base de datos usando el ID
                                 $stmtF = $pdo->prepare("SELECT folio_especial FROM cotizacion WHERE id_cotizacion = ?");
                                 $stmtF->execute([$id_cotizacion]);
@@ -22,8 +22,9 @@
                                 
                                 // Si tiene folio con letras (ej. 00004-U) lo usa, si no, formatea el ID a 5 dígitos
                                 $folioAMostrar = $folioEspecial ? $folioEspecial : str_pad((string)$id_cotizacion, 5, '0', STR_PAD_LEFT);
-                            ?>
-                            <li class="breadcrumb-item">Direcciones Cotización <strong>#<?php echo $folioAMostrar; ?></strong></li>
+                            ?> -->
+                            <li class="breadcrumb-item">Direcciones Cotización <strong id="breadcrumb_folio">#Cargando...</strong></li>
+                            <!-- <li class="breadcrumb-item">Direcciones Cotización <strong>#?php echo $folioAMostrar; ?></strong></li> -->
                             <!-- <li class="breadcrumb-item">Direcciones Cotizacion #?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></li> -->
                         </ul>
                         <!-- <h5 class="m-b-10">Formalizar Venta #?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></h5> -->

@@ -1,24 +1,14 @@
 $(document).ready(function () {
 
+    let windowContactosOptions = '<option value="">Seleccione una empresa primero...</option>';
+    let domCount = 0;
+
     // ✨ 0. INICIALIZAR SELECT2 PARA MODAL
     $('#Empresa_id').select2({
         dropdownParent: $('#modalPlaza'),
         width: '100%',
         placeholder: "Selecciona una empresa..."
     });
-
-    $('#atencion_a_1').select2({
-        dropdownParent: $('#modalPlaza'),
-        width: '100%',
-        placeholder: "Selecciona un contacto..."
-    });
-
-    $('#atencion_a_2').select2({
-        dropdownParent: $('#modalPlaza'),
-        width: '100%',
-        placeholder: "Opcional: Selecciona un contacto..."
-    });
-
 
     // 1. Forzar mayúsculas
     $('#formPlaza').on('input', '.mayusculas, #nombre_plaza', function() {
@@ -40,72 +30,189 @@ $(document).ready(function () {
         }
     });
 
-    // 2.1 FUNCIÓN PARA CARGAR CONTACTOS DINÁMICOS
+    // 3. FUNCIÓN PARA CARGAR CONTACTOS
     function cargarContactosPorEmpresa(empresa_id, callback = null) {
-        let $c1 = $('#atencion_a_1');
-        let $c2 = $('#atencion_a_2');
-
         if (!empresa_id) {
-            $c1.empty().append('<option value="">Seleccione una empresa primero...</option>').trigger('change.select2');
-            $c2.empty().append('<option value="">Seleccione una empresa primero...</option>').trigger('change.select2');
+            windowContactosOptions = '<option value="">Seleccione una empresa primero...</option>';
+            actualizarSelectsDinamicos();
             if (callback) callback();
             return;
         }
-
-        $c1.empty().append('<option value="">Cargando contactos...</option>').trigger('change.select2');
-        $c2.empty().append('<option value="">Cargando contactos...</option>').trigger('change.select2');
 
         $.ajax({
             url: 'api/api_ver_sucursales.php?action=get_usuarios_empresa&empresa_id=' + empresa_id,
             method: 'GET', dataType: 'json',
             success: function (users) {
-                $c1.empty().append('<option value="">Selecciona un contacto...</option>');
-                $c2.empty().append('<option value="">Opcional: Selecciona un contacto...</option>');
-                
+                windowContactosOptions = '<option value="">Selecciona un contacto...</option>';
                 users.forEach(u => {
                     let nombreCompleto = `${u.nombre} ${u.apellido_pat} ${u.apellido_mat || ''}`.trim().toUpperCase();
-                    $c1.append(`<option value="${nombreCompleto}">${nombreCompleto}</option>`);
-                    $c2.append(`<option value="${nombreCompleto}">${nombreCompleto}</option>`);
+                    windowContactosOptions += `<option value="${nombreCompleto}">${nombreCompleto}</option>`;
                 });
-
-                $c1.trigger('change.select2');
-                $c2.trigger('change.select2');
-
+                
+                actualizarSelectsDinamicos();
                 if (callback) callback();
             }
         });
     }
 
-    // 2.2 Evento: Cuando el usuario elige otra empresa en el Select2
+    function actualizarSelectsDinamicos() {
+        $('.select-contacto-dinamico').each(function() {
+            let val = $(this).attr('data-selected') || $(this).val();
+            
+            if ($(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2('destroy');
+            }
+            
+            $(this).html(windowContactosOptions);
+            
+            if (val && windowContactosOptions.includes(val)) {
+                $(this).val(val);
+            }
+            $(this).select2({ dropdownParent: $('#modalPlaza'), width: '100%' });
+        });
+    }
+
     $('#Empresa_id').on('change', function() {
         if($(this).val()) {
             cargarContactosPorEmpresa($(this).val());
         }
     });
 
-
-    // 3. FUNCIÓN VISUAL INTELIGENTE
-    function formatearApilado(cadena) {
-        if (!cadena) return '<span class="text-muted">N/A</span>';
-        let items = cadena.split('||').map(item => item.trim());
-        let todosIguales = items.every(val => val === items[0]);
-
-        if (items.length === 1 || todosIguales) {
-            return items[0]; 
+    // 4. CREAR BLOQUES DE DIRECCIÓN AL VUELO
+    function construirBloqueDomicilio(d = null) {
+        domCount++;
+        let isFirst = (domCount === 1);
+        let showClass = isFirst ? 'show' : '';
+        
+        let isEven = (domCount % 2 === 0);
+        let bgClass = isEven ? 'bg-light' : 'bg-white';
+        
+        let topBar = '';
+        if (!isFirst) {
+            topBar = `
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 rounded border shadow-sm" style="background-color: #f4f5f7; gap: 15px;">
+                <div class="d-flex flex-wrap gap-4 align-items-center">
+                    <div class="form-check form-switch m-0 d-flex align-items-center">
+                        <input class="form-check-input mt-0 switch-copiar-contacto me-2 border-secondary" type="checkbox" id="switchCont${domCount}" style="transform: scale(1.2);">
+                        <label class="form-check-label text-dark fw-bold mb-0" for="switchCont${domCount}" style="cursor: pointer;"><i class="feather-users me-1 text-primary"></i> Copiar Contacto</label>
+                    </div>
+                    <div class="form-check form-switch m-0 d-flex align-items-center">
+                        <input class="form-check-input mt-0 switch-copiar-direccion me-2 border-secondary" type="checkbox" id="switchDir${domCount}" style="transform: scale(1.2);">
+                        <label class="form-check-label text-dark fw-bold mb-0" for="switchDir${domCount}" style="cursor: pointer;"><i class="feather-map me-1 text-primary"></i> Copiar Dirección</label>
+                    </div>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-domicilio fw-bold px-3 py-2"><i class="feather-trash-2 me-1"></i> ELIMINAR DIRECCIÓN</button>
+                </div>
+            </div>`;
         }
 
+        let html = `
+        <div class="accordion-item mb-3 border shadow-sm bloque-domicilio" style="border-radius: 8px; overflow: hidden;">
+            <h2 class="accordion-header">
+                <button class="accordion-button ${isFirst ? '' : 'collapsed'} ${bgClass} fw-bold texto-titulo-domicilio text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDom${domCount}">
+                    <i class="feather-map-pin me-2"></i> Dirección #${domCount}
+                </button>
+            </h2>
+            <div id="collapseDom${domCount}" class="accordion-collapse collapse ${showClass}">
+                <div class="accordion-body ${bgClass} pt-4 border-top">
+                    ${topBar}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Contacto <span class="text-danger">*</span></label>
+                            <select class="form-select mayusculas select-contacto-dinamico" name="atencion_a[]" data-selected="${d ? d.atencion_a : ''}" required>
+                                ${windowContactosOptions}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Teléfono</label><input type="text" class="form-control mayusculas" name="telefono[]" value="${d && d.telefono ? d.telefono : ''}"></div>
+                        <div class="col-md-12 mb-3"><label class="form-label">Calle y Número <span class="text-danger">*</span></label><input type="text" class="form-control mayusculas" name="calle[]" value="${d && d.calle ? d.calle : ''}" required></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">No. Ext.</label><input type="text" class="form-control mayusculas" name="num_ext[]" value="${d && d.num_ext ? d.num_ext : ''}"></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">No. Int.</label><input type="text" class="form-control mayusculas" name="num_int[]" value="${d && d.num_int ? d.num_int : ''}"></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Entre Calle</label><input type="text" class="form-control mayusculas" name="entre_calle[]" value="${d && d.entre_calle ? d.entre_calle : ''}"></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Y Calle</label><input type="text" class="form-control mayusculas" name="y_calle[]" value="${d && d.y_calle ? d.y_calle : ''}"></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Colonia <span class="text-danger">*</span></label><input type="text" class="form-control mayusculas" name="colonia[]" value="${d && d.colonia ? d.colonia : ''}" required></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Localidad</label><input type="text" class="form-control mayusculas" name="localidad[]" value="${d && d.localidad ? d.localidad : ''}"></div>
+                        <div class="col-md-4 mb-3"><label class="form-label">C.P. <span class="text-danger">*</span></label><input type="text" class="form-control mayusculas" name="cp[]" value="${d && d.cp ? d.cp : ''}" required></div>
+                        <div class="col-md-4 mb-3"><label class="form-label">Municipio <span class="text-danger">*</span></label><input type="text" class="form-control mayusculas" name="municipio[]" value="${d && d.municipio ? d.municipio : ''}" required></div>
+                        <div class="col-md-4 mb-3"><label class="form-label">Estado <span class="text-danger">*</span></label><input type="text" class="form-control mayusculas" name="estado[]" value="${d && d.estado ? d.estado : ''}" required></div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        
+        $('#contenedor_domicilios').append(html);
+        
+        let $nuevoSelect = $('.select-contacto-dinamico').last();
+        if (d && d.atencion_a) {
+            if ($nuevoSelect.find(`option[value="${d.atencion_a}"]`).length === 0) {
+                $nuevoSelect.append(`<option value="${d.atencion_a}">${d.atencion_a}</option>`);
+            }
+            $nuevoSelect.attr('data-selected', d.atencion_a);
+            $nuevoSelect.val(d.atencion_a);
+        }
+        $nuevoSelect.select2({ dropdownParent: $('#modalPlaza'), width: '100%' });
+    }
+
+    $(document).on('click', '#btnAgregarDomicilio', function () {
+        construirBloqueDomicilio();
+    });
+
+    $(document).on('click', '.btn-eliminar-domicilio', function () {
+        $(this).closest('.bloque-domicilio').remove();
+        domCount = 0;
+        
+        $('.bloque-domicilio').each(function() {
+            domCount++;
+            $(this).find('.texto-titulo-domicilio').html(`<i class="feather-map-pin me-2"></i> Dirección #${domCount}`);
+            
+            let isEven = (domCount % 2 === 0);
+            let $btn = $(this).find('.accordion-button');
+            let $body = $(this).find('.accordion-body');
+            
+            if (isEven) {
+                $btn.removeClass('bg-white').addClass('bg-light');
+                $body.removeClass('bg-white').addClass('bg-light');
+            } else {
+                $btn.removeClass('bg-light').addClass('bg-white');
+                $body.removeClass('bg-light').addClass('bg-white');
+            }
+        });
+    });
+
+    // ✨ 5. FUNCIÓN VISUAL INTELIGENTE (LA TABLA PRINCIPAL)
+    function formatearApilado(cadena) {
+        if (!cadena) return '<span class="text-muted">N/A</span>';
+        
+        // Separamos y limpiamos espacios vacíos
+        let items = cadena.split('||').map(item => item.trim()).filter(item => item !== '');
+        
+        if (items.length === 0) return '<span class="text-muted">N/A</span>';
+
+        // ✨ MAGIA: Quitamos los duplicados usando un Set (Solo nos quedamos con valores únicos)
+        let uniqueItems = [...new Set(items)];
+
+        // Si después de quitar duplicados, solo queda 1 valor, lo imprimimos limpio (sin número)
+        if (uniqueItems.length === 1) { 
+            return `<span class="d-block text-dark">${uniqueItems[0]}</span>`; 
+        }
+
+        // Si quedaron múltiples valores diferentes, los listamos con sus badges de colores
         let html = '<div class="d-flex flex-column" style="font-size: 11px; line-height: 1.4;">';
-        items.forEach((item, index) => {
-            let color = index === 0 ? 'primary' : 'warning';
+        uniqueItems.forEach((item, index) => {
+            let colores = ['primary', 'warning', 'success', 'info'];
+            let color = colores[index % colores.length];
             let borde = index > 0 ? 'border-top pt-1 mt-1' : 'mb-1';
-            html += `<div class="${borde}"><span class="badge bg-soft-${color} text-${color} px-1 me-1">${index + 1}</span> ${item}</div>`;
+            
+            html += `<div class="${borde}">
+                        <span class="badge bg-soft-${color} text-${color} px-1 me-1">${index + 1}</span> 
+                        <span class="text-dark">${item}</span>
+                    </div>`;
         });
         html += '</div>';
-        
         return html;
     }
 
-    // 4. Cargar Tabla
+    // 6. Cargar Tabla
     function cargarTabla() {
         $.ajax({
             url: 'api/api_ver_plazas.php?action=leer',
@@ -119,6 +226,7 @@ $(document).ready(function () {
                 data.forEach(function (p) {
                     let badge = p.estatus === 'Y' ? '<span class="badge bg-soft-success text-success">Activo</span>' : '<span class="badge bg-soft-danger text-danger">Inactivo</span>';
                     
+                    // Aquí llamamos a la función inteligente para ambas columnas
                     let htmlContactos = formatearApilado(p.contactos);
                     let htmlCalles = formatearApilado(p.calles);
 
@@ -150,16 +258,13 @@ $(document).ready(function () {
         });
     }
 
-    // 5. Buscador General
     $('#buscador_personalizado').on('keyup', function () {
-        let tabla = $('#tablePlazas').DataTable();
-        tabla.search(this.value).draw();
+        $('#tablePlazas').DataTable().search(this.value).draw();
     });
 
-    // 6. GUARDAR
+    // 7. GUARDAR
     $('#formPlaza').on('submit', function (e) {
         e.preventDefault();
-        
         let $btn = $(this).find('button[type="submit"]');
         let textoOriginal = $btn.text();
         $btn.prop('disabled', true).text('Guardando...');
@@ -174,9 +279,7 @@ $(document).ready(function () {
                     $('#modalPlaza').modal('hide');
                     cargarTabla();
                     alert(res.message);
-                } else {
-                    alert(res.message);
-                }
+                } else { alert(res.message); }
             },
             error: function (xhr) {
                 alert('Ocurrió un error al guardar. Revisa la consola.');
@@ -188,7 +291,7 @@ $(document).ready(function () {
         });
     });
 
-    // 7. EDITAR
+    // 8. EDITAR
     $(document).on('click', '.btn-editar', function (e) {
         e.preventDefault();
         let id = $(this).data('id');
@@ -199,7 +302,8 @@ $(document).ready(function () {
             success: function (res) {
                 if (res.status === 'success') {
                     $('#formPlaza')[0].reset(); 
-                    $('.switch-clonador').prop('checked', false); 
+                    $('#contenedor_domicilios').empty(); 
+                    domCount = 0;
                     
                     let p = res.data;
                     $('#action').val('guardar');
@@ -211,64 +315,24 @@ $(document).ready(function () {
                     
                     cargarContactosPorEmpresa(p.Empresa_id, function() {
                         if (p.domicilios && p.domicilios.length > 0) {
-                            let d1 = p.domicilios[0];
-                            if ($('#atencion_a_1 option[value="'+d1.atencion_a+'"]').length === 0 && d1.atencion_a !== '') {
-                                $('#atencion_a_1').append(`<option value="${d1.atencion_a}">${d1.atencion_a}</option>`);
-                            }
-                            
-                            $('#atencion_a_1').val(d1.atencion_a).trigger('change.select2');
-                            $('#calle_1').val(d1.calle);
-                            $('#num_ext_1').val(d1.num_ext);
-                            $('#num_int_1').val(d1.num_int);
-                            
-                            // ✨ CORRECCIÓN: Cargamos entre_calle y y_calle en la edición del Domicilio 1
-                            $('#entre_calle_1').val(d1.entre_calle);
-                            $('#y_calle_1').val(d1.y_calle);
-
-                            $('#colonia_1').val(d1.colonia);
-                            $('#localidad_1').val(d1.localidad);
-                            $('#municipio_1').val(d1.municipio);
-                            $('#estado_1').val(d1.estado);
-                            $('#cp_1').val(d1.cp);
-                            $('#telefono_1').val(d1.telefono);
-                        }
-
-                        if (p.domicilios && p.domicilios.length > 1) {
-                            let d2 = p.domicilios[1];
-                            if ($('#atencion_a_2 option[value="'+d2.atencion_a+'"]').length === 0 && d2.atencion_a !== '') {
-                                $('#atencion_a_2').append(`<option value="${d2.atencion_a}">${d2.atencion_a}</option>`);
-                            }
-
-                            $('#atencion_a_2').val(d2.atencion_a).trigger('change.select2');
-                            $('#calle_2').val(d2.calle);
-                            $('#num_ext_2').val(d2.num_ext);
-                            $('#num_int_2').val(d2.num_int);
-                            
-                            // ✨ CORRECCIÓN: Cargamos entre_calle y y_calle en la edición del Domicilio 2
-                            $('#entre_calle_2').val(d2.entre_calle);
-                            $('#y_calle_2').val(d2.y_calle);
-
-                            $('#colonia_2').val(d2.colonia);
-                            $('#localidad_2').val(d2.localidad);
-                            $('#municipio_2').val(d2.municipio);
-                            $('#estado_2').val(d2.estado);
-                            $('#cp_2').val(d2.cp);
-                            $('#telefono_2').val(d2.telefono);
+                            p.domicilios.forEach(d => {
+                                construirBloqueDomicilio(d);
+                            });
+                            evaluarSwitchesIniciales(); 
+                        } else {
+                            construirBloqueDomicilio(); 
                         }
                     });
 
                     $('.modal-title').text('Editar Plaza Logística');
-                    
-                    // ✨ CORRECCIÓN: Cambiar texto del botón a "Guardar Cambios"
                     $('#formPlaza button[type="submit"]').text('Guardar Cambios');
-
                     $('#modalPlaza').modal('show');
                 }
             }
         });
     });
 
-    // 8. NUEVO
+    // 9. NUEVO
     $(document).on('click', '#btnNuevaPlaza', function (e) {
         e.preventDefault();
         $('#formPlaza')[0].reset();
@@ -276,22 +340,22 @@ $(document).ready(function () {
         $('#id_plaza').val(''); 
         
         $('#Empresa_id').val('').trigger('change.select2');
-        cargarContactosPorEmpresa(''); 
+        cargarContactosPorEmpresa('', function() {
+            $('#contenedor_domicilios').empty();
+            domCount = 0;
+            construirBloqueDomicilio(); 
+        }); 
 
         $('#estatus').prop('checked', true);
-        $('.switch-clonador').prop('checked', false);
         $('.modal-title').text('Nueva Plaza Logística');
-        
-        // ✨ CORRECCIÓN: Restaurar texto original del botón en creaciones nuevas
         $('#formPlaza button[type="submit"]').text('Guardar Plaza');
-
         $('#modalPlaza').modal('show');
     });
 
-    // 9. ELIMINAR
+    // 10. ELIMINAR
     $(document).on('click', '.btn-eliminar', function (e) {
         e.preventDefault();
-        if (confirm("¿Estás seguro de eliminar por completo esta Plaza y todas sus direcciones?")) {
+        if (confirm("¿Estás seguro de eliminar por completo esta Plaza y TODAS sus direcciones?")) {
             $.ajax({
                 url: 'api/api_ver_plazas.php',
                 type: 'POST',
@@ -306,60 +370,107 @@ $(document).ready(function () {
     });
 
     // ==========================================================
-    // 10. PANEL DE CLONACIÓN INTELIGENTE (DOMICILIO 2)
+    // 11. SISTEMA DINÁMICO DE COPIADO EN CASCADA Y AUTO-LECTURA
     // ==========================================================
-    const camposContacto = ['atencion_a', 'telefono'];
-    const camposDireccion = ['calle', 'num_ext', 'num_int', 'entre_calle', 'y_calle', 'colonia', 'localidad', 'cp', 'municipio', 'estado'];
+    const camposContacto = ['atencion_a[]', 'telefono[]'];
+    const camposDireccion = ['calle[]', 'num_ext[]', 'num_int[]', 'entre_calle[]', 'y_calle[]', 'colonia[]', 'localidad[]', 'cp[]', 'municipio[]', 'estado[]'];
 
-    function clonarCampos(arregloCampos, limpiarSiFalso = false) {
-        arregloCampos.forEach(campo => {
-            let $campoDestino = $('#' + campo + '_2');
-            if (limpiarSiFalso) {
-                $campoDestino.val('');
-            } else {
-                $campoDestino.val($('#' + campo + '_1').val());
+    function evaluarSwitchesIniciales() {
+        let bloques = $('.bloque-domicilio');
+        if (bloques.length <= 1) return;
+
+        for (let i = 1; i < bloques.length; i++) {
+            let $curr = $(bloques[i]);
+            let $prev = $(bloques[i - 1]);
+
+            let sameContact = true;
+            camposContacto.forEach(name => {
+                let v1 = $prev.find(`[name="${name}"]`).val() || '';
+                let v2 = $curr.find(`[name="${name}"]`).val() || '';
+                if (v1 !== v2) sameContact = false;
+            });
+            if (sameContact && $curr.find(`[name="atencion_a[]"]`).val() !== '') {
+                $curr.find('.switch-copiar-contacto').prop('checked', true);
             }
-            
-            if ($campoDestino.hasClass('select2-hidden-accessible')) {
-                $campoDestino.trigger('change.select2');
+
+            let sameDir = true;
+            camposDireccion.forEach(name => {
+                let v1 = $prev.find(`[name="${name}"]`).val() || '';
+                let v2 = $curr.find(`[name="${name}"]`).val() || '';
+                if (v1 !== v2) sameDir = false;
+            });
+            if (sameDir && $curr.find(`[name="calle[]"]`).val() !== '') {
+                $curr.find('.switch-copiar-direccion').prop('checked', true);
             }
-        });
+        }
     }
 
-    $('#switchCopiarContacto').change(function() {
-        if ($(this).is(':checked')) {
-            clonarCampos(camposContacto);
+    $(document).on('change', '.switch-copiar-contacto', function() {
+        let $currentBlock = $(this).closest('.bloque-domicilio');
+        let $prevBlock = $currentBlock.prev('.bloque-domicilio');
+        
+        if ($(this).is(':checked') && $prevBlock.length) {
+            camposContacto.forEach(name => {
+                let val = $prevBlock.find(`[name="${name}"]`).val();
+                let $target = $currentBlock.find(`[name="${name}"]`);
+                $target.val(val);
+                if ($target.hasClass('select2-hidden-accessible')) { $target.trigger('change.select2'); }
+            });
         } else {
-            clonarCampos(camposContacto, true);
+            camposContacto.forEach(name => {
+                let $target = $currentBlock.find(`[name="${name}"]`);
+                $target.val('');
+                if ($target.hasClass('select2-hidden-accessible')) { $target.trigger('change.select2'); }
+            });
         }
     });
 
-    $('#switchCopiarUbicacion').change(function() {
-        if ($(this).is(':checked')) {
-            clonarCampos(camposDireccion);
+    $(document).on('change', '.switch-copiar-direccion', function() {
+        let $currentBlock = $(this).closest('.bloque-domicilio');
+        let $prevBlock = $currentBlock.prev('.bloque-domicilio');
+        
+        if ($(this).is(':checked') && $prevBlock.length) {
+            camposDireccion.forEach(name => {
+                let val = $prevBlock.find(`[name="${name}"]`).val();
+                $currentBlock.find(`[name="${name}"]`).val(val);
+            });
         } else {
-            clonarCampos(camposDireccion, true);
+            camposDireccion.forEach(name => {
+                $currentBlock.find(`[name="${name}"]`).val('');
+            });
         }
     });
 
-    $('#formPlaza').on('input change', 'input[id$="_1"]_1, select[id$="_1"]', function() {
-        let idBase = $(this).attr('id').replace('_1', '');
-        let copiaContacto = $('#switchCopiarContacto').is(':checked') && camposContacto.includes(idBase);
-        let copiaDireccion = $('#switchCopiarUbicacion').is(':checked') && camposDireccion.includes(idBase);
+    $(document).on('input change', '.bloque-domicilio input[type="text"], .bloque-domicilio select', function(e) {
+        let $currentBlock = $(this).closest('.bloque-domicilio');
+        let name = $(this).attr('name');
+        let val = $(this).val();
 
-        if (copiaContacto || copiaDireccion) {
-            let $destino = $('#' + idBase + '_2');
-            $destino.val($(this).val());
-            if ($destino.hasClass('select2-hidden-accessible')) {
-                $destino.trigger('change.select2');
+        if (e.originalEvent) {
+            if (camposContacto.includes(name)) {
+                $currentBlock.find('.switch-copiar-contacto').prop('checked', false);
+            } else if (camposDireccion.includes(name)) {
+                $currentBlock.find('.switch-copiar-direccion').prop('checked', false);
             }
         }
-    });
 
-    $('#formPlaza').on('input change', 'input[id$="_2"], select[id$="_2"]', function() {
-        let idBase = $(this).attr('id').replace('_2', '');
-        if (camposContacto.includes(idBase)) $('#switchCopiarContacto').prop('checked', false);
-        if (camposDireccion.includes(idBase)) $('#switchCopiarUbicacion').prop('checked', false);
+        let cascadeUpdate = function($block, inputName, inputVal) {
+            let $next = $block.next('.bloque-domicilio');
+            if ($next.length) {
+                let isContacto = camposContacto.includes(inputName);
+                if (isContacto && $next.find('.switch-copiar-contacto').is(':checked')) {
+                    let $target = $next.find(`[name="${inputName}"]`);
+                    $target.val(inputVal);
+                    if ($target.hasClass('select2-hidden-accessible')) $target.trigger('change.select2');
+                    cascadeUpdate($next, inputName, inputVal);
+                } else if (!isContacto && $next.find('.switch-copiar-direccion').is(':checked')) {
+                    $next.find(`[name="${inputName}"]`).val(inputVal);
+                    cascadeUpdate($next, inputName, inputVal);
+                }
+            }
+        };
+
+        cascadeUpdate($currentBlock, name, val);
     });
 
 });

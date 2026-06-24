@@ -936,7 +936,7 @@ function getPlazaCompletaPorId(PDO $pdo, int $id_plaza)
     return $plaza;
 }
 
-function guardarPlazaAgrupada(PDO $pdo, array $datos)
+/* function guardarPlazaAgrupada(PDO $pdo, array $datos)
 {
     $id_plaza = (isset($datos['id_plaza']) && is_numeric($datos['id_plaza'])) ? (int)$datos['id_plaza'] : 0;
     
@@ -962,6 +962,58 @@ function guardarPlazaAgrupada(PDO $pdo, array $datos)
     }
     if (!empty(trim($datos['calle_2'] ?? '')) && !empty(trim($datos['atencion_a_2'] ?? ''))) {
         insertarUnDomicilioPlaza($pdo, $id_plaza, 2, $datos);
+    }
+} */
+
+function guardarPlazaAgrupada(PDO $pdo, array $datos)
+{
+    $id_plaza = (isset($datos['id_plaza']) && is_numeric($datos['id_plaza'])) ? (int)$datos['id_plaza'] : 0;
+    
+    $nombre_plaza = trim($datos['nombre_plaza']);
+    $estatus = isset($datos['estatus']) ? 'Y' : 'N';
+    $empresa_id = !empty($datos['Empresa_id']) ? (int)$datos['Empresa_id'] : null;
+
+    // 1. Guardar o Actualizar Plaza (El Padre)
+    if ($id_plaza > 0) {
+        $stmt = $pdo->prepare("UPDATE plazas SET nombre_plaza = ?, estatus = ?, Empresa_id = ? WHERE id_plaza = ?");
+        $stmt->execute([$nombre_plaza, $estatus, $empresa_id, $id_plaza]);
+    } else {
+        $stmt = $pdo->prepare("INSERT INTO plazas (nombre_plaza, estatus, Empresa_id) VALUES (?, ?, ?)");
+        $stmt->execute([$nombre_plaza, $estatus, $empresa_id]);
+        $id_plaza = (int)$pdo->lastInsertId(); 
+    }
+
+    // 2. Borrar las direcciones antiguas para sustituirlas por las actualizadas
+    $pdo->prepare("DELETE FROM plaza_domicilio WHERE Plaza_id = ?")->execute([$id_plaza]);
+
+    // 3. Iterar dinámicamente y guardar todos los domicilios (Los Hijos)
+    $calles = $datos['calle'] ?? [];
+    
+    if (!empty($calles)) {
+        $sql = "INSERT INTO plaza_domicilio (Plaza_id, atencion_a, calle, num_ext, num_int, entre_calle, y_calle, colonia, cp, localidad, municipio, estado, telefono, estatus) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Y')";
+        $stmtDom = $pdo->prepare($sql);
+
+        for ($i = 0; $i < count($calles); $i++) {
+            // Solo inserta si escribieron calle y eligieron un contacto
+            if (!empty(trim($calles[$i])) && !empty(trim($datos['atencion_a'][$i] ?? ''))) {
+                $stmtDom->execute([
+                    $id_plaza,
+                    trim($datos['atencion_a'][$i] ?? ''),
+                    trim($calles[$i] ?? ''),
+                    trim($datos['num_ext'][$i] ?? ''),
+                    trim($datos['num_int'][$i] ?? ''),
+                    trim($datos['entre_calle'][$i] ?? ''),
+                    trim($datos['y_calle'][$i] ?? ''),
+                    trim($datos['colonia'][$i] ?? ''),
+                    trim($datos['cp'][$i] ?? ''),
+                    trim($datos['localidad'][$i] ?? ''),
+                    trim($datos['municipio'][$i] ?? ''),
+                    trim($datos['estado'][$i] ?? ''),
+                    trim($datos['telefono'][$i] ?? '')
+                ]);
+            }
+        }
     }
 }
 

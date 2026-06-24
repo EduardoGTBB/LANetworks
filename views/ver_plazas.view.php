@@ -322,7 +322,7 @@
                             <input type="text" class="form-control" name="telefono" id="telefono" placeholder="Opcional">
                         </div>
                     </div> -->
-                    <div class="row">
+                    <!-- <div class="row">
                         <div class="col-md-6 border-end">
                             <div class="p-3 bg-white rounded shadow-sm border">
                                 <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="feather-map-pin me-2"></i>Contacto y Domicilio 1 (Principal)</h6>
@@ -419,6 +419,15 @@
                                 </div>
                             </div>
                         </div>
+                    </div> -->
+                    <hr class="my-3">
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-primary mb-0"><i class="feather-map-pin me-2"></i>Domicilios de la Plaza</h6>
+                        <button type="button" class="btn btn-sm btn-primary" id="btnAgregarDomicilio"><i class="feather-plus me-1"></i> Añadir Dirección</button>
+                    </div>
+
+                    <div class="accordion" id="contenedor_domicilios">
                     </div>
 
                     <div id="bloque_estatus_suc" class="row mt-3">

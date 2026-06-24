@@ -40,6 +40,10 @@ try {
         // Si hay una sucursal_global, NO es multisucursal
         $direcciones['es_multisucursal'] = empty($sucursal_global);
         $direcciones['sucursal_global'] = $sucursal_global;
+
+        $stmtF = $pdo->prepare("SELECT folio_especial FROM cotizacion WHERE id_cotizacion = ?");
+        $stmtF->execute([$id_cot]);
+        $direcciones['folio_especial'] = $stmtF->fetchColumn();
         
         echo json_encode(['status' => 'success', 'data' => $direcciones]);
         exit;

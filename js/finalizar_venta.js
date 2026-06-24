@@ -23,6 +23,9 @@ $(document).ready(function () {
             if (res.status === 'success' && res.data) {
                 let d = res.data;
 
+                let folioFormat = d.folio_especial ? d.folio_especial : id_cot.toString().padStart(5, '0');
+                $('#breadcrumb_folio').text('#' + folioFormat);
+
                 if (d.fiscal && d.fiscal.calle_numero_fiscal) {
                     $('#btn_regresar').html('Regresar');
                 } else {

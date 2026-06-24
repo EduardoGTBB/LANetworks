@@ -3,6 +3,8 @@ Pruebas/
 
 #Importadores
 importar_plazas.php
+importar_sucursales.php
+importar_usuarios.php
 
 #CSV
-PlazasP.cvs
+*.csv
