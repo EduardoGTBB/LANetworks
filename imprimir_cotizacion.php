@@ -333,10 +333,9 @@ if ($es_multisucursal) {
                 ?> -->
                 <?php
                 $plaza_completa = 'Sin especificar';
-                
-               if ($es_multisucursal) {
-                    // ✨ 1. Excluimos la sucursal matriz (id_sae = 1) de la consulta para que 
-                    // su plaza asignada (Pachuca) no sume ni genere el mensaje de "2 PLAZAS"
+
+                if ($es_multisucursal) {
+                    // Buscamos los nombres de las plazas, ignorando a la sucursal matriz (id_sae = 1)
                     $sqlPlazas = "SELECT DISTINCT pl.nombre_plaza
                                   FROM detalle_cotizacion d
                                   JOIN sucursales s ON d.sucursal_destino_id = s.id_sucursal
@@ -346,25 +345,22 @@ if ($es_multisucursal) {
                     $stmtPlazas->execute([$id_cot]);
                     $plazas_multi = $stmtPlazas->fetchAll(PDO::FETCH_COLUMN);
 
-                    if (count($plazas_multi) == 1) {
-                        // Si solo quedó 1 plaza real (ej. Saltillo), muestra su nombre
-                        $plaza_completa = mb_strtoupper($plazas_multi[0], 'UTF-8');
-                    } elseif (count($plazas_multi) > 1) {
-                        // Si realmente van a diferentes estados
-                        $plaza_completa = 'DISTRIBUCIÓN MULTISUCURSAL (' . count($plazas_multi) . ' PLAZAS)';
+                    if (count($plazas_multi) > 0) {
+                        // ✨ MAGIA: Si hay 1 o más plazas, simplemente une sus nombres con una coma
+                        // Ejemplo: "SALTILLO" o "SALTILLO, MONTERREY"
+                        $plaza_completa = mb_strtoupper(implode(', ', $plazas_multi), 'UTF-8');
                     } else {
-                        // Si el conteo dio 0, significa que TODA la orden va solo a la sucursal matriz (id_sae = 1)
+                        // Si la consulta viene vacía, significa que es 100% para la Matriz
                         $plaza_completa = 'SUCURSAL MATRIZ (DIRECCIÓN FISCAL)';
                     }
-                    
                 } elseif (isset($cot['id_sae']) && $cot['id_sae'] == 1) {
-                    // ✨ 2. Si NO es multisucursal, pero es la Matriz (id_sae 1), evitamos que imprima Pachuca
+                    // Si es sucursal única y es la Matriz
                     $plaza_completa = 'SUCURSAL MATRIZ (DIRECCIÓN FISCAL)';
-                    
                 } elseif (!empty($cot['nombre_plaza'])) {
+                    // Si es sucursal única normal, pone su plaza directa
                     $plaza_completa = mb_strtoupper(htmlspecialchars($cot['nombre_plaza']), 'UTF-8');
-                    
                 } elseif (!empty($cot['nombre_sucursal'])) {
+                    // Respaldo por si no tiene plaza pero sí sucursal
                     $estado_texto = !empty($cot['sucursal_estado']) ? htmlspecialchars($cot['sucursal_estado']) . ', ' : '';
                     $plaza_completa = mb_strtoupper($estado_texto . htmlspecialchars($cot['nombre_sucursal']), 'UTF-8');
                 }
