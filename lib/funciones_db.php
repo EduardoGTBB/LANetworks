@@ -1384,7 +1384,30 @@ function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array
             WHERE us.Usuario_id = :usuario_id AND s.estatus = 'Y'";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':usuario_id' => $id_usuario]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $sucursales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $sqlMatriz = "SELECT s.* FROM sucursales s 
+                  INNER JOIN usuarios u ON s.Empresa_id = u.Empresa_id 
+                  WHERE u.id_usuario = :usuario_id AND s.id_sae = 1 LIMIT 1";
+    $stmtMatriz = $pdo->prepare($sqlMatriz);
+    $stmtMatriz->execute([':usuario_id' => $id_usuario]);
+    $matriz = $stmtMatriz->fetch(PDO::FETCH_ASSOC);
+
+    if ($matriz) {
+        $ya_existe = false;
+        foreach ($sucursales as $suc) {
+            if ($suc['id_sucursal'] == $matriz['id_sucursal']) {
+                $ya_existe = true;
+                break;
+            }
+        }
+        if (!$ya_existe) {
+            $sucursales[] = $matriz;
+        }
+    }
+
+    return $sucursales;
 }
 
 // [fn] Obtener detalles y la dirección de la sucursal asignada
@@ -1415,7 +1438,7 @@ function obtenerDetallesParaFinalizarVenta(PDO $pdo, int $id_cotizacion)
     $sql = "SELECT dc.id_detalle_cot, dc.cantidad, p.clave_product, p.descripcion_product, dc.sucursal_destino_id,
                    c.calle_numero_cert as c_calle, c.colonia_cert as c_colonia, c.localidad_cert as c_localidad, c.municipio_cert as c_municipio, c.estado as c_estado, c.cp_cert as c_cp,
                    e.calle_numero_envio as e_calle, e.colonia_envio as e_colonia, e.localidad_envio as e_localidad, e.municipio_envio as e_municipio, e.estado_envio as e_estado, e.cp_envio as e_cp,
-                   s.nombre_sucursal as suc_nombre, s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp,
+                   s.id_sae, s.nombre_sucursal as suc_nombre, s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp,
                    
                    pl.id_plaza as id_plaza_asociada, pl.nombre_plaza
             FROM detalle_cotizacion dc

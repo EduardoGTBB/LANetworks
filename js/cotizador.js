@@ -205,8 +205,20 @@ $(document).ready(function() {
                         windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
 
                         data.forEach(suc => {
-                            $selectSuc.append(`<option value="${suc.id_sucursal}">${suc.nombre_sucursal} (${suc.estado})</option>`);
-                            windowSucursalesOpciones += `<option value="${suc.id_sucursal}">${suc.nombre_sucursal}</option>`;
+                            // ✨ MAGIA: Si no tiene nombre y es la SAE 1, le ponemos un distintivo genial
+                            let nombreVisual = suc.nombre_sucursal ? suc.nombre_sucursal.trim() : '';
+                            
+                            if (nombreVisual === '' && suc.id_sae == 1) {
+                                nombreVisual = 'SUCURSAL MATRIZ (Sin Sucursal)';
+                            } else if (nombreVisual === '') {
+                                nombreVisual = `📍 SUCURSAL SAE: ${suc.id_sae}`;
+                            }
+
+                            // Formatear estado solo si existe, para no mostrar un "null"
+                            let textEstado = suc.estado ? ` (${suc.estado})` : '';
+
+                            $selectSuc.append(`<option value="${suc.id_sucursal}">${nombreVisual}${textEstado}</option>`);
+                            windowSucursalesOpciones += `<option value="${suc.id_sucursal}">${nombreVisual}</option>`;
                         });
 
                         if(data.length === 1) $selectSuc.val(data[0].id_sucursal).trigger('change');

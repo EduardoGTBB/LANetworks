@@ -50,6 +50,13 @@ $(document).ready(function () {
                     let doms_map = new Map();
 
                     d.detalles.forEach(item => {
+
+                        // FILTRO DE SEGURIDAD: Omitimos la sucursal matriz (id_sae = 1) 
+                        // para que plazas ajenas (como Pachuca) no contaminen los destinos reales (como Saltillo)
+                        if (item.id_sae == 1) {
+                            return;
+                        }
+
                         let parsed = [];
                         try { parsed = JSON.parse(item.domicilios_plaza_json || '[]'); } catch(e){}
                         parsed.forEach(dom => {
@@ -108,7 +115,13 @@ $(document).ready(function () {
                                         estado: item.suc_estado || '',
                                         cp: item.suc_cp || ''
                                     };
-                                    let nombreSuc = item.suc_nombre || 'Sucursal ' + item.sucursal_destino_id;
+                                    /* let nombreSuc = item.suc_nombre || 'Sucursal ' + item.sucursal_destino_id; */
+                                    let nombreSuc = item.suc_nombre ? item.suc_nombre.trim() : '';
+                                    if (item.id_sae == 1) {
+                                        nombreSuc = '🏢 SUCURSAL MATRIZ (Dirección Fiscal)';
+                                    } else if (nombreSuc === '') {
+                                        nombreSuc = 'Sucursal ' + item.sucursal_destino_id;
+                                    }
                                     $selMulti.append(`<option value="${item.sucursal_destino_id}">${nombreSuc}</option>`);
                                 }
                             });
@@ -299,7 +312,11 @@ $(document).ready(function () {
             let cert_estado = (item.c_estado && item.c_estado.trim() !== '') ? item.c_estado : (item.suc_estado || '');
             let cert_cp = (item.c_cp && item.c_cp.trim() !== '') ? item.c_cp : (item.suc_cp || '');
 
-            let nombreSucursal = item.suc_nombre ? item.suc_nombre : 'Sin sucursal asignada';
+            /* let nombreSucursal = item.suc_nombre ? item.suc_nombre : 'Sin sucursal asignada'; */
+            let nombreSucursal = item.suc_nombre ? item.suc_nombre.trim() : 'Sin sucursal asignada';
+            if (item.id_sae == 1) {
+                nombreSucursal = '🏢 SUCURSAL MATRIZ (Dirección Fiscal)';
+            }
 
             html += `
             <div class="accordion-item border mb-4 shadow-sm equipo-item" style="border-radius: 8px; overflow: hidden;">
