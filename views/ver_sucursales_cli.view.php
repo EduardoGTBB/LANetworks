@@ -13,10 +13,11 @@
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
-                        <h5 class="m-b-10">Clientes</h5>
+                        <h5 class="m-b-10">Sucursales</h5>
                     </div>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
+                        <li class="breadcrumb-item">Clientes</li>
                         <li class="breadcrumb-item">Sucursales</li>
                     </ul>
                 </div>
@@ -260,15 +261,23 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-12 mb-3">
                             <label class="form-label">Nombre Sucursal <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="nombre_sucursal" id="nombre_sucursal" placeholder="Ej. Narvarte Oriente" required>
+                            <input type="text" class="form-control" name="nombre_sucursal" id="nombre_sucursal" placeholder="Ej. Narvarte Oriente">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Asociar a Plaza</label>
-                            <select class="form-control" name="Plaza_id" id="Plaza_id" data-select2-selector="status">
+                        <!-- <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">Plazas asociadas</label>
+                            <select class="form-control" name="Plaza_id[]" id="Plaza_id" multiple="multiple" data-select2-selector="status">
                             </select>
-                            <!-- <small class="text-muted">Si es una sucursal de Veracruz, puedes dejarlo en blanco ("Selecciona...") para activar el Método Híbrido.</small> -->
+                        </div> -->
+                    </div>
+
+                    <div class="row bg-soft-light rounded p-3 mb-3 border border-light">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold text-primary mb-1"><i class="feather-map me-1"></i> Plazas asociadas</label>
+                            <p class="text-muted small mb-2">Selecciona las plazas a las que esta sucursal brindará cobertura. Puedes elegir más de una.</p>
+                            <select class="form-control" name="Plaza_id[]" id="Plaza_id" multiple="multiple" style="width: 100%;">
+                            </select>
                         </div>
                     </div>
 

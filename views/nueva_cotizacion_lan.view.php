@@ -12,10 +12,11 @@
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
-                        <h5 class="m-b-10">Cotizador</h5>
+                        <h5 class="m-b-10">Nueva cotización</h5>
                     </div>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
+                        <li class="breadcrumb-item">Cotizaciones</li>
                         <li class="breadcrumb-item">Nueva cotización</li>
                     </ul>
                 </div>
@@ -208,7 +209,7 @@
                                                         <tr id="addr0">
                                                             <td>1</td>
                                                             <td>
-                                                                <input type="number" name="cantidad_cot[]" placeholder="Cantidad" class="form-control qty" step="1" min="1">
+                                                                <input type="number" name="cantidad_cot[]" placeholder="Cantidad" class="form-control qty" step="1" min="1" value="1">
                                                             </td>
                                                             <td>
                                                                 <select class="form-control product-select" name="productos[]" required data-select2-selector="status">
@@ -860,6 +861,7 @@
         const PORTAL_USUARIO_ID = "<?php echo $_SESSION['id_usuario_cliente'] ?? ''; ?>";
     </script>
 
+    <script src="js/utils_sucursales.js"></script>
     <script src="js/cotizador.js"></script>
     <!--! END: Theme Customizer !-->
     <!-- <script>

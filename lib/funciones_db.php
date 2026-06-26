@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-// >>> ==================================
-// >>>       INICIO: LOGIN
-// >>> ================================== 
+// >>> ==============================================
+// >>>          INICIO: FUNCIONES LOGIN
+// >>> ============================================== 
 // | Usuarios LAN
 // [fn] Obtener usuario para el Login (Validación)
 function obtenerUsuarioPorLan(PDO $pdo, string $usuario_lan)
@@ -34,9 +34,9 @@ function obtenerUsuarioEmpresaporCorreo(PDO $pdo, string $correo)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// >>> ==================================
-// >>>       FIN: LOGIN
-// >>> ================================== 
+// >>> ==============================================
+// >>>          FIN: FUNCIONES LOGIN
+// >>> ============================================== 
 
 // -----------------------------------------------------
 
@@ -195,16 +195,10 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
 // [fn] Obtener las cotizaciones por Usuario Logeado
 function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
 {
-    /* $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva 
-            AS gran_total, e.razon_social, u.nombre, u.apellido_pat, c.estatus
-            FROM cotizacion c
-            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
-            LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
-            WHERE c.Usuario_admin_id = :admin_id
-            ORDER BY c.id_cotizacion DESC";*/
     $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
                    e.razon_social, u.nombre, u.apellido_pat, c.estatus,
-                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir
+                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
+                   (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
             FROM cotizacion c
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
@@ -219,16 +213,10 @@ function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
 // [fn] Obtener las cotizaciones por cliente
 function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
 {
-    /* $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva 
-            AS gran_total,  e.razon_social, u.nombre, u.apellido_pat, c.estatus
-            FROM cotizacion c
-            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
-            LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
-            WHERE c.Usuario_empresa_id = :cliente_id
-            ORDER BY c.id_cotizacion DESC"; */
     $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
                    e.razon_social, u.nombre, u.apellido_pat, c.estatus,
-                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir
+                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
+                   (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
             FROM cotizacion c
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
@@ -392,26 +380,16 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
 // [fn] Obtener All cotizaciones Admin
 function obtenerTodasLasCotizaciones(PDO $pdo): array
 {
-    /* $sql = "SELECT c.id_cotizacion, c.fecha_cot, c.precio_iva AS gran_total, 
-                   e.razon_social, 
-                   u.nombre, u.apellido_pat, u.apellido_mat,
-                   ua.admin_nombre, ua.admin_apell_pat, 
-                   c.estatus
-            FROM cotizacion c
-            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
-            LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
-            LEFT JOIN usuarios_admin ua ON c.Usuario_admin_id = ua.id_user_admin
-            ORDER BY c.id_cotizacion DESC"; */
     $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
                    e.razon_social, u.nombre, u.apellido_pat, u.apellido_mat,
                    ua.admin_nombre, ua.admin_apell_pat, c.estatus,
-                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir
+                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
+                   (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
             FROM cotizacion c
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
             LEFT JOIN usuarios_admin ua ON c.Usuario_admin_id = ua.id_user_admin
             ORDER BY c.id_cotizacion DESC";
-
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
@@ -770,7 +748,17 @@ function verificarUsuarioClienteExistente(PDO $pdo, string $correo, int $id_usua
 // >>> ============================================== 
 function obtenerAllSucursales(PDO $pdo): array
 {
-    $sql = "SELECT s.*, e.razon_social FROM sucursales s INNER JOIN empresa e ON s.Empresa_id = e.id_empresa ORDER BY e.razon_social ASC, s.nombre_sucursal ASC";
+    // ✨ ACTUALIZACIÓN: Usamos GROUP_CONCAT para traer todas las plazas unidas por comas
+    // Ejemplo: "SALTILLO, PACHUCA, TOLUCA" en lugar de una sola.
+    $sql = "SELECT s.*, e.razon_social,
+                   (SELECT GROUP_CONCAT(p.nombre_plaza SEPARATOR ', ') 
+                    FROM sucursal_plaza sp 
+                    JOIN plazas p ON sp.Plaza_id = p.id_plaza 
+                    WHERE sp.Sucursal_id = s.id_sucursal) as nombres_plazas
+            FROM sucursales s 
+            INNER JOIN empresa e ON s.Empresa_id = e.id_empresa 
+            ORDER BY e.razon_social ASC, s.nombre_sucursal ASC";
+            
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -781,14 +769,13 @@ function insertarSucursal(PDO $pdo, array $post, array $usuarios_ids): void
     try {
         $pdo->beginTransaction();
 
-        // ✨ CORRECCIÓN: Agregamos el placeholder :plaza_id que estaba faltando
-        $sql = "INSERT INTO sucursales (Empresa_id, Plaza_id, id_sae, nombre_sucursal, calle, num_ext, num_int, entre_calle, y_calle, colonia, cp, poblacion, municipio, estado, estatus) 
-                VALUES (:emp_id, :plaza_id, :sae, :nom, :calle, :ext, :int, :e_calle, :y_calle, :col, :cp, :pob, :mun, :est, 'Y')";
+        // 1. Insertamos los datos nativos de la sucursal (Sin la columna Plaza_id)
+        $sql = "INSERT INTO sucursales (Empresa_id, id_sae, nombre_sucursal, calle, num_ext, num_int, entre_calle, y_calle, colonia, cp, poblacion, municipio, estado, estatus) 
+                VALUES (:emp_id, :sae, :nom, :calle, :ext, :int, :e_calle, :y_calle, :col, :cp, :pob, :mun, :est, 'Y')";
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':emp_id'   => $post['Empresa_id'],
-            ':plaza_id' => !empty($post['Plaza_id']) ? (int)$post['Plaza_id'] : null, // ✨ Ahora sí se mapea
             ':sae'      => !empty($post['id_sae']) ? $post['id_sae'] : null,
             ':nom'      => $post['nombre_sucursal'],
             ':calle'    => $post['calle'] ?? null,
@@ -804,6 +791,19 @@ function insertarSucursal(PDO $pdo, array $post, array $usuarios_ids): void
         ]);
 
         $id_sucursal = (int)$pdo->lastInsertId();
+
+        // 2. ✨ NUEVA LÓGICA DE RELACIÓN MULTI-PLAZA
+        // Soportamos que desde el formulario envíen una sola plaza o un grupo de ellas (Array)
+        $plaza_ids = isset($post['Plaza_id']) ? (array)$post['Plaza_id'] : [];
+        if (!empty($plaza_ids)) {
+            $stmtPlaza = $pdo->prepare("INSERT INTO sucursal_plaza (Sucursal_id, Plaza_id) VALUES (?, ?)");
+            foreach ($plaza_ids as $pid) {
+                if (!empty($pid)) {
+                    $stmtPlaza->execute([$id_sucursal, (int)$pid]);
+                }
+            }
+        }
+
         actualizarRelacionUsuariosSucursal($pdo, $id_sucursal, $usuarios_ids);
 
         $pdo->commit();
@@ -818,10 +818,9 @@ function actualizarSucursal(PDO $pdo, array $post, array $usuarios_ids): void
     try {
         $pdo->beginTransaction();
 
-        // ✨ CORRECCIÓN: Agregamos Plaza_id = :plaza_id al cuerpo del UPDATE
+        // 1. Actualizamos la sucursal de forma independiente
         $sql = "UPDATE sucursales SET 
                     Empresa_id = :emp_id, 
-                    Plaza_id = :plaza_id, 
                     id_sae = :sae, nombre_sucursal = :nom, 
                     calle = :calle, num_ext = :ext, num_int = :int, 
                     entre_calle = :e_calle, y_calle = :y_calle, colonia = :col, 
@@ -832,7 +831,6 @@ function actualizarSucursal(PDO $pdo, array $post, array $usuarios_ids): void
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':emp_id'   => $post['Empresa_id'],
-            ':plaza_id' => !empty($post['Plaza_id']) ? (int)$post['Plaza_id'] : null, // ✨ Guardado de cambios
             ':sae'      => !empty($post['id_sae']) ? $post['id_sae'] : null,
             ':nom'      => $post['nombre_sucursal'],
             ':calle'    => $post['calle'] ?? null,
@@ -848,6 +846,21 @@ function actualizarSucursal(PDO $pdo, array $post, array $usuarios_ids): void
             ':status'   => $post['estatus'],
             ':id'       => $post['id_sucursal']
         ]);
+
+        // 2. ✨ SINCRONIZACIÓN DE PLAZAS (Muchos a Muchos)
+        // Eliminamos los enlaces anteriores para evitar duplicados
+        $pdo->prepare("DELETE FROM sucursal_plaza WHERE Sucursal_id = ?")->execute([$post['id_sucursal']]);
+        
+        // Insertamos el nuevo set de plazas seleccionadas
+        $plaza_ids = isset($post['Plaza_id']) ? (array)$post['Plaza_id'] : [];
+        if (!empty($plaza_ids)) {
+            $stmtPlaza = $pdo->prepare("INSERT INTO sucursal_plaza (Sucursal_id, Plaza_id) VALUES (?, ?)");
+            foreach ($plaza_ids as $pid) {
+                if (!empty($pid)) {
+                    $stmtPlaza->execute([(int)$post['id_sucursal'], (int)$pid]);
+                }
+            }
+        }
 
         actualizarRelacionUsuariosSucursal($pdo, (int)$post['id_sucursal'], $usuarios_ids);
 
@@ -896,7 +909,7 @@ function eliminarSucursal(PDO $pdo, int $id_sucursal)
 // -----------------------------------------------------
 
 // >>> ==============================================
-// >>>        INICIO: FUNCIONES | PLAZAS
+// >>>          INICIO: FUNCIONES | PLAZAS
 // >>> ============================================== 
 function obtenerAllPlazasAgrupadas(PDO $pdo)
 {
@@ -935,35 +948,6 @@ function getPlazaCompletaPorId(PDO $pdo, int $id_plaza)
     }
     return $plaza;
 }
-
-/* function guardarPlazaAgrupada(PDO $pdo, array $datos)
-{
-    $id_plaza = (isset($datos['id_plaza']) && is_numeric($datos['id_plaza'])) ? (int)$datos['id_plaza'] : 0;
-    
-    $nombre_plaza = trim($datos['nombre_plaza']);
-    $estatus = isset($datos['estatus']) ? 'Y' : 'N';
-    $empresa_id = !empty($datos['Empresa_id']) ? (int)$datos['Empresa_id'] : null;
-
-    if ($id_plaza > 0) {
-        // Si hay ID, ACTUALIZA (Evita duplicados)
-        $stmt = $pdo->prepare("UPDATE plazas SET nombre_plaza = ?, estatus = ?, Empresa_id = ? WHERE id_plaza = ?");
-        $stmt->execute([$nombre_plaza, $estatus, $empresa_id, $id_plaza]);
-    } else {
-        // Si NO hay ID, CREA
-        $stmt = $pdo->prepare("INSERT INTO plazas (nombre_plaza, estatus, Empresa_id) VALUES (?, ?, ?)");
-        $stmt->execute([$nombre_plaza, $estatus, $empresa_id]);
-        $id_plaza = (int)$pdo->lastInsertId(); 
-    }
-
-    $pdo->prepare("DELETE FROM plaza_domicilio WHERE Plaza_id = ?")->execute([$id_plaza]);
-
-    if (!empty(trim($datos['calle_1'] ?? '')) && !empty(trim($datos['atencion_a_1'] ?? ''))) {
-        insertarUnDomicilioPlaza($pdo, $id_plaza, 1, $datos);
-    }
-    if (!empty(trim($datos['calle_2'] ?? '')) && !empty(trim($datos['atencion_a_2'] ?? ''))) {
-        insertarUnDomicilioPlaza($pdo, $id_plaza, 2, $datos);
-    }
-} */
 
 function guardarPlazaAgrupada(PDO $pdo, array $datos)
 {
@@ -1045,10 +1029,15 @@ function eliminarPlazaCompleta(PDO $pdo, int $id_plaza)
     $stmt = $pdo->prepare("DELETE FROM plazas WHERE id_plaza = ?");
     $stmt->execute([$id_plaza]);
 }
+
+// <<< ==============================================
+// <<<          FIN: FUNCIONES | PLAZAS
+// <<< ============================================== 
+
 // -----------------------------------------------------
 
 // >>> ==============================================
-// >>>          INICIO: FUNCIONES ALMACEN|PRODUCTOS
+// >>>      INICIO: FUNCIONES ALMACEN|PRODUCTOS
 // >>> ============================================== 
 
 function insertarProduct(PDO $pdo, array $datos): void
@@ -1183,7 +1172,7 @@ function verificarProductoExistente(PDO $pdo, string $descripcion, string $clave
     return false;
 }
 // >>> ==============================================
-// >>>          FIN: FUNCIONES ALMACEN|PRODUCTOS
+// >>>        FIN: FUNCIONES ALMACEN|PRODUCTOS
 // >>> ============================================== 
 
 // -----------------------------------------------------
@@ -1376,78 +1365,75 @@ function obtenerDomicilioPorCotizacion(PDO $pdo, int $id_cotizacion)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// [fn] Sucursales por Usuario
+// [fn] Sucursales por Usuario (Modelo Muchos a Muchos)
 function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array
 {
+    // 1. Traemos las sucursales únicas asignadas directamente al usuario
     $sql = "SELECT s.* FROM sucursales s
             INNER JOIN usuario_sucursal us ON s.id_sucursal = us.Sucursal_id
             WHERE us.Usuario_id = :usuario_id AND s.estatus = 'Y'";
+            
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':usuario_id' => $id_usuario]);
-    // return $stmt->fetchAll(PDO::FETCH_ASSOC);
     $sucursales = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $sqlMatriz = "SELECT s.* FROM sucursales s 
-                  INNER JOIN usuarios u ON s.Empresa_id = u.Empresa_id 
-                  WHERE u.id_usuario = :usuario_id AND s.id_sae = 1 LIMIT 1";
+    // 2. Inyección Única: Traemos la sucursal matriz (id_sae = 1) de la empresa (Máximo 1 fila)
+    $sqlMatriz = "SELECT s.* FROM sucursales s
+                  INNER JOIN usuarios u ON s.Empresa_id = u.Empresa_id
+                  WHERE u.id_usuario = :usuario_id AND s.id_sae = 1 AND s.estatus = 'Y' 
+                  LIMIT 1";
+                  
     $stmtMatriz = $pdo->prepare($sqlMatriz);
     $stmtMatriz->execute([':usuario_id' => $id_usuario]);
     $matriz = $stmtMatriz->fetch(PDO::FETCH_ASSOC);
 
+    // 3. La agregamos al listado únicamente si no estaba previamente enlazada
     if ($matriz) {
-        $ya_existe = false;
-        foreach ($sucursales as $suc) {
-            if ($suc['id_sucursal'] == $matriz['id_sucursal']) {
-                $ya_existe = true;
+        $existe = false;
+        foreach ($sucursales as $sRow) {
+            if ($sRow['id_sucursal'] == $matriz['id_sucursal']) {
+                $existe = true;
                 break;
             }
         }
-        if (!$ya_existe) {
+        if (!$existe) {
             $sucursales[] = $matriz;
         }
     }
+
+    // 4. LÓGICA DE NEGOCIO CENTRALIZADA PARA EL NOMBRE VISUAL (MVC Backend)
+    foreach ($sucursales as &$suc) {
+        $nombreVisual = trim($suc['nombre_sucursal'] ?? '');
+        
+        if ($nombreVisual === '' && $suc['id_sae'] == 1) {
+            $nombreVisual = 'SUCURSAL MATRIZ (Sin Sucursal)';
+        } elseif ($nombreVisual === '') {
+            $nombreVisual = 'SUCURSAL SAE: ' . ($suc['id_sae'] ?? 'S/N');
+        }
+
+        $suc['nombre_listo_para_mostrar'] = $nombreVisual;
+    }
+    unset($suc); 
 
     return $sucursales;
 }
 
 // [fn] Obtener detalles y la dirección de la sucursal asignada
-/* function obtenerDetallesParaFinalizarVenta(PDO $pdo, int $id_cot) {
-    $sql = "SELECT dc.id_detalle_cot, dc.cantidad, p.clave_product, p.descripcion_product,
-                   c.calle_numero_cert as c_calle, c.colonia_cert as c_colonia, c.localidad_cert as c_localidad, c.municipio_cert as c_municipio, c.estado as c_estado, c.cp_cert as c_cp,
-                   e.calle_numero_envio as e_calle, e.colonia_envio as e_colonia, e.localidad_envio as e_localidad, e.municipio_envio as e_municipio, e.estado_envio as e_estado, e.cp_envio as e_cp,
-                   s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp
-            FROM detalle_cotizacion dc
-            JOIN productos p ON dc.Product_id = p.id_product
-            LEFT JOIN domicilio_cert_calib c ON dc.id_dom_cert = c.id_domicilio_cert
-            LEFT JOIN domicilio_envio e ON dc.id_dom_envio = e.id_domicilio_envio
-            LEFT JOIN sucursales s ON dc.sucursal_destino_id = s.id_sucursal
-            WHERE dc.Cotizacion_id = ?
-            ORDER BY dc.id_detalle_cot ASC";
-    
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$id_cot]);
-    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($resultados as &$row) {
-        $row['suc_calle'] = trim(($row['suc_calle_sola'] ?? '') . ' ' . ($row['suc_num_ext'] ?? ''));
-    }
-    return $resultados;
-} */
 function obtenerDetallesParaFinalizarVenta(PDO $pdo, int $id_cotizacion)
 {
+    // ✨ ACTUALIZACIÓN: Agregamos "s.num_int as suc_num_int" al SELECT
     $sql = "SELECT dc.id_detalle_cot, dc.cantidad, p.clave_product, p.descripcion_product, dc.sucursal_destino_id,
                    c.calle_numero_cert as c_calle, c.colonia_cert as c_colonia, c.localidad_cert as c_localidad, c.municipio_cert as c_municipio, c.estado as c_estado, c.cp_cert as c_cp,
                    e.calle_numero_envio as e_calle, e.colonia_envio as e_colonia, e.localidad_envio as e_localidad, e.municipio_envio as e_municipio, e.estado_envio as e_estado, e.cp_envio as e_cp,
-                   s.id_sae, s.nombre_sucursal as suc_nombre, s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp,
+                   s.id_sae, s.nombre_sucursal as suc_nombre, s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.num_int as suc_num_int, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp,
                    
-                   pl.id_plaza as id_plaza_asociada, pl.nombre_plaza
+                   (SELECT GROUP_CONCAT(Plaza_id) FROM sucursal_plaza WHERE Sucursal_id = COALESCE(dc.sucursal_destino_id, cot.Sucursal_id)) as plazas_asociadas
             FROM detalle_cotizacion dc
             JOIN cotizacion cot ON dc.Cotizacion_id = cot.id_cotizacion
             JOIN productos p ON dc.Product_id = p.id_product
             LEFT JOIN domicilio_cert_calib c ON dc.id_dom_cert = c.id_domicilio_cert
             LEFT JOIN domicilio_envio e ON dc.id_dom_envio = e.id_domicilio_envio
             LEFT JOIN sucursales s ON COALESCE(dc.sucursal_destino_id, cot.Sucursal_id) = s.id_sucursal
-            LEFT JOIN plazas pl ON s.Plaza_id = pl.id_plaza
             WHERE dc.Cotizacion_id = ?
             ORDER BY dc.id_detalle_cot ASC";
 
@@ -1455,13 +1441,21 @@ function obtenerDetallesParaFinalizarVenta(PDO $pdo, int $id_cotizacion)
     $stmt->execute([$id_cotizacion]);
     $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 1. Extraer los IDs de las plazas detectadas para buscar sus domicilios
-    $plaza_ids = array_filter(array_unique(array_column($resultados, 'id_plaza_asociada')));
+    // 1. Extraer TODOS los IDs de las plazas permitidas para buscar sus domicilios
+    $all_plaza_ids = [];
+    foreach ($resultados as $r) {
+        if (!empty($r['plazas_asociadas'])) {
+            $ids = explode(',', $r['plazas_asociadas']);
+            foreach ($ids as $id) { $all_plaza_ids[] = (int)$id; }
+        }
+    }
+    $plaza_ids = array_unique($all_plaza_ids);
     $domicilios_por_plaza = [];
 
     if (!empty($plaza_ids)) {
         $inQuery = implode(',', array_fill(0, count($plaza_ids), '?'));
-        $sqlDom = "SELECT * FROM plaza_domicilio WHERE Plaza_id IN ($inQuery) AND estatus = 'Y'";
+        // Traemos también el nombre de la plaza para que el usuario sepa de dónde viene la dirección
+        $sqlDom = "SELECT pd.*, p.nombre_plaza FROM plaza_domicilio pd JOIN plazas p ON pd.Plaza_id = p.id_plaza WHERE pd.Plaza_id IN ($inQuery) AND pd.estatus = 'Y'";
         $stmtDom = $pdo->prepare($sqlDom);
         $stmtDom->execute(array_values($plaza_ids));
         $all_domicilios = $stmtDom->fetchAll(PDO::FETCH_ASSOC);
@@ -1477,26 +1471,30 @@ function obtenerDetallesParaFinalizarVenta(PDO $pdo, int $id_cotizacion)
         }
     }
 
-    // 2. Inyectar los domicilios en los resultados para el Frontend
+    // 2. Inyectar todos los domicilios permitidos en los resultados
     foreach ($resultados as &$row) {
-        $row['suc_calle'] = trim(($row['suc_calle_sola'] ?? '') . ' ' . ($row['suc_num_ext'] ?? ''));
-        $pid = $row['id_plaza_asociada'];
+        // ✨ NUEVA LÓGICA: Formatear calle con Num Ext y Num Int si existen
+        $calle_suc = trim($row['suc_calle_sola'] ?? '');
+        if (!empty($row['suc_num_ext'])) { $calle_suc .= ' NO. ' . trim($row['suc_num_ext']); }
+        if (!empty($row['suc_num_int'])) { $calle_suc .= ' INT. ' . trim($row['suc_num_int']); }
         
-        $domicilios = []; 
-
-        if (!empty($pid)) {
-            // Aplica regla estricta: Se trae únicamente la plaza enlazada a la sucursal
-            $domicilios = $domicilios_por_plaza[$pid] ?? [];
-            $row['domicilios_plaza_json'] = json_encode($domicilios);
-        } else {
-            // SIN MÉTODO HÍBRIDO: Si la sucursal no tiene plaza, se envía vacío y el usuario deberá escribir a mano
-            $row['domicilios_plaza_json'] = json_encode([]);
-            $row['nombre_plaza'] = 'POR ASIGNAR';
+        $row['suc_calle'] = $calle_suc;
+        
+        $domicilios_combinados = [];
+        if (!empty($row['plazas_asociadas'])) {
+            $ids = explode(',', $row['plazas_asociadas']);
+            foreach ($ids as $pid) {
+                if (isset($domicilios_por_plaza[$pid])) {
+                    $domicilios_combinados = array_merge($domicilios_combinados, $domicilios_por_plaza[$pid]);
+                }
+            }
         }
 
-        // Seteamos el primero por defecto solo si es caso normal fijo
-        if (!empty($pid) && count($domicilios) > 0) {
-            $defaultDom = $domicilios[0];
+        $row['domicilios_plaza_json'] = json_encode($domicilios_combinados);
+        $row['nombre_plaza'] = count($domicilios_combinados) > 0 ? 'MÚLTIPLES OPCIONES' : 'POR ASIGNAR';
+
+        if (count($domicilios_combinados) > 0) {
+            $defaultDom = $domicilios_combinados[0];
             $row['plaza_contacto']  = $defaultDom['atencion_a'];
             $row['plaza_calle']     = $defaultDom['calle_formateada'];
             $row['plaza_colonia']   = $defaultDom['colonia'];
@@ -1616,7 +1614,8 @@ function obtenerDireccionesCotizacion(PDO $pdo, int $id_cot)
 // [fn] Obtener la dirección de la sucursal global (Para Sucursal Única)
 function obtenerSucursalGlobalPorCotizacion(PDO $pdo, int $id_cotizacion)
 {
-    $sql = "SELECT s.nombre_sucursal as suc_nombre, s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp
+    // ✨ ACTUALIZACIÓN: Agregamos "s.num_int as suc_num_int" al SELECT
+    $sql = "SELECT s.nombre_sucursal as suc_nombre, s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.num_int as suc_num_int, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp
             FROM cotizacion c
             JOIN sucursales s ON c.Sucursal_id = s.id_sucursal
             WHERE c.id_cotizacion = ?";
@@ -1625,8 +1624,12 @@ function obtenerSucursalGlobalPorCotizacion(PDO $pdo, int $id_cotizacion)
     $res = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($res) {
-        // Concatenamos limpiamente la calle y el número
-        $res['suc_calle'] = trim(($res['suc_calle_sola'] ?? '') . ' ' . ($res['suc_num_ext'] ?? ''));
+        // ✨ NUEVA LÓGICA: Concatenamos la calle, num ext y num int
+        $calle_suc = trim($res['suc_calle_sola'] ?? '');
+        if (!empty($res['suc_num_ext'])) { $calle_suc .= ' NO. ' . trim($res['suc_num_ext']); }
+        if (!empty($res['suc_num_int'])) { $calle_suc .= ' INT. ' . trim($res['suc_num_int']); }
+        
+        $res['suc_calle'] = $calle_suc;
     }
     return $res ?: null;
 }

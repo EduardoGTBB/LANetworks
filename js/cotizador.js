@@ -6,7 +6,8 @@ $(document).ready(function() {
 
     /* //& Prueba */
     var windowProductos = [];
-    var windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
+    /* var windowSucursalesOpciones = '<option value="">Selecciona destino...</option>'; */
+    window.windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
     if ($.fn.select2) {
         $('#filtro_estado_producto').select2({
             theme: 'bootstrap-5', // Ajusta el diseño a tu plantilla
@@ -135,7 +136,10 @@ $(document).ready(function() {
             }
             
             // Reactivar Select2
-            $select.select2({ width: '100%' });
+            $select.select2({ 
+                theme: 'bootstrap-5', 
+                width: '100%' 
+            });
         });
     });
 
@@ -186,7 +190,7 @@ $(document).ready(function() {
         });
     }
 
-    $('#select_solicitante').on('change', function() {
+    /* $('#select_solicitante').on('change', function() {
         let usuarioId = $(this).val();
         let $selectSuc = $('#select_sucursal');
         $selectSuc.empty().append('<option value="">Cargando...</option>');
@@ -211,9 +215,8 @@ $(document).ready(function() {
                             if (nombreVisual === '' && suc.id_sae == 1) {
                                 nombreVisual = 'SUCURSAL MATRIZ (Sin Sucursal)';
                             } else if (nombreVisual === '') {
-                                nombreVisual = `📍 SUCURSAL SAE: ${suc.id_sae}`;
+                                nombreVisual = `SUCURSAL SAE: ${suc.id_sae}`;
                             }
-
                             // Formatear estado solo si existe, para no mostrar un "null"
                             let textEstado = suc.estado ? ` (${suc.estado})` : '';
 
@@ -229,6 +232,11 @@ $(document).ready(function() {
         } else {
             $selectSuc.empty().append('<option value="">Esperando al solicitante...</option>');
         }
+    }); */
+    $('#select_solicitante').on('change', function() {
+        let usuarioId = $(this).val();
+        // Llamada a la utilidad centralizada (MVC Limpio)
+        cargarSelectSucursales(usuarioId, '#select_sucursal', '.select-sucursal-fila', null);
     });
 
     $('#tipo_precio').on('change', function() {
@@ -252,9 +260,11 @@ $(document).ready(function() {
         var nuevaFila = $("#addr0").clone();
         
         /* //& Prueba */
-        nuevaFila.find('.select-sucursal-fila').html(windowSucursalesOpciones).val('');
+        /* nuevaFila.find('.select-sucursal-fila').html(windowSucursalesOpciones).val(''); */
+        nuevaFila.find('.select-sucursal-fila').html(window.windowSucursalesOpciones).val('');
         nuevaFila.attr('id', 'addr' + uniqueIdCounter);
         nuevaFila.find("input[type='text'], input[type='number']").val('');
+        nuevaFila.find('.qty').val(1);
 
         /* //& Prueba */
         
@@ -269,16 +279,25 @@ $(document).ready(function() {
         nuevaFila.find('.info-desglose').html('');
         
         nuevaFila.find('.select2-container').remove();
+        nuevaFila.find('select').removeClass('select2-hidden-accessible').removeAttr('data-select2-id aria-hidden tabindex');
+        nuevaFila.find('select option, select optgroup').removeAttr('data-select2-id');
+
         let $nuevoSelect = nuevaFila.find('.product-select');
-        $nuevoSelect.removeClass('select2-hidden-accessible').removeAttr('data-select2-id aria-hidden tabindex').val('');
-        $nuevoSelect.find('option').removeAttr('data-select2-id');
+        $nuevoSelect.val('');
 
         $("#tab_logic tbody").append(nuevaFila);
 
         $('#filtro_estado_producto').trigger('change');
         
-        if ($.fn.select2) { $nuevoSelect.select2({ width: '100%' }); }
-        
+        /* if ($.fn.select2) { $nuevoSelect.select2({ width: '100%' }); }*/
+        if ($.fn.select2) { 
+            nuevaFila.find('.select-sucursal-fila').select2({ 
+                theme: 'bootstrap-5', 
+                width: '100%', 
+                placeholder: "Selecciona destino..." 
+            });
+        }
+
         uniqueIdCounter++;
         recalcularNumeros(); 
     });

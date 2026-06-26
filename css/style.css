@@ -221,3 +221,52 @@ span.select2.select2-container.form-control {
     box-shadow: 0 0 0 0.25rem rgba(23, 198, 83, 0.25) !important;
     outline: none !important;
 }
+
+/* 10. Engrosar la caja principal SOLO dentro de las tablas de partidas */
+#tab_logic .select2-container--bootstrap-5 .select2-selection--single,
+#tab_logic_edit .select2-container--bootstrap-5 .select2-selection--single {
+    min-height: 42px !important; 
+    padding: 4px 12px !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 5px !important;
+}
+
+/* 11. Centrar verticalmente el texto y EVITAR QUE TAPE LA FLECHA (Puntos suspensivos) */
+#tab_logic .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered,
+#tab_logic_edit .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+    color: #495057 !important;
+    padding-right: 35px !important; /* 👈 Muro de contención para proteger la flecha */
+    text-overflow: ellipsis !important; /* 👈 Agrega los ... al final */
+    white-space: nowrap !important; /* 👈 Impide que la tabla se haga gruesa */
+    overflow: hidden !important;
+    display: block !important;
+}
+
+/* 12. Centrar verticalmente la flecha de la derecha */
+#tab_logic .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow,
+#tab_logic_edit .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+    height: 40px !important;
+    top: 0 !important;
+}
+
+/* 13. Forzar borde gris en el cuadro de búsqueda EXCLUSIVAMENTE dentro del modal de edición */
+#modalEditarCotizacion .select2-search--dropdown .select2-search__field {
+    border: 1px solid #ced4da !important;
+    border-radius: 5px !important;
+    padding: 6px 12px !important;
+    background-color: #ffffff !important;
+}
+#modalEditarCotizacion .select2-search--dropdown .select2-search__field:focus {
+    border-color: #86b7fe !important;
+    outline: 0 !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+/* 14. Listado Multilínea: Permitir leer todo el texto en las opciones al desplegar */
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__option {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    line-height: 1.4 !important;
+}

@@ -8,13 +8,15 @@ $(document).ready(function () {
         dropdownParent: $('#modalSucursal .modal-content')
     });
 
-    // ✨ Inicializar Select2 para Plazas
-   /*  $('#Plaza_id').select2({
+    // Inicializar Select2 para Plazas
+    $('#Plaza_id').select2({
         placeholder: "Selecciona plaza (Opcional)...",
         allowClear: true,
         width: '100%',
-        dropdownParent: $('#modalSucursal .modal-content')
-    }); */
+        dropdownParent: $('#modalSucursal .modal-content'),
+        // Esta opción evita que el dropdown tape el input al escribir
+        dropdownAutoWidth: true 
+    });
 
     $('#nombre_sucursal, #calle, #num_ext, #num_int, #entre_calle, #y_calle, #colonia, #poblacion, #municipio, #estado').on('input', function() {
         $(this).val($(this).val().toUpperCase());
@@ -89,6 +91,8 @@ $(document).ready(function () {
                     let textoEstatus = (suc.estatus === 'Y') ? 'Activa' : 'Inactiva';
 
                     let id_sae_display = suc.id_sae ? suc.id_sae : '<span class="text-muted">-</span>';
+
+                    /* let nombrePlaza = suc.nombres_plazas ? suc.nombres_plazas : '<span class="text-muted">Sin plaza asignada</span>'; */
                     let municipio_display = suc.municipio ? suc.municipio : 'Sin municipio';
                     let estado_display = suc.estado ? suc.estado : '';
 
@@ -148,7 +152,7 @@ $(document).ready(function () {
         $('#usuarios_multi').val(null).trigger('change');
         
         // ✨ Resetea la Plaza también
-        $('#Plaza_id').val('').trigger('change'); 
+        $('#Plaza_id').val([]).trigger('change.select2'); 
         
         $('#modalSucursalLabel').text('Nueva Sucursal');
         $('#modalSucursal').modal('show');
@@ -183,8 +187,8 @@ $(document).ready(function () {
                     $('#estatus_suc').prop('checked', s.estatus === 'Y');
                     $('#bloque_estatus_suc').show();
 
-                    // ✨ Asigna la plaza desde la BD
-                    $('#Plaza_id').val(s.Plaza_id).trigger('change');
+                    // ✨ Asigna las plazas enlazadas (Arreglo)
+                    $('#Plaza_id').val(s.plazas_ids).trigger('change.select2');
 
                     $('#Empresa_id').val(s.Empresa_id).trigger('change');
                     $.ajax({

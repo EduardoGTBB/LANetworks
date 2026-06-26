@@ -49,20 +49,21 @@ $(document).ready(function () {
                     let doms_plaza = [];
                     let doms_map = new Map();
 
-                    d.detalles.forEach(item => {
+                    let tiene_otras_sucursales = d.detalles.some(item => item.id_sae != 1);
 
+                    d.detalles.forEach(item => {
                         // FILTRO DE SEGURIDAD: Omitimos la sucursal matriz (id_sae = 1) 
                         // para que plazas ajenas (como Pachuca) no contaminen los destinos reales (como Saltillo)
-                        if (item.id_sae == 1) {
+                        if (item.id_sae == 1 && tiene_otras_sucursales) {
                             return;
                         }
 
                         let parsed = [];
-                        try { parsed = JSON.parse(item.domicilios_plaza_json || '[]'); } catch(e){}
+                        try { parsed = JSON.parse(item.domicilios_plaza_json || '[]'); } catch (e) { }
                         parsed.forEach(dom => {
                             let key = dom.id_plaza_domicilio || dom.calle_formateada;
-                            if(!doms_map.has(key)) {
-                                dom.nombre_plaza = item.nombre_plaza || 'Plaza';
+                            if (!doms_map.has(key)) {
+                                dom.nombre_plaza = item.nombre_plaza || dom.nombre_plaza || 'Plaza';
                                 doms_map.set(key, dom);
                                 doms_plaza.push(dom);
                             }
@@ -77,7 +78,7 @@ $(document).ready(function () {
                         $('#lbl_envio_gral').hide();
                         $('#col_cert_gral').removeClass('d-none');
                         $('#seccion_desglose_equipos').hide();
-                        
+
                         let suc = d.sucursal_global;
                         let tieneCertGuardado = (equipo_base && equipo_base.c_calle && equipo_base.c_calle.trim() !== '');
                         if (tieneCertGuardado) {
@@ -97,13 +98,13 @@ $(document).ready(function () {
                         }
                     } else {
                         $('#alerta_sucursal_unica').addClass('d-none');
-                        $('#col_envio_gral').removeClass('col-lg-6').addClass('col-lg-12'); 
+                        $('#col_envio_gral').removeClass('col-lg-6').addClass('col-lg-12');
                         $('#lbl_envio_gral').show();
-                        $('#col_cert_gral').addClass('d-none'); 
-                        $('#seccion_desglose_equipos').show(); 
+                        $('#col_cert_gral').addClass('d-none');
+                        $('#seccion_desglose_equipos').show();
 
                         let $selMulti = $('#select_sucursal_envio_gral');
-                        if($selMulti.length > 0) {
+                        if ($selMulti.length > 0) {
                             $selMulti.empty().append('<option value="">Escribir manualmente...</option>');
                             d.detalles.forEach(item => {
                                 if (item.sucursal_destino_id && !sucursalesMap[item.sucursal_destino_id]) {
@@ -118,7 +119,7 @@ $(document).ready(function () {
                                     /* let nombreSuc = item.suc_nombre || 'Sucursal ' + item.sucursal_destino_id; */
                                     let nombreSuc = item.suc_nombre ? item.suc_nombre.trim() : '';
                                     if (item.id_sae == 1) {
-                                        nombreSuc = '🏢 SUCURSAL MATRIZ (Dirección Fiscal)';
+                                        nombreSuc = 'SUCURSAL MATRIZ (Sin sucursal)';
                                     } else if (nombreSuc === '') {
                                         nombreSuc = 'Sucursal ' + item.sucursal_destino_id;
                                     }
@@ -139,7 +140,7 @@ $(document).ready(function () {
                         if (isSucursalUnica) {
                             options += '<option value="CERTIFICADO" class="fw-bold text-dark">🚚 Usar la misma dirección del Certificado</option>';
                         }
-                        
+
                         options += '<optgroup label="Plazas Disponibles">';
                         doms_plaza.forEach((d, i) => {
                             let text = `Atn: ${d.atencion_a} - ${d.calle_formateada}`;
@@ -147,12 +148,12 @@ $(document).ready(function () {
                             options += `<option value="${i}">${text}</option>`;
                         });
                         options += '</optgroup>';
-                        
+
                         $('#selector_contacto_gral').html(options);
 
-                        $('#selector_contacto_gral').off('change').on('change', function() {
+                        $('#selector_contacto_gral').off('change').on('change', function () {
                             let val = $(this).val();
-                            
+
                             if (val === 'CERTIFICADO') {
                                 $('#envio_gral_calle').val($('#cert_gral_calle').val());
                                 $('#envio_gral_colonia').val($('#cert_gral_colonia').val());
@@ -193,7 +194,7 @@ $(document).ready(function () {
                             $('#envio_gral_municipio').val(equipo_base.e_municipio);
                             $('#envio_gral_estado').val(equipo_base.e_estado);
                             $('#envio_gral_cp').val(equipo_base.e_cp);
-                            sincronizarEnvioEquipos(); 
+                            sincronizarEnvioEquipos();
 
                             // Seleccionamos el dropdown si coincide
                             if ($('#selector_contacto_gral').length > 0) {
@@ -214,14 +215,14 @@ $(document).ready(function () {
                             $('#envio_gral_municipio').val(dt.municipio);
                             $('#envio_gral_estado').val(dt.estado);
                             $('#envio_gral_cp').val(dt.cp);
-                            sincronizarEnvioEquipos(); 
+                            sincronizarEnvioEquipos();
                             if ($('#selector_contacto_gral').length > 0) $('#selector_contacto_gral').val(0);
                         }
                         sincronizarCertEquipos();
 
                     } else {
                         let primerValido = d.detalles.find(item => item.e_calle && item.e_calle.trim() !== '');
-                        
+
                         if (primerValido) {
                             let todasIguales = true;
                             for (let i = 0; i < d.detalles.length; i++) {
@@ -233,7 +234,7 @@ $(document).ready(function () {
                                     }
                                 }
                             }
-                            
+
                             if (todasIguales) {
                                 $('#envio_gral_calle').val(primerValido.e_calle);
                                 $('#envio_gral_colonia').val(primerValido.e_colonia);
@@ -241,8 +242,8 @@ $(document).ready(function () {
                                 $('#envio_gral_municipio').val(primerValido.e_municipio);
                                 $('#envio_gral_estado').val(primerValido.e_estado);
                                 $('#envio_gral_cp').val(primerValido.e_cp);
-                                
-                                sincronizarEnvioEquipos(); 
+
+                                sincronizarEnvioEquipos();
 
                                 // Seleccionamos el dropdown si coincide
                                 if ($('#selector_contacto_gral').length > 0) {
@@ -264,13 +265,19 @@ $(document).ready(function () {
                     const urlParams = new URLSearchParams(window.location.search);
                     const vieneDeEdicion = urlParams.has('editado');
 
-                    if (numSinDir > 0 && vieneDeEdicion) {
-                        let msjExtra = isSucursalUnica 
+                    // ✨ INTELIGENCIA: Si ya tiene dirección fiscal guardada pero le faltan direcciones a equipos, es un cambio de edición pendiente de guardar
+                    const esEdicionIncomplete = (numSinDir > 0 && d.fiscal && d.fiscal.calle_numero_fiscal);
+
+                    if (numSinDir > 0 && (vieneDeEdicion || esEdicionIncomplete)) {
+                        let msjExtra = isSucursalUnica
                             ? "El sistema ha pre-llenado la información en base a los otros equipos. Por favor verifícala y <strong>da clic en Guardar</strong> para registrar los equipos nuevos."
                             : "Por favor, revisa la información precargada o asigna manualmente la dirección a los equipos faltantes y haz clic en <strong>Guardar</strong>.";
-                        
+
+                        // Eliminar alertas previas para evitar duplicidad visual si vuelven a renderizar
+                        $('.alert-danger-radar').remove();
+
                         $('#col_cert_gral').closest('.row.mt-4').before(`
-                            <div class="alert alert-danger mb-4 border-0 border-start border-5 border-danger shadow-sm">
+                            <div class="alert alert-danger mb-4 border-0 border-start border-5 border-danger shadow-sm alert-danger-radar">
                                 <i class="feather-alert-triangle me-2" style="font-size: 1.1rem;"></i> 
                                 <strong>¡Acción Requerida!</strong> Detectamos <strong>${numSinDir}</strong> equipo(s) recién agregado(s) sin dirección asignada. 
                                 <br><span class="ms-4">${msjExtra}</span>
@@ -315,7 +322,7 @@ $(document).ready(function () {
             /* let nombreSucursal = item.suc_nombre ? item.suc_nombre : 'Sin sucursal asignada'; */
             let nombreSucursal = item.suc_nombre ? item.suc_nombre.trim() : 'Sin sucursal asignada';
             if (item.id_sae == 1) {
-                nombreSucursal = '🏢 SUCURSAL MATRIZ (Dirección Fiscal)';
+                nombreSucursal = 'SUCURSAL MATRIZ (Sin sucursal)';
             }
 
             html += `
@@ -433,7 +440,7 @@ $(document).ready(function () {
         sincronizarEnvioEquipos();
     });
 
-    $('#select_sucursal_envio_gral').change(function() {
+    $('#select_sucursal_envio_gral').change(function () {
         let val = $(this).val();
         if (val && sucursalesMap[val]) {
             let s = sucursalesMap[val];
@@ -452,7 +459,7 @@ $(document).ready(function () {
     $('#cert_gral_calle, #cert_gral_colonia, #cert_gral_localidad, #cert_gral_municipio, #cert_gral_estado, #cert_gral_cp').on('input', function () {
         sincronizarCertEquipos();
         if ($('#check_cert_igual_fiscal').is(':checked')) $('#check_cert_igual_fiscal').prop('checked', false);
-        
+
         if ($('#check_envio_igual_cert').is(':checked')) {
             $('#envio_gral_calle').val($('#cert_gral_calle').val());
             $('#envio_gral_colonia').val($('#cert_gral_colonia').val());

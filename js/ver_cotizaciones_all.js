@@ -6,7 +6,8 @@ $(document).ready(function () {
     let preciosProductos = {};
     let rowCount = 0;
 
-    let windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
+    // let windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
+    window.windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
     let isEditMultiSucursal = false;
 
     //>>>==========================================
@@ -62,7 +63,7 @@ $(document).ready(function () {
                 }
 
                 data.forEach(function (cot) {
-                    // ✨ Folio Visual Inteligente
+                    // Folio Visual
                     let folioVisual = cot.folio_especial ? cot.folio_especial : cot.id_cotizacion.toString().padStart(5, '0');
                     let razonSoc = cot.razon_social ? cot.razon_social : 'Sin Empresa';
 
@@ -82,16 +83,35 @@ $(document).ready(function () {
 
                     let btnDirecciones = '';
                     let yaTieneDirecciones = parseInt(cot.tiene_dir) || 0;
-
+                    let equiposSinDir = parseInt(cot.equipos_sin_dir) || 0;
                     // ✨ Lógica inteligente del botón de direcciones
                     if (estatusTexto !== 'Autorizada (información completa)' && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
-                        let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || (estatusTexto === 'Por aprobar' && yaTieneDirecciones === 0));
-                        let colorIcon = urgeDireccion ? 'text-warning' : 'text-primary';
-                        let latido = urgeDireccion ? 'style="animation: pulse 2s infinite;"' : '';
-                        let claseFondo = urgeDireccion ? 'bg-soft-warning border border-warning' : 'bg-soft-light border border-light';
+                        
+                        let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || ((estatusTexto === 'Por aprobar' || estatusTexto === 'Guardado') && yaTieneDirecciones === 0));
+                        let alertaEdicionIncompleta = (yaTieneDirecciones > 0 && equiposSinDir > 0);
+
+                        // Valores por defecto (TU COLOR ACTUAL)
+                        let colorIcon = 'text-primary';
+                        let latido = '';
+                        let claseFondo = 'bg-soft-light border border-light';
+                        let textoTooltip = 'Gestionar Direcciones';
+
+                        if (alertaEdicionIncompleta) {
+                            // 🔴 ESTADO CRÍTICO (ROJO)
+                            colorIcon = 'text-danger';
+                            latido = 'style="animation: pulse 1.5s infinite;"';
+                            claseFondo = 'bg-soft-danger border border-danger';
+                            textoTooltip = '¡Alerta! Equipos nuevos sin dirección. Haz clic aquí para corregir.';
+                        } else if (urgeDireccion) {
+                            // 🟡 ADVERTENCIA (AMARILLO)
+                            colorIcon = 'text-warning';
+                            latido = 'style="animation: pulse 2s infinite;"';
+                            claseFondo = 'bg-soft-warning border border-warning';
+                            textoTooltip = '¡Faltan Direcciones! Haz clic aquí.';
+                        }
 
                         btnDirecciones = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}&from=all" class="avatar-text avatar-md ${claseFondo}" ${latido}>
-                                                <abbr title="${urgeDireccion ? '¡Faltan Direcciones! Haz clic aquí.' : 'Gestionar Direcciones'}" style="text-decoration:none;">
+                                                <abbr title="${textoTooltip}" style="text-decoration:none;">
                                                     <i class="feather-map-pin ${colorIcon}"></i>
                                                 </abbr>
                                              </a>`;
@@ -190,7 +210,7 @@ $(document).ready(function () {
         let tdSucursal = `
             <td class="align-middle col-edit-multisucursal" ${displayStyle}>
                 <select class="form-select form-select-sm select-sucursal-fila-edit" name="sucursal_fila[]" data-selected-suc="${sucursal_destino_id}">
-                    ${windowSucursalesOpcionesEdit}
+                    ${window.windowSucursalesOpcionesEdit}
                 </select>
             </td>
         `;
@@ -233,55 +253,6 @@ $(document).ready(function () {
         `;
     }
 
-    // ✨ Funciones Select2 blindadas
-    function cargarSucursales(usuarioId, preseleccion_suc = null) {
-        let $selectSuc = $('#edit_select_sucursal');
-        
-        if ($selectSuc.hasClass('select2-hidden-accessible')) {
-            $selectSuc.select2('destroy');
-        }
-        $selectSuc.html('<option value="">Cargando...</option>');
-
-        if (usuarioId) {
-            $.ajax({
-                url: 'api/api_cotizador.php?action=get_sucursales_usuario&usuario_id=' + usuarioId,
-                method: 'GET', dataType: 'json',
-                success: function(data) {
-                    $selectSuc.html('');
-                    windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
-
-                    if(data.length === 0) {
-                        $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
-                        windowSucursalesOpcionesEdit = '<option value="" disabled>Sin sucursales asignadas</option>';
-                    } else {
-                        $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
-                        data.forEach(suc => {
-                            $selectSuc.append(`<option value="${suc.id_sucursal}">${suc.nombre_sucursal} (${suc.estado})</option>`);
-                            windowSucursalesOpcionesEdit += `<option value="${suc.id_sucursal}">${suc.nombre_sucursal}</option>`;
-                        });
-                        
-                        if (preseleccion_suc) {
-                            $selectSuc.val(preseleccion_suc);
-                        }
-                    }
-
-                    $selectSuc.select2({ dropdownParent: $('#modalEditarCotizacion') });
-
-                    $('.select-sucursal-fila-edit').each(function() {
-                        let valToSelect = $(this).attr('data-selected-suc');
-                        $(this).html(windowSucursalesOpcionesEdit);
-                        if (valToSelect) {
-                            $(this).val(valToSelect);
-                        }
-                    });
-                }
-            });
-        } else {
-            $selectSuc.html('<option value="">Selecciona un solicitante primero...</option>');
-            $selectSuc.select2({ dropdownParent: $('#modalEditarCotizacion') });
-        }
-    }
-
     function cargarSolicitantes(id_empresa, preseleccion = null, isReadOnly = false, preseleccion_suc = null) {
         let $selSol = $('#edit_select_solicitante');
         
@@ -299,7 +270,8 @@ $(document).ready(function () {
 
                 if (preseleccion) {
                     $selSol.data('old', preseleccion.toString()).val(preseleccion);
-                    cargarSucursales(preseleccion, preseleccion_suc);
+                    // Llamada a la utilidad global:
+                    cargarSelectSucursales(preseleccion, '#edit_select_sucursal', '.select-sucursal-fila-edit', preseleccion_suc);
                 }
 
                 $selSol.select2({ dropdownParent: $('#modalEditarCotizacion') });
@@ -447,7 +419,12 @@ $(document).ready(function () {
                     rowCount++;
                 });
 
-                $('.select-prod-modal').select2({ dropdownParent: $('#modalEditarCotizacion') });
+                /* $('.select-prod-modal').select2({ dropdownParent: $('#modalEditarCotizacion') }); */
+                $('.select-prod-modal').select2({ 
+                    theme: 'bootstrap-5',
+                    dropdownParent: $('#modalEditarCotizacion'),
+                    width: '100%'
+                });
 
                 if (isReadOnly) {
                     $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', true);
@@ -471,7 +448,20 @@ $(document).ready(function () {
             $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
         }
 
-        $(`#edit_addr${rowCount} .select-prod-modal`).select2({ dropdownParent: $('#modalEditarCotizacion') });
+        /* $(`#edit_addr${rowCount} .select-prod-modal`).select2({ dropdownParent: $('#modalEditarCotizacion') }); */
+        // ✨ Agregamos el buscador de sucursal en la nueva fila del modal
+        $(`#edit_addr${rowCount} .select-prod-modal`).select2({ 
+            theme: 'bootstrap-5',
+            dropdownParent: $('#modalEditarCotizacion'),
+            width: '100%'
+        });
+
+        $(`#edit_addr${rowCount} .select-sucursal-fila-edit`).select2({ 
+            theme: 'bootstrap-5',
+            dropdownParent: $('#modalEditarCotizacion'), 
+            width: '100%', 
+            placeholder: "Selecciona destino..." 
+        });
         rowCount++; recalcularNumerosFila();
     });
 
@@ -481,14 +471,6 @@ $(document).ready(function () {
             $(this).closest('tr').remove(); recalcularNumerosFila(); calcEditTotal();
         } else { alert("La cotización debe tener al menos un producto."); }
     });
-
-    /* function recalcularNumerosFila() {
-        $('#edit_tbody_productos tr.fila-producto').each(function (index) {
-            $(this).find('.fila-numero').contents().filter(function() {
-                return this.nodeType === 3; 
-            }).replaceWith(index + 1);
-        });
-    } */
 
     function recalcularNumerosFila() {
         $('#edit_tbody_productos tr.fila-producto').each(function (index) {
@@ -685,8 +667,14 @@ $(document).ready(function () {
             if ($selectProd.hasClass('select2-hidden-accessible')) {
                 $selectProd.select2('destroy'); 
             }
+            /* $selectProd.html(opcionesActualizadas).val(idProductoActual);
+            $selectProd.select2({ dropdownParent: $('#modalEditarCotizacion') }); */
             $selectProd.html(opcionesActualizadas).val(idProductoActual);
-            $selectProd.select2({ dropdownParent: $('#modalEditarCotizacion') });
+            $selectProd.select2({ 
+                theme: 'bootstrap-5',
+                dropdownParent: $('#modalEditarCotizacion'),
+                width: '100%'
+            });
         });
     });
 });

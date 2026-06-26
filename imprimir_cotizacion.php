@@ -23,15 +23,14 @@ if (!$id_cot) {
 $sql = "SELECT c.*, e.*, dem.calle_numero, dem.colonia, dem.localidad, dem.codigo_postal, dem.municipio, dem.estado, 
         CONCAT(usu.nombre, ' ', usu.apellido_pat, ' ', usu.apellido_mat) as cliente, 
         CONCAT(u.admin_nombre, ' ', u.admin_apell_pat) as vendedor,
-        s.nombre_sucursal, s.estado as sucursal_estado,
-        pl.nombre_plaza
+        s.id_sae, s.nombre_sucursal, s.estado as sucursal_estado,
+        (SELECT GROUP_CONCAT(p.nombre_plaza SEPARATOR ', ') FROM sucursal_plaza sp JOIN plazas p ON sp.Plaza_id = p.id_plaza WHERE sp.Sucursal_id = s.id_sucursal) as nombre_plaza
     FROM cotizacion c
     JOIN empresa e ON c.Empresa_id = e.id_empresa
     JOIN domicilio_empresa dem ON e.id_empresa = dem.Empresa_id
     LEFT JOIN usuarios_admin u ON c.Usuario_admin_id = u.id_user_admin
     JOIN usuarios usu ON c.Usuario_empresa_id = usu.id_usuario
     LEFT JOIN sucursales s ON c.Sucursal_id = s.id_sucursal
-    LEFT JOIN plazas pl ON s.Plaza_id = pl.id_plaza
     WHERE c.id_cotizacion = ?";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$id_cot]);
@@ -51,17 +50,15 @@ $sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product,
            s_dest.estado AS estado_sucursal_destino,
            c_dir.calle_numero_cert, c_dir.colonia_cert, c_dir.municipio_cert, c_dir.estado as estado_cert, c_dir.cp_cert,
            e_dir.calle_numero_envio, e_dir.colonia_envio, e_dir.municipio_envio, e_dir.estado_envio, e_dir.cp_envio,
-           pl.nombre_plaza
+           (SELECT GROUP_CONCAT(p.nombre_plaza SEPARATOR ', ') FROM sucursal_plaza sp JOIN plazas p ON sp.Plaza_id = p.id_plaza WHERE sp.Sucursal_id = s_dest.id_sucursal) as nombre_plaza
            FROM detalle_cotizacion d
            JOIN productos p ON d.Product_id = p.id_product
            LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
            LEFT JOIN sucursales s_dest ON d.sucursal_destino_id = s_dest.id_sucursal
-           LEFT JOIN plazas pl ON s_dest.Plaza_id = pl.id_plaza
            LEFT JOIN domicilio_cert_calib c_dir ON d.id_dom_cert = c_dir.id_domicilio_cert
            LEFT JOIN domicilio_envio e_dir ON d.id_dom_envio = e_dir.id_domicilio_envio
            WHERE d.Cotizacion_id = ?";
-
 $stmtDet = $pdo->prepare($sqlDet);
 $stmtDet->execute([$id_cot]);
 $detalles = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
@@ -339,7 +336,8 @@ if ($es_multisucursal) {
                     $sqlPlazas = "SELECT DISTINCT pl.nombre_plaza
                                   FROM detalle_cotizacion d
                                   JOIN sucursales s ON d.sucursal_destino_id = s.id_sucursal
-                                  JOIN plazas pl ON s.Plaza_id = pl.id_plaza
+                                  JOIN sucursal_plaza sp ON s.id_sucursal = sp.Sucursal_id
+                                  JOIN plazas pl ON sp.Plaza_id = pl.id_plaza
                                   WHERE d.Cotizacion_id = ? AND pl.nombre_plaza IS NOT NULL AND s.id_sae != 1";
                     $stmtPlazas = $pdo->prepare($sqlPlazas);
                     $stmtPlazas->execute([$id_cot]);
@@ -354,8 +352,28 @@ if ($es_multisucursal) {
                         $plaza_completa = 'SUCURSAL MATRIZ (DIRECCIÓN FISCAL)';
                     }
                 } elseif (isset($cot['id_sae']) && $cot['id_sae'] == 1) {
-                    // Si es sucursal única y es la Matriz
-                    $plaza_completa = 'SUCURSAL MATRIZ (DIRECCIÓN FISCAL)';
+                    $plaza_real_matriz = null;
+                    foreach ($detalles as $d) {
+                        // Buscamos coincidencia exacta por la colonia y CP copiados en el envío
+                        if (!empty($d['colonia_envio']) && !empty($d['cp_envio'])) {
+                            $stmtP = $pdo->prepare("SELECT p.nombre_plaza FROM plaza_domicilio pd JOIN plazas p ON pd.Plaza_id = p.id_plaza WHERE pd.colonia = ? AND pd.cp = ? LIMIT 1");
+                            $stmtP->execute([$d['colonia_envio'], $d['cp_envio']]);
+                            $plaza_real_matriz = $stmtP->fetchColumn();
+                            if ($plaza_real_matriz) break;
+                        }
+                        // Si no hay envío, buscamos por los datos guardados del certificado
+                        if (!empty($d['colonia_cert']) && !empty($d['cp_cert'])) {
+                            $stmtP = $pdo->prepare("SELECT p.nombre_plaza FROM plaza_domicilio pd JOIN plazas p ON pd.Plaza_id = p.id_plaza WHERE pd.colonia = ? AND pd.cp = ? LIMIT 1");
+                            $stmtP->execute([$d['colonia_cert'], $d['cp_cert']]);
+                            $plaza_real_matriz = $stmtP->fetchColumn();
+                            if ($plaza_real_matriz) break;
+                        }
+                    }
+                    if ($plaza_real_matriz) {
+                        $plaza_completa = mb_strtoupper($plaza_real_matriz, 'UTF-8');
+                    } else {
+                        $plaza_completa = 'SUCURSAL MATRIZ (DIRECCIÓN FISCAL)';
+                    }
                 } elseif (!empty($cot['nombre_plaza'])) {
                     // Si es sucursal única normal, pone su plaza directa
                     $plaza_completa = mb_strtoupper(htmlspecialchars($cot['nombre_plaza']), 'UTF-8');

@@ -11,10 +11,11 @@
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
-                        <h5 class="m-b-10">Ventas</h5>
+                        <h5 class="m-b-10">Mis cotizaciones</h5>
                     </div>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
+                        <li class="breadcrumb-item">Cotizaciones</li>
                         <li class="breadcrumb-item">Mis cotizaciones</li>
                     </ul>
                 </div>
@@ -287,9 +288,9 @@
                                 <table class="table table-bordered overflow-hidden" id="tab_logic_edit">
                                     <thead>
                                         <tr class="single-item">
-                                            <th class="text-center wd-70">Ítem</th>
+                                            <th class="text-center wd-80">Ítem</th>
                                             <th class="text-center wd-150">Cantidad</th>
-                                            <th class="text-center wd-450">Producto</th>
+                                            <th class="text-center wd-400">Producto</th>
                                             <!-- //& Prueba -->
                                             <th class="text-center wd-250 col-edit-multisucursal" style="display:none">Sucursal Destino</th>
                                             <!-- //& Prueba -->
@@ -889,6 +890,7 @@
         const ES_CLIENTE_PORTAL = <?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
         const USER_PERFIL = "<?php echo $_SESSION['perfil'] ?? 'cliente'; ?>";
     </script>
+    <script src="js/utils_sucursales.js"></script>
     <script src="js/ver_cotizaciones.js"></script>
 </body>
 

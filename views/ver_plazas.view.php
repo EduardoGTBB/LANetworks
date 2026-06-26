@@ -13,10 +13,11 @@
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
-                        <h5 class="m-b-10">Clientes</h5>
+                        <h5 class="m-b-10">Plazas</h5>
                     </div>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
+                        <li class="breadcrumb-item">Clientes</li>
                         <li class="breadcrumb-item">Plazas</li>
                     </ul>
                 </div>

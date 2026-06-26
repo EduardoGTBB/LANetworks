@@ -6,7 +6,8 @@ $(document).ready(function () {
     let preciosProductos = {};
     let rowCount = 0;
 
-    let windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
+    /* let windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>'; */
+    window.windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
     let isEditMultiSucursal = false;
 
     //>>>==========================================
@@ -25,21 +26,21 @@ $(document).ready(function () {
         }
     });
 
-    $('#edit_estatus').on('change', function() {
+    $('#edit_estatus').on('change', function () {
         let val = $(this).val();
         let tieneDir = $(this).data('tiene-dir');
-        
+
         if (val === 'Autorizada (información completa)' && tieneDir === 0) {
             alert("No puedes marcar la cotización como 'Autorizada' sin antes registrar las direcciones de Certificado y Envío.");
-            $(this).val('Por aprobar').trigger('change.select2'); 
+            $(this).val('Por aprobar').trigger('change.select2');
         }
     });
 
-    $(document).on('change', '.chk-desglosar', function() {
-        $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
+    $(document).on('change', '.chk-desglosar', function () {
+        $(this).siblings('.hidden-desglose').val($(this).is(':checked') ? 'Y' : 'N');
     });
 
-    $(document).on('change', '.select-sucursal-fila-edit', function() {
+    $(document).on('change', '.select-sucursal-fila-edit', function () {
         $(this).attr('data-selected-suc', $(this).val());
     });
 
@@ -54,7 +55,19 @@ $(document).ready(function () {
                 img class="img-fluid" src="assets/images/gallery/icono_cot.jpg">
             </div>
         </div>
-    </td> */}
+    </td>
+    if (estatusTexto !== 'Autorizada (información completa)' && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
+                        let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || (estatusTexto === 'Por aprobar' && yaTieneDirecciones === 0));
+                        let colorIcon = urgeDireccion ? 'text-warning' : 'text-primary';
+                        let latido = urgeDireccion ? 'style="animation: pulse 2s infinite;"' : '';
+                        let claseFondo = urgeDireccion ? 'bg-soft-warning border border-warning' : 'bg-soft-light border border-light';
+
+                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md ${claseFondo}" ${latido}>
+                                                <abbr title="${urgeDireccion ? '¡Faltan Direcciones! Haz clic aquí.' : 'Gestionar Direcciones'}" style="text-decoration:none;">
+                                                    <i class="feather-map-pin ${colorIcon}"></i>
+                                                </abbr>
+                                            </a>`;
+                    } */}
     function cargarTablaPrincipal() {
         $.ajax({
             url: 'api/api_ver_cotizaciones.php?action=leer',
@@ -93,15 +106,35 @@ $(document).ready(function () {
 
                     let btnCompletarVenta = '';
                     let yaTieneDirecciones = parseInt(cot.tiene_dir) || 0;
+                    let equiposSinDir = parseInt(cot.equipos_sin_dir) || 0; // ✨ Leemos la columna de equipos sin dirección
 
                     if (estatusTexto !== 'Autorizada (información completa)' && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
-                        let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || (estatusTexto === 'Por aprobar' && yaTieneDirecciones === 0));
-                        let colorIcon = urgeDireccion ? 'text-warning' : 'text-primary';
-                        let latido = urgeDireccion ? 'style="animation: pulse 2s infinite;"' : '';
-                        let claseFondo = urgeDireccion ? 'bg-soft-warning border border-warning' : 'bg-soft-light border border-light';
+
+                        let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || ((estatusTexto === 'Por aprobar' || estatusTexto === 'Guardado') && yaTieneDirecciones === 0));
+                        let alertaEdicionIncompleta = (yaTieneDirecciones > 0 && equiposSinDir > 0);
+
+                        // Valores por defecto (TU COLOR ACTUAL)
+                        let colorIcon = 'text-primary';
+                        let latido = '';
+                        let claseFondo = 'bg-soft-light border border-light';
+                        let textoTooltip = 'Gestionar Direcciones';
+
+                        if (alertaEdicionIncompleta) {
+                            // 🔴 ESTADO CRÍTICO (ROJO)
+                            colorIcon = 'text-danger';
+                            latido = 'style="animation: pulse 1.5s infinite;"';
+                            claseFondo = 'bg-soft-danger border border-danger';
+                            textoTooltip = '¡Alerta! Equipos nuevos sin dirección. Haz clic aquí para corregir.';
+                        } else if (urgeDireccion) {
+                            // 🟡 ADVERTENCIA (AMARILLO)
+                            colorIcon = 'text-warning';
+                            latido = 'style="animation: pulse 2s infinite;"';
+                            claseFondo = 'bg-soft-warning border border-warning';
+                            textoTooltip = '¡Faltan Direcciones! Haz clic aquí.';
+                        }
 
                         btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md ${claseFondo}" ${latido}>
-                                                <abbr title="${urgeDireccion ? '¡Faltan Direcciones! Haz clic aquí.' : 'Gestionar Direcciones'}" style="text-decoration:none;">
+                                                <abbr title="${textoTooltip}" style="text-decoration:none;">
                                                     <i class="feather-map-pin ${colorIcon}"></i>
                                                 </abbr>
                                             </a>`;
@@ -181,18 +214,18 @@ $(document).ready(function () {
             let claveM = p.clave_product.toUpperCase();
             let descM = p.descripcion_product.toUpperCase();
             let estadoBD = p.estado_product ? p.estado_product.toUpperCase().trim() : 'N/A';
-            
+
             let pasaFiltro = false;
-            if (filtroActual === 'TODOS') pasaFiltro = true; 
-            else if (filtroActual === estadoBD) pasaFiltro = true; 
-            else if (p.id_product == prod_id) pasaFiltro = true; 
+            if (filtroActual === 'TODOS') pasaFiltro = true;
+            else if (filtroActual === estadoBD) pasaFiltro = true;
+            else if (p.id_product == prod_id) pasaFiltro = true;
 
             if (pasaFiltro) {
                 let selected = (p.id_product == prod_id) ? 'selected' : '';
                 let marca = (p.marca_product && p.marca_product !== 'N/A') ? p.marca_product.toUpperCase() : '';
                 let textoMarca = marca ? ` | Marca: ${marca}` : '';
                 let isSrv = (estadoBD === 'CALIBRACION');
-                
+
                 opciones += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}${textoMarca}</option>`;
             }
         });
@@ -206,7 +239,7 @@ $(document).ready(function () {
         let tdSucursal = `
             <td class="align-middle col-edit-multisucursal" ${displayStyle}>
                 <select class="form-select form-select-sm select-sucursal-fila-edit" name="sucursal_fila[]" data-selected-suc="${sucursal_destino_id}">
-                    ${windowSucursalesOpcionesEdit}
+                    ${window.windowSucursalesOpcionesEdit}
                 </select>
             </td>
         `;
@@ -245,7 +278,7 @@ $(document).ready(function () {
         `;
     }
 
-    function cargarSucursales(usuarioId, preseleccion_suc = null) {
+    /* function cargarSucursales(usuarioId, preseleccion_suc = null) {
         let $selectSuc = $('#edit_select_sucursal');
         $selectSuc.empty().append('<option value="">Cargando...</option>');
 
@@ -283,7 +316,7 @@ $(document).ready(function () {
         } else {
             $selectSuc.empty().append('<option value="">Selecciona un solicitante primero...</option>');
         }
-    }
+    } */
 
     function cargarSolicitantes(id_empresa, preseleccion = null, isReadOnly = false, preseleccion_suc = null) {
         $.ajax({
@@ -294,9 +327,14 @@ $(document).ready(function () {
                 $selSol.empty().append('<option value="">Selecciona...</option>');
                 users.forEach(u => { $selSol.append(`<option value="${u.id_usuario}">${u.nombre} ${u.apellido_pat} ${u.apellido_mat}</option>`); });
 
-                if (preseleccion) {
+                /* if (preseleccion) {
                     $selSol.val(preseleccion);
                     cargarSucursales(preseleccion, preseleccion_suc);
+                } */
+                if (preseleccion) {
+                    $selSol.val(preseleccion);
+                    // En ver_cotizaciones_all.js tienes $selSol.data('old', preseleccion).val(preseleccion); déjalo así.
+                    cargarSelectSucursales(preseleccion, '#edit_select_sucursal', '.select-sucursal-fila-edit', preseleccion_suc);
                 }
 
                 $selSol.select2({ dropdownParent: $('#modalEditarCotizacion') });
@@ -314,7 +352,16 @@ $(document).ready(function () {
     }
 
     $('#edit_select_empresa').on('change', function () { cargarSolicitantes($(this).val()); });
-    $('#edit_select_solicitante').on('change', function () { cargarSucursales($(this).val(), null); });
+
+    $('#edit_select_solicitante').on('change', function () {
+        let val = $(this).val();
+        // En ver_cotizaciones_all.js usas data('old') para evitar re-cargas innecesarias
+        if (!val || $(this).data('old') === val) return;
+        $(this).data('old', val);
+
+        cargarSelectSucursales(val, '#edit_select_sucursal', '.select-sucursal-fila-edit', null);
+        /* cargarSucursales($(this).val(), null);  */
+    });
 
     let previousTipoPrecio = '';
     $('#tipo_precio').on('focus click', function () { previousTipoPrecio = $(this).val(); }).on('change', function () {
@@ -373,18 +420,27 @@ $(document).ready(function () {
                 if (estatusBD === 'Autorizada (sin dirección)') estatusBD = 'Autorizada (información completa)';
                 $('#edit_estatus').val(estatusBD).trigger('change');
 
-                let $colSolicitante = $('#edit_select_solicitante').closest('div[class^="col-"]');
-                let $colPrecio = $('#tipo_precio').closest('div[class^="col-"]');
-                let $colEstatus = $('#fila_estatus_lan');
-                let $colCliente = $('#edit_select_empresa').closest('div[class^="col-"]');
-                let $colSucursal = $('#edit_select_sucursal').closest('div[class^="col-"]');
-                let $colTipoProd = $('#edit_filtro_tipo_producto').closest('div[class^="col-"]');
+                let $colSolicitante = $('#edit_select_solicitante').closest('div[class*="col-"]');
+                let $colPrecio      = $('#tipo_precio').closest('div[class*="col-"]');
+                let $colEstatus     = $('#fila_estatus_lan');
+                let $colCliente     = $('#edit_select_empresa').closest('div[class*="col-"]');
+                let $colSucursal    = $('#edit_select_sucursal').closest('div[class*="col-"]');
+                let $colTipoProd    = $('#edit_filtro_tipo_producto').closest('div[class*="col-"]');
+                let $colDivision    = $('#division').closest('div[class*="col-"]');
 
-                $colSolicitante.removeClass('col-md-12').addClass('col-md-4');
+                function setColClass($el, colClass) {
+                    $el.removeClass(function (index, className) {
+                        return (className.match(/(^|\s)col-\S+/g) || []).join(' ');
+                    }).addClass(colClass);
+                }
+
+                setColClass($colCliente, 'col-md-4');
+                setColClass($colDivision, 'col-md-4');
+                setColClass($colSolicitante, 'col-md-4');
                 $colPrecio.show();
                 $colEstatus.show();
                 $selEmp.prop('disabled', false);
-                $colSucursal.insertAfter($colSolicitante); 
+                $colSucursal.insertAfter($colSolicitante);
 
                 if (isEditMultiSucursal) {
                     $colSucursal.hide();
@@ -396,15 +452,34 @@ $(document).ready(function () {
                     $('.col-edit-multisucursal').hide();
                 }
 
+                // ✨ LÓGICA EXCLUSIVA PARA EL PORTAL B2B (CLIENTES)
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
                     $colPrecio.hide();
                     $colEstatus.hide();
-                    if (!isEditMultiSucursal) { $colSucursal.insertAfter($colCliente); }
-                    $colSucursal.insertAfter($colCliente);
-                    $colSolicitante.removeClass('col-md-4').addClass('col-md-6');
-                    $colTipoProd.removeClass('col-md-4').addClass('col-md-6');
+                    
+                    if (isEditMultiSucursal) {
+                        // MULTISUCURSAL: Expande Cliente y División a media pantalla (6+6)
+                        setColClass($colDivision, 'col-md-6');
+                        setColClass($colCliente, 'col-md-6');
+                    } else {
+                        // SUCURSAL ÚNICA: Acomoda División, Cliente y Sucursal en una sola fila (4+4+4)
+                        setColClass($colDivision, 'col-md-4');
+                        setColClass($colCliente, 'col-md-4');
+                        setColClass($colSucursal, 'col-md-4');
+                        
+                        // Ordenamos para que queden juntos en HTML uno tras otro
+                        $colCliente.insertAfter($colDivision);
+                        $colSucursal.insertAfter($colCliente);
+                    }
+
+                    // Solicitante y Tipo de Producto llenan la segunda fila (6+6)
+                    setColClass($colSolicitante, 'col-md-6');
+                    setColClass($colTipoProd, 'col-md-6');
+                    $colTipoProd.insertAfter($colSolicitante);
+                    
                     $selEmp.prop('disabled', true);
 
+                    // Campos ocultos para mantener los valores
                     if ($('#hidden_edit_empresa').length === 0) {
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
@@ -424,7 +499,7 @@ $(document).ready(function () {
                 } else {
                     $('#edit_filtro_tipo_producto').val('TODOS').trigger('change');
                 }
-                
+
                 $('#edit_filtro_tipo_producto').css({
                     'pointer-events': 'none',
                     'background-color': '#e9ecef',
@@ -444,7 +519,7 @@ $(document).ready(function () {
                         let precioGuardado = parseFloat(item.precio_unitario);
 
                         if (Math.abs(precioGuardado - precioSoloEquipo) < 0.01) isCalibIncluida = false;
-                        
+
                         let claveM = pData.clave_product.toUpperCase();
                         let descM = pData.descripcion_product.toUpperCase();
                         if (claveM.includes('SERVICIO') || descM.includes('SERVICIO')) {
@@ -458,7 +533,11 @@ $(document).ready(function () {
                     rowCount++;
                 });
 
-                $('.select-prod-modal').select2({ dropdownParent: $('#modalEditarCotizacion') });
+                $('.select-prod-modal').select2({ 
+                    theme: 'bootstrap-5',
+                    dropdownParent: $('#modalEditarCotizacion'),
+                    width: '100%'
+                });
 
                 if (isReadOnly) {
                     $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', true);
@@ -484,7 +563,20 @@ $(document).ready(function () {
             $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
         }
 
-        $(`#edit_addr${rowCount} .select-prod-modal`).select2({ dropdownParent: $('#modalEditarCotizacion') });
+        // $(`#edit_addr${rowCount} .select-prod-modal`).select2({ dropdownParent: $('#modalEditarCotizacion') });
+        $(`#edit_addr${rowCount} .select-prod-modal`).select2({ 
+            theme: 'bootstrap-5',
+            dropdownParent: $('#modalEditarCotizacion'),
+            width: '100%'
+        });
+
+        // ✨ Inicializamos la sucursal clonada con el tema correcto y su placeholder
+        $(`#edit_addr${rowCount} .select-sucursal-fila-edit`).select2({ 
+            theme: 'bootstrap-5',
+            dropdownParent: $('#modalEditarCotizacion'), 
+            width: '100%', 
+            placeholder: "Selecciona destino..." 
+        });
         rowCount++;
         recalcularNumerosFila();
     });
@@ -503,7 +595,7 @@ $(document).ready(function () {
     // ✨ RASTREADOR PROTEGIDO: Solo alteramos el texto visible del td sin destruir el input hidden
     function recalcularNumerosFila() {
         $('#edit_tbody_productos tr.fila-producto').each(function (index) {
-            $(this).find('.fila-numero').contents().filter(function() {
+            $(this).find('.fila-numero').contents().filter(function () {
                 return this.nodeType === 3; // Selecciona solo el texto (los números)
             }).replaceWith(index + 1);
         });
@@ -631,10 +723,10 @@ $(document).ready(function () {
 
                     if (estatusSeleccionado.includes('Autorizada') || window.productoAgregadoEnEdicion) {
                         alert("Cambios guardados. Serás redirigido para verificar las direcciones de los equipos.");
-                        
+
                         // Reseteamos la bandera por seguridad
-                        window.productoAgregadoEnEdicion = false; 
-                        
+                        window.productoAgregadoEnEdicion = false;
+
                         window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val() + '&editado=1';
                     } else {
                         alert("Cambios guardados exitosamente.");
@@ -675,7 +767,7 @@ $(document).ready(function () {
         $('#edit_tbody_productos tr.fila-producto').each(function () {
             let $row = $(this);
             let $selectProd = $row.find('.select-prod-modal');
-            let idProductoActual = $selectProd.val(); 
+            let idProductoActual = $selectProd.val();
 
             let opcionesActualizadas = '<option value="">Selecciona...</option>';
 
@@ -683,7 +775,7 @@ $(document).ready(function () {
                 let claveM = p.clave_product.toUpperCase();
                 let descM = p.descripcion_product.toUpperCase();
                 let estadoBD = p.estado_product ? p.estado_product.toUpperCase().trim() : 'N/A';
-                
+
                 let pasaFiltro = false;
                 if (nuevoFiltro === 'TODOS') {
                     pasaFiltro = true;
@@ -698,17 +790,23 @@ $(document).ready(function () {
                     let marca = (p.marca_product && p.marca_product !== 'N/A') ? p.marca_product.toUpperCase() : '';
                     let textoMarca = marca ? ` | Marca: ${marca}` : '';
                     let isSrv = (estadoBD === 'CALIBRACION');
-                    
+
                     opcionesActualizadas += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}${textoMarca}</option>`;
                 }
             });
 
             if ($selectProd.hasClass('select2-hidden-accessible')) {
-                $selectProd.select2('destroy'); 
+                $selectProd.select2('destroy');
             }
-            
+
+            /* $selectProd.html(opcionesActualizadas).val(idProductoActual);
+            $selectProd.select2({ dropdownParent: $('#modalEditarCotizacion') }); */
             $selectProd.html(opcionesActualizadas).val(idProductoActual);
-            $selectProd.select2({ dropdownParent: $('#modalEditarCotizacion') });
+            $selectProd.select2({ 
+                theme: 'bootstrap-5', // ✨ Mantenemos el tema al recargar por filtros
+                dropdownParent: $('#modalEditarCotizacion'),
+                width: '100%'
+            });
         });
     });
 });

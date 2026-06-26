@@ -158,9 +158,25 @@ try {
             echo json_encode(['status' => 'error', 'message' => 'Debes agregar al menos un producto con cantidad válida.']);
             exit;
         }
-
+/* 
         $nuevo_folio = saveCotizacion($pdo, $datosCotizacion, $detalles);
-        echo json_encode(['status' => 'success', 'message' => "La cotización #$nuevo_folio se guardó correctamente.", 'id_cotizacion' => $nuevo_folio]);
+        echo json_encode(['status' => 'success', 'message' => "La cotización #$nuevo_folio se guardó correctamente.", 'id_cotizacion' => $nuevo_folio]); */
+        // 1. Guardamos la cotización y obtenemos su ID interno (Modelo)
+        $id_cotizacion = saveCotizacion($pdo, $datosCotizacion, $detalles);
+
+        // 2. ✨ REUTILIZAMOS la función existente para traer el folio generado
+        $cotizacionReciente = editarCotizacionporID($pdo, (int)$id_cotizacion);
+        $folio_especial = $cotizacionReciente['folio_especial'] ?? null;
+
+        // 3. Fallback de seguridad (por si el folio llegara vacío)
+        $folio_mostrar = $folio_especial ? $folio_especial : str_pad((string)$id_cotizacion, 5, '0', STR_PAD_LEFT);
+
+        // 4. Retornamos el JSON manteniendo el ID numérico para la redirección de JS
+        echo json_encode([
+            'status'        => 'success', 
+            'message'       => "La cotización #$folio_mostrar se guardó correctamente.", 
+            'id_cotizacion' => $id_cotizacion
+        ]);
     }
 } catch (Exception $e) {
     http_response_code(500);

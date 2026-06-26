@@ -11,10 +11,11 @@
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
-                        <h5 class="m-b-10">Ventas</h5>
+                        <h5 class="m-b-10">Todas las cotizaciones</h5>
                     </div>
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
+                        <li class="breadcrumb-item">Cotizaciones</li>
                         <li class="breadcrumb-item">Todas las cotizaciones</li>
                     </ul>
                 </div>
@@ -291,9 +292,9 @@
                                 <table class="table table-bordered overflow-hidden" id="tab_logic_edit">
                                     <thead>
                                         <tr class="single-item">
-                                            <th class="text-center wd-70">Ítem</th>
+                                            <th class="text-center wd-80">Ítem</th>
                                             <th class="text-center wd-150">Cantidad</th>
-                                            <th class="text-center wd-450">Producto</th>
+                                            <th class="text-center wd-400">Producto</th>
                                             <th class="text-center wd-250 col-edit-multisucursal" style="display:none">Sucursal Destino</th>
                                             <th class="text-center wd-250">Desglose de Calibración</th>
                                             <th class="text-center wd-150">Precio U.</th>
@@ -887,6 +888,7 @@
     <!--! BEGIN: Theme Customizer  !-->
     <script src="assets/js/theme-customizer-init.min.js"></script>
     <!--! END: Theme Customizer !-->
+    <script src="js/utils_sucursales.js"></script>
     <script src="js/ver_cotizaciones_all.js"></script>
 
     <!-- <script>

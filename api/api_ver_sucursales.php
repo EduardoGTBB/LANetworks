@@ -32,12 +32,29 @@ try {
             $stmt->execute([$id]);
             $sucursal = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Traer usuarios asignados
+            /* // Traer usuarios asignados
             $stmtUsr = $pdo->prepare("SELECT Usuario_id FROM usuario_sucursal WHERE Sucursal_id = ?");
             $stmtUsr->execute([$id]);
             $sucursal['usuarios_asignados'] = $stmtUsr->fetchAll(PDO::FETCH_COLUMN);
 
-            echo json_encode(['status' => 'success', 'data' => $sucursal]);
+            echo json_encode(['status' => 'success', 'data' => $sucursal]); */
+
+            if ($sucursal) {
+                // Traer usuarios asignados
+                $stmtUsr = $pdo->prepare("SELECT Usuario_id FROM usuario_sucursal WHERE Sucursal_id = ?");
+                $stmtUsr->execute([$id]);
+                $sucursal['usuarios_asignados'] = $stmtUsr->fetchAll(PDO::FETCH_COLUMN);
+
+                // ✨ MAGIA: Traer TODAS las plazas asignadas (Arreglo múltiple)
+                $stmtPlaza = $pdo->prepare("SELECT Plaza_id FROM sucursal_plaza WHERE Sucursal_id = ?");
+                $stmtPlaza->execute([$id]);
+                $sucursal['plazas_ids'] = $stmtPlaza->fetchAll(PDO::FETCH_COLUMN);
+
+                echo json_encode(['status' => 'success', 'data' => $sucursal]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Sucursal no encontrada']);
+            }
+
         }
         exit;
     }
