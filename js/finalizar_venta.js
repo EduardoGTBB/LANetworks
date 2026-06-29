@@ -63,7 +63,8 @@ $(document).ready(function () {
                         parsed.forEach(dom => {
                             let key = dom.id_plaza_domicilio || dom.calle_formateada;
                             if (!doms_map.has(key)) {
-                                dom.nombre_plaza = item.nombre_plaza || dom.nombre_plaza || 'Plaza';
+                                dom.nombre_plaza = dom.nombre_plaza || 'Plaza';
+
                                 doms_map.set(key, dom);
                                 doms_plaza.push(dom);
                             }
@@ -141,13 +142,40 @@ $(document).ready(function () {
                             options += '<option value="CERTIFICADO" class="fw-bold text-dark">🚚 Usar la misma dirección del Certificado</option>';
                         }
 
-                        options += '<optgroup label="Plazas Disponibles">';
+                        /* options += '<optgroup label="Plazas Disponibles">';
                         doms_plaza.forEach((d, i) => {
                             let text = `Atn: ${d.atencion_a} - ${d.calle_formateada}`;
                             if (!isSucursalUnica) text = `[${d.nombre_plaza}] ` + text;
                             options += `<option value="${i}">${text}</option>`;
                         });
-                        options += '</optgroup>';
+                        options += '</optgroup>'; */
+
+                        // AGRUPACIÓN INTELIGENTE POR PLAZA
+                        let plazas_agrupadas = {};
+                        
+                        // 1. Clasificamos las direcciones en sus respectivas plazas
+                        doms_plaza.forEach((d, index) => {
+                            let nombre = d.nombre_plaza || 'Plaza General';
+                            if (!plazas_agrupadas[nombre]) {
+                                plazas_agrupadas[nombre] = [];
+                            }
+                            // Guardamos la dirección y su índice original para no romper el guardado
+                            plazas_agrupadas[nombre].push({ data: d, originalIndex: index });
+                        });
+
+                        // 2. Construimos las opciones usando el nombre de la plaza como Título (optgroup)
+                        for (const [nombrePlaza, direcciones] of Object.entries(plazas_agrupadas)) {
+                            options += `<optgroup label="📍 PLAZA: ${nombrePlaza}">`;
+                            
+                            direcciones.forEach(item => {
+                                let d = item.data;
+                                let i = item.originalIndex;
+                                let text = `Atn: ${d.atencion_a} - ${d.calle_formateada}`;
+                                options += `<option value="${i}">${text}</option>`;
+                            });
+                            
+                            options += `</optgroup>`;
+                        }
 
                         $('#selector_contacto_gral').html(options);
 
