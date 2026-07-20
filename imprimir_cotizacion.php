@@ -43,7 +43,7 @@ if (!$cot) {
 $es_multisucursal = empty($cot['Sucursal_id']);
 
 // 2. Detalles de la cotización - Manteniendo tu lógica PDO original
-$sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product,
+$sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product,p.puntos_calibracion,
            pf.pf_equipo, pf.pf_calibracion,
            pp.pp_equipo, pp.pp_calibracion,
            s_dest.nombre_sucursal AS nombre_sucursal_destino,
@@ -71,7 +71,7 @@ $stmtEnvio = $pdo->prepare("SELECT * FROM domicilio_envio WHERE Cotizacion_id = 
 $stmtEnvio->execute([$id_cot]);
 $dir_envio = $stmtEnvio->fetch(PDO::FETCH_ASSOC); */
 
-$titulo_cotizacion = "COTIZACIÓN";
+/* $titulo_cotizacion = "COTIZACIÓN";
 if (isset($cot['categoria'])) {
     if ($cot['categoria'] == 'Nuevo') {
         $titulo_cotizacion = "COTIZACIÓN DE EQUIPOS NUEVOS";
@@ -79,6 +79,32 @@ if (isset($cot['categoria'])) {
         $titulo_cotizacion = "COTIZACIÓN DE EQUIPOS USADOS";
     } elseif ($cot['categoria'] == 'Calibracion') {
         $titulo_cotizacion = "COTIZACIÓN DE SERVICIO DE CALIBRACIÓN";
+    }
+} */
+
+$es_laboratorio = (isset($_GET['tipo']) && $_GET['tipo'] === 'lab');
+
+if ($es_laboratorio) {
+    $titulo_cotizacion = "PDF LABORATORIO";
+    if (isset($cot['categoria'])) {
+        if ($cot['categoria'] == 'Nuevo') {
+            $titulo_cotizacion = "PDF LABORATORIO DE EQUIPOS NUEVOS";
+        } elseif ($cot['categoria'] == 'Usado') {
+            $titulo_cotizacion = "PDF LABORATORIO DE EQUIPOS USADOS";
+        } elseif ($cot['categoria'] == 'Calibracion') {
+            $titulo_cotizacion = "PDF LABORATORIO DE SERVICIO DE CALIBRACIÓN";
+        }
+    }
+} else {
+    $titulo_cotizacion = "COTIZACIÓN";
+    if (isset($cot['categoria'])) {
+        if ($cot['categoria'] == 'Nuevo') {
+            $titulo_cotizacion = "COTIZACIÓN DE EQUIPOS NUEVOS";
+        } elseif ($cot['categoria'] == 'Usado') {
+            $titulo_cotizacion = "COTIZACIÓN DE EQUIPOS USADOS";
+        } elseif ($cot['categoria'] == 'Calibracion') {
+            $titulo_cotizacion = "COTIZACIÓN DE SERVICIO DE CALIBRACIÓN";
+        }
     }
 }
 
@@ -247,6 +273,18 @@ if ($es_multisucursal) {
             text-transform: uppercase !important;
         }
 
+        .table thead th {
+            background-color: #00a3f0 !important;
+            /* Fondo Azul corporativo */
+            color: #ffffff !important;
+            /* Letra blanca para máximo contraste */
+            border-bottom: 2px solid #007bb5 !important;
+            /* Borde inferior azul oscuro */
+            text-transform: uppercase;
+            font-size: 10px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
 
         @media print {
 
@@ -269,7 +307,7 @@ if ($es_multisucursal) {
             </div>
         </div>
 
-        <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+        <?php if ($cot['division'] == 'LA NETWORKS & SMART TECHNOLOGIES'): ?>
             <div class="row align-items-center mb-3">
                 <div class="col-2 text-start">
                     <img src="assets/images/logo-lan.png" alt="Logo LAN" class="img-fluid" style="max-height: 100px;">
@@ -454,9 +492,12 @@ if ($es_multisucursal) {
                         <tr>
                             <th width="10%">CANTIDAD</th>
                             <th width="10%">CLAVE</th>
-                            <th width="45%">DESCRIPCIÓN</th>
-                            <th width="10%">P/U</th>
-                            <th width="10%">IMPORTE</th>
+                            <!-- <th width="45%">DESCRIPCIÓN</th> -->
+                            <th width="<?php echo $es_laboratorio ? '80%' : '45%'; ?>">DESCRIPCIÓN</th>
+                            <?php if (!$es_laboratorio): ?>
+                                <th width="10%">P/U</th>
+                                <th width="10%">IMPORTE</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -464,16 +505,67 @@ if ($es_multisucursal) {
                             <tr>
                                 <td class="text-center"><?php echo $d['cantidad']; ?></td>
                                 <td class="text-center"><?php echo htmlspecialchars($d['clave_product']); ?></td>
-                                <!-- <td class="text-start px-2">?php echo htmlspecialchars($d['descripcion_product']); ?></td> -->
-                                <td class="text-start px-2 py-2">
-                                    <?php echo nl2br(htmlspecialchars($d['descripcion_product'])); ?>
-                                    <?php
+                                <!-- <td class="text-start px-2 py-2">
+                                    ?php echo nl2br(htmlspecialchars($d['descripcion_product'])); ?
+                                    ?php
                                     // Si el desglose está activo, mostramos los precios
                                     if (isset($d['desglosar']) && $d['desglosar'] === 'Y'):
                                         $pEquipo = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_equipo'] : $d['pp_equipo'];
                                         $pCalib = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_calibracion'] : $d['pp_calibracion'];
 
                                         // Multiplicamos por la cantidad para tener el total real de esa fila
+                                        $tEquipo = $pEquipo * $d['cantidad'];
+                                        $tCalib  = $pCalib * $d['cantidad'];
+                                    ?>
+                                        <div style="margin-top: 6px;">
+                                            ?php if ($d['cantidad'] > 1): ?>
+                                                span style="color: #0d6efd; font-weight: bold; font-size: 10px; display: block;">
+                                                    Desglose Total (?php echo $d['cantidad']; ?> pz): Equipo ($?php echo number_format((float)$tEquipo, 2); ?>) + Calibración ($?php echo number_format((float)$tCalib, 2); ?>)
+                                                </span>
+                                                <span style="color: #777; font-size: 9px; display: block; margin-top: 2px;">
+                                                    <i>* Unitario (c/u): Equipo $?php echo number_format((float)$pEquipo, 2); ?> + Calib. $?php echo number_format((float)$pCalib, 2); ?></i>
+                                                </span>
+                                            ?php else: ?>
+                                                <span style="color: #0d6efd; font-weight: bold; font-size: 10px; display: block;">
+                                                    Desglose: Equipo ($?php echo number_format((float)$pEquipo, 2); ?>) + Calibración ($?php echo number_format((float)$pCalib, 2); ?>)
+                                                </span>
+                                            ?php endif; ?>
+                                        </div>
+                                    ?php endif; ?>
+
+                                    ?php
+                                    // ✨ AQUÍ ESTÁ LA MAGIA: Si es multisucursal, inyectamos las direcciones debajo de la descripción
+                                    if ($es_multisucursal && (!empty($d['calle_numero_cert']) || !empty($d['calle_numero_envio']))):
+                                    ?>
+                                        <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed #ccc;">
+                                            <span style="font-size: 9px; color: #444; display: block; line-height: 1.2;">
+                                                <strong style="color: #000;">📍 Certificado (?php echo htmlspecialchars($d['nombre_sucursal_destino']); ?>):</strong>
+                                                ?php echo htmlspecialchars($d['calle_numero_cert'] . ', ' . $d['colonia_cert'] . ', ' . $d['municipio_cert'] . ', ' . $d['estado_cert'] . ' C.P. ' . $d['cp_cert']); ?>
+                                            </span>
+                                            !-- <span style="font-size: 9px; color: #444; display: block; line-height: 1.2; margin-top: 2px;">
+                                                <strong style="color: #000;">🚚 Envío:</strong>
+                                                ?php echo htmlspecialchars($d['calle_numero_envio'] . ', ' . $d['colonia_envio'] . ', ' . $d['municipio_envio'] . ', ' . $d['estado_envio'] . ' C.P. ' . $d['cp_envio']); ?>
+                                            </span> --
+                                        </div>
+                                    ?php endif; ?>
+                                </td> -->
+                                <td class="text-start px-2 py-2">
+                                    <?php echo nl2br(htmlspecialchars($d['descripcion_product'])); ?>
+
+                                    <!-- ✨ Puntos de Calibración SIEMPRE visibles -->
+                                    <?php if (!empty($d['puntos_calibracion'])): ?>
+                                        <div style="margin-top: 6px;">
+                                            <div style="display: inline-block; background-color: #e6f4ea !important; color: #157347 !important; border-left: 3px solid #28a745 !important; padding: 4px 8px; border-radius: 4px; font-size: 9px; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                                <strong style="color: #28a745 !important; font-size: 10px;">◎ Ptos de calibración:</strong> <?php echo nl2br(htmlspecialchars($d['puntos_calibracion'])); ?>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php
+                                    // ✨ Desgloses solo visibles si NO es laboratorio
+                                    if (!$es_laboratorio && isset($d['desglosar']) && $d['desglosar'] === 'Y'):
+                                        $pEquipo = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_equipo'] : $d['pp_equipo'];
+                                        $pCalib = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_calibracion'] : $d['pp_calibracion'];
                                         $tEquipo = $pEquipo * $d['cantidad'];
                                         $tCalib  = $pCalib * $d['cantidad'];
                                     ?>
@@ -494,7 +586,7 @@ if ($es_multisucursal) {
                                     <?php endif; ?>
 
                                     <?php
-                                    // ✨ AQUÍ ESTÁ LA MAGIA: Si es multisucursal, inyectamos las direcciones debajo de la descripción
+                                    // Direcciones multisucursal
                                     if ($es_multisucursal && (!empty($d['calle_numero_cert']) || !empty($d['calle_numero_envio']))):
                                     ?>
                                         <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed #ccc;">
@@ -502,26 +594,14 @@ if ($es_multisucursal) {
                                                 <strong style="color: #000;">📍 Certificado (<?php echo htmlspecialchars($d['nombre_sucursal_destino']); ?>):</strong>
                                                 <?php echo htmlspecialchars($d['calle_numero_cert'] . ', ' . $d['colonia_cert'] . ', ' . $d['municipio_cert'] . ', ' . $d['estado_cert'] . ' C.P. ' . $d['cp_cert']); ?>
                                             </span>
-                                            <!-- <span style="font-size: 9px; color: #444; display: block; line-height: 1.2; margin-top: 2px;">
-                                                <strong style="color: #000;">🚚 Envío:</strong>
-                                                ?php echo htmlspecialchars($d['calle_numero_envio'] . ', ' . $d['colonia_envio'] . ', ' . $d['municipio_envio'] . ', ' . $d['estado_envio'] . ' C.P. ' . $d['cp_envio']); ?>
-                                            </span> -->
                                         </div>
                                     <?php endif; ?>
 
                                 </td>
-
-                                <!-- ?php if ($es_multisucursal): ?>
-                                    <td class="text-center px-2 py-2" style="font-size: 9px; font-weight: bold; color: #333;">
-                                        <php echo htmlspecialchars($d['nombre_sucursal_destino'] ?? 'POR ASIGNAR'); ?>
-                                        <php if (!empty($d['estado_sucursal_destino'])): ?>
-                                            <br><span style="font-weight: normal; color: #666;">(<php echo htmlspecialchars($d['estado_sucursal_destino']); ?>)</span>
-                                        <php endif; ?>
-                                    </td>
-                                <php endif; ?> -->
-
-                                <td class="text-end px-2"><?php echo number_format($d['precio_unitario'], 2); ?></td>
-                                <td class="text-end px-2"><?php echo number_format($d['precio_extendido'], 2); ?></td>
+                                <?php if (!$es_laboratorio): ?>
+                                    <td class="text-end px-2"><?php echo number_format($d['precio_unitario'], 2); ?></td>
+                                    <td class="text-end px-2"><?php echo number_format($d['precio_extendido'], 2); ?></td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -552,31 +632,37 @@ if ($es_multisucursal) {
                 ?php endif; ?>
             </div> -->
 
-            <div class="col-5 ms-auto">
-                <table class="table table-bordered table-striped float-end table-sm mb-0" style="width: 100%">
-                    <tbody>
-                        <tr>
-                            <td class="text-start fw-bold px-2">Subtotal</td>
-                            <td class="text-end px-2">$ <?php echo number_format($cot['importe_total'], 2); ?></td>
-                        </tr>
-                        <tr>
-                            <td class="text-start fw-bold px-2">IVA</td>
-                            <td class="text-end px-2">$ <?php echo number_format($cot['precio_iva'] - $cot['importe_total'], 2); ?></td>
-                        </tr>
-                        <tr class="table-dark">
+            <?php if (!$es_laboratorio): ?>
+                <div class="col-5 ms-auto">
+                    <table class="table table-bordered table-striped float-end table-sm mb-0" style="width: 100%">
+                        <tbody>
+                            <tr>
+                                <td class="text-start fw-bold px-2">Subtotal</td>
+                                <td class="text-end px-2">$ <?php echo number_format($cot['importe_total'], 2); ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-start fw-bold px-2">IVA</td>
+                                <td class="text-end px-2">$ <?php echo number_format($cot['precio_iva'] - $cot['importe_total'], 2); ?></td>
+                            </tr>
+                            <!-- <tr class="table-dark">
                             <td class="text-start fw-bold px-2 border-0">Total</td>
                             <td class="text-end fw-bold px-2 border-0">$ <?php echo number_format(($cot['precio_iva']), 2); ?></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="fw-bold small text-uppercase mt-1 text-start" style="font-size: 10px;">
-                    <?php
-                    // Sumamos subtotal + IVA para obtener el Total real
-                    $total_cotizacion = $cot['precio_iva'];
-                    echo NumeroALetras::convertir($total_cotizacion) . " M.N.";
-                    ?>
+                        </tr> -->
+                            <tr style="background-color: #00a3f0 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                <td class="text-start fw-bold px-2 border-0" style="background-color: #00a3f0 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">Total</td>
+                                <td class="text-end fw-bold px-2 border-0" style="background-color: #00a3f0 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">$ <?php echo number_format(($cot['precio_iva']), 2); ?></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="fw-bold small text-uppercase mt-1 text-start" style="font-size: 10px;">
+                        <?php
+                        // Sumamos subtotal + IVA para obtener el Total real
+                        $total_cotizacion = $cot['precio_iva'];
+                        echo NumeroALetras::convertir($total_cotizacion) . " M.N.";
+                        ?>
+                    </div>
                 </div>
-            </div>
+            <?php endif; ?>
 
         </div>
 
@@ -601,15 +687,15 @@ if ($es_multisucursal) {
                     <tbody>
                         <tr>
                             <td class="text-start fw-bold px-2">Subtotal</td>
-                            <td class="text-end px-2"><?php echo number_format($cot['importe_total'], 2); ?></td>
+                            <td class="text-end px-2">?php echo number_format($cot['importe_total'], 2); ?></td>
                         </tr>
                         <tr>
                             <td class="text-start fw-bold px-2">IVA</td>
-                            <td class="text-end px-2"><?php echo number_format($cot['precio_iva'] - $cot['importe_total'], 2); ?></td>
+                            <td class="text-end px-2">?php echo number_format($cot['precio_iva'] - $cot['importe_total'], 2); ?></td>
                         </tr>
                         <tr class="table-dark">
                             <td class="text-start fw-bold px-2 border-0">Total</td>
-                            <td class="text-end fw-bold px-2 border-0"><?php echo number_format(($cot['precio_iva']), 2); ?></td>
+                            <td class="text-end fw-bold px-2 border-0">?php echo number_format(($cot['precio_iva']), 2); ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -629,13 +715,13 @@ if ($es_multisucursal) {
         <div class="row">
             <div class="col-12">
                 <div class="mt-2">
-                    <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+                    <?php if ($cot['division'] == 'LA NETWORKS & SMART TECHNOLOGIES'): ?>
                         <img src="assets/images/pdf/LAN-TECHNOLOGIES.jpeg" alt="SAC TECNOLOGIES" class="img-fluid" style="max-width: 320px;">
                     <?php else: ?>
                         <img src="assets/images/pdf/LAN-ANALITICAL.jpeg" alt="SAC ANALITICAL" class="img-fluid" style="max-width: 320px;">
                     <?php endif; ?>
                 </div>
-            </div><!--  -->
+            </div>
         </div>
 
         <!--  ?php if ($cot['division'] == 'LA NETWORKS ANALITICAL'): ?>
@@ -653,7 +739,7 @@ if ($es_multisucursal) {
 
         <footer class="row mt-5 pt-3 border-top border-secondary footer-system text-center small">
             <div class="col-12" style="font-size: 9px; font-weight: bold;">
-                <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?>
+                <?php if ($cot['division'] == 'LA NETWORKS & SMART TECHNOLOGIES'): ?>
                     Sistema Automatizado de Cotizaciones (SAC)<br>
                     LA Networks & Smart Technologies S.A. de C.V.
                 <?php else: ?>

@@ -210,7 +210,7 @@
                     <input type="hidden" name="id_cotizacion" id="edit_id_cotizacion" value="">
                     <input type="hidden" name="is_multisucursal" id="edit_is_multisucursal" value="0">
 
-                    <div class="row">
+                    <!-- <div class="row">
                         <div class="col-md-4 mb-4">
                             <label class="form-label">División de LAN</label>
                             <select class="form-control" id="division" name="division" data-select2-selector="status" required>
@@ -271,6 +271,91 @@
                             </select>
                         </div>
                         
+                    </div> -->
+                    <div class="row mb-4">
+                        <!-- ✨ TARJETA 1: DATOS COMERCIALES (AZUL) -->
+                        <div class="col-lg-6 mb-4 mb-lg-0">
+                            <div class="card border-primary h-100 shadow-sm">
+                                <div class="card-header bg-primary text-white py-3">
+                                    <h6 class="mb-0 text-white fw-bold"><i class="feather-user me-2"></i>Datos Comerciales</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-briefcase me-1 text-primary"></i>División de LAN</label>
+                                        <select class="form-control border-primary bg-light" id="division_visual" disabled>
+                                            <option value="LA NETWORKS & TECHNOLOGIES" selected>LA NETWORKS & SMART TECHNOLOGIES SA DE CV</option>
+                                        </select>
+                                        <input type="hidden" name="division" id="division" value="LA NETWORKS & TECHNOLOGIES">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-users me-1 text-primary"></i>Cliente <span class="text-danger">*</span></label>
+                                        <select class="form-control border-primary" id="edit_select_empresa" name="Empresa_id" data-select2-selector="status" required>
+                                            <option value="">Cargando clientes...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-user-check me-1 text-primary"></i>Solicitante <span class="text-danger">*</span></label>
+                                        <select class="form-control border-primary" id="edit_select_solicitante" name="Usuario_id" data-select2-selector="status" required>
+                                            <option value="">Selecciona un cliente primero...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2" id="wrapper_info_plaza_edit" style="display: none;">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-map me-1 text-primary"></i>Plaza Asignada</label>
+                                        <select class="form-control border-primary bg-light shadow-sm" id="edit_info_plaza" disabled>
+                                            <option value="">Esperando sucursal...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ✨ TARJETA 2: PARÁMETROS DE COTIZACIÓN (VERDE) -->
+                        <div class="col-lg-6">
+                            <div class="card border-success h-100 shadow-sm">
+                                <div class="card-header bg-success text-white py-3">
+                                    <h6 class="mb-0 text-white fw-bold"><i class="feather-settings me-2"></i>Parámetros de Cotización</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4" id="fila_estatus_lan">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-activity me-1 text-success"></i>Estatus de la cotización <span class="text-danger">*</span></label>
+                                        <select class="form-control border-success" id="edit_estatus" name="estatus" data-select2-selector="status" required>
+                                            <option value="Guardado">Guardado (En proceso)</option>
+                                            <option value="Por aprobar">Por aprobar (Revisión)</option>
+                                            <option value="Autorizada (información completa)">Autorizada (Aprobada)</option>
+                                            <option value="No autorizada">No autorizada (Rechazada)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
+                                        <select class="form-control border-success max-select" name="categoria" id="edit_filtro_tipo_producto">
+                                            <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
+                                            <option value="NUEVO">✨ Solo Equipos Nuevos</option>
+                                            <option value="USADO">🔧 Solo Equipos Usados</option>
+                                            <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-tag me-1 text-success"></i>Selecciona el precio que se utilizará</label>
+                                        <select class="form-control border-success" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
+                                            <option value="">Selecciona el tipo de precio...</option>
+                                            <option value="Farmacia">Farmacia</option>
+                                            <option value="Público">Público</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-2" id="wrapper_selector_sucursal_edit">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-map-pin me-1 text-success"></i>Sucursal Destino <span class="text-danger">*</span></label>
+                                        <select class="form-control border-success" id="edit_select_sucursal" name="Sucursal_id" data-select2-selector="status" required>
+                                            <option value="">Esperando al solicitante...</option>
+                                        </select>
+                                    </div>
+                                    
+                                    
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <hr class="mt-0 mb-3">
@@ -305,6 +390,9 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <button type="button" id="edit_btn_add_row_bottom" class="btn btn-light text-primary w-100 fw-bold mt-3 mb-4 shadow-sm" style="display: none; border: 2px dashed #0d6efd !important; border-radius: 8px;">
+                                <i class="feather-plus-circle me-2 fs-14"></i>AÑADIR NUEVO PRODUCTO AQUÍ
+                            </button>
                         </div>
                     </div>
 
@@ -349,6 +437,9 @@
                         </div>
                     </div>
                 </form>
+                <button type="button" id="btnBackToTopModal" class="btn btn-primary" title="Volver al inicio">
+                    <i class="feather-arrow-up" style="font-size: 1.2rem; font-weight: bold;"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -699,7 +790,7 @@
     <!--! ================================================================ !-->
     <!--! BEGIN: Theme Customizer !-->
     <!--! ================================================================ !-->
-    <div class="theme-customizer">
+    <!-- <div class="theme-customizer">
         <div class="customizer-handle">
             <a href="javascript:void(0);" class="cutomizer-open-trigger bg-primary">
                 <i class="feather-settings"></i>
@@ -713,7 +804,7 @@
                 </a>
             </div>
             <div class="customizer-sidebar-body position-relative p-4" data-scrollbar-target="#psScrollbarInit">
-                <!--! BEGIN: [Navigation] !-->
+                !--! BEGIN: [Navigation] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-5 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Navigation</label>
                     <div class="row g-2 theme-options-items app-navigation" id="appNavigationList">
@@ -727,8 +818,8 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Navigation] !-->
-                <!--! BEGIN: [Header] !-->
+                !--! END: [Navigation] !--
+                !--! BEGIN: [Header] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-5 border border-gray-2 theme-options-set mt-5">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Header</label>
                     <div class="row g-2 theme-options-items app-header" id="appHeaderList">
@@ -742,8 +833,8 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Header] !-->
-                <!--! BEGIN: [Skins] !-->
+                !--! END: [Header] !--
+                !--! BEGIN: [Skins] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-5 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Skins</label>
                     <div class="row g-2 theme-options-items app-skin" id="appSkinList">
@@ -757,8 +848,8 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Skins] !-->
-                <!--! BEGIN: [Typography] !-->
+                !--! END: [Skins] !--
+                !--! BEGIN: [Typography] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-0 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Typography</label>
                     <div class="row g-2 theme-options-items font-family" id="fontFamilyList">
@@ -852,7 +943,7 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Typography] !-->
+                !--! END: [Typography] !--
             </div>
             <div class="customizer-sidebar-footer px-4 ht-60 border-top d-flex align-items-center gap-2">
                 <div class="flex-fill w-50">
@@ -863,7 +954,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!--! ================================================================ !-->
     <!--! [End] Theme Customizer !-->
@@ -886,7 +977,7 @@
     <script src="assets/js/widgets-tables-init.min.js"></script>
     <!--! END: Apps Init !-->
     <!--! BEGIN: Theme Customizer  !-->
-    <script src="assets/js/theme-customizer-init.min.js"></script>
+    <!-- <script src="assets/js/theme-customizer-init.min.js"></script> -->
     <!--! END: Theme Customizer !-->
     <script src="js/utils_sucursales.js"></script>
     <script src="js/ver_cotizaciones_all.js"></script>

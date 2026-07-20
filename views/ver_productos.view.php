@@ -206,7 +206,7 @@
                                             <tr>
                                                 <th class="text-center">Clave</th>
                                                 <th>Atributos</th>
-                                                <th class="wd-200">Producto</th>
+                                                <th class="wd-400">Producto</th>
                                                 <th>Precio farmacia</th>
                                                 <th>Precio publico</th>
                                                 <th>Estatus</th>
@@ -262,9 +262,9 @@
 
 
     <!-- & INICIO: MODAL PRODUCTOS -->
-    <!-- & ====================================================== -->
+    <!-- & ====================================================== tabindex="-1"-->
 
-    <div class="modal fade-scale" id="modalProductos" tabindex="-1" aria-labelledby="modalProductoLabel" aria-hidden="true">
+    <div class="modal fade-scale" id="modalProductos" aria-labelledby="modalProductoLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <form id="formProducto" class="modal-content bg-white" enctype="multipart/form-data">
                 <div class="modal-header">
@@ -299,23 +299,26 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Descripcion Producto:<span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="descripcion_product" id="descripcion_product" required>
-                    </div>
                     <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Descripcion Producto:<span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="descripcion_product" id="descripcion_product" required>
+                        </div>
+
                         <div class="col-12 mb-3">
                             <label class="form-label">Clave<span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="clave_product" id="clave_product" required>
                         </div>
-                        <!-- <div class="col-md-6 mb-3">
-                            <label class="form-label"><span class="text-danger">Precio Farmacia</span></label>
-                            <input type="number" class="form-control" name="precio_farmacia" id="precio_farmacia" step="any" requerid>
+
+                        <div class="col-12 mb-3">
+                            <label class="form-label small">Puntos de Calibración <i class="feather-info text-primary" title="Si no requiere, déjalo en blanco"></i></label>
+                            <!-- ✨ Input nativo con Datalist enlazado -->
+                            <input type="text" class="form-control" name="puntos_calibracion" id="puntos_calibracion" list="lista_puntos" placeholder="Ej: (15, 20, 30) °C / (15, 35, 65) % HR" autocomplete="off">
+                            <datalist id="lista_puntos">
+                                <!-- Se llenará dinámicamente desde JS -->
+                            </datalist>
+                            <small class="text-muted">Escribe libremente los puntos o selecciona uno de tu historial dando doble clic en el campo.</small>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label"><span class="text-danger">Precio Público</span></label>
-                            <input type="number" class="form-control" name="precio_publico" id="precio_publico" step="any" required>
-                        </div> -->
                     </div>
                     
                     <div class="row bg-light p-3 rounded mb-3 border">
@@ -789,7 +792,7 @@
     <!--! ================================================================ !-->
     <!--! BEGIN: Theme Customizer !-->
     <!--! ================================================================ !-->
-    <div class="theme-customizer">
+    <!-- <div class="theme-customizer">
         <div class="customizer-handle">
             <a href="javascript:void(0);" class="cutomizer-open-trigger bg-primary">
                 <i class="feather-settings"></i>
@@ -803,7 +806,7 @@
                 </a>
             </div>
             <div class="customizer-sidebar-body position-relative p-4" data-scrollbar-target="#psScrollbarInit">
-                <!--! BEGIN: [Navigation] !-->
+                !--! BEGIN: [Navigation] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-5 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Navigation</label>
                     <div class="row g-2 theme-options-items app-navigation" id="appNavigationList">
@@ -817,8 +820,8 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Navigation] !-->
-                <!--! BEGIN: [Header] !-->
+                !--! END: [Navigation] !--
+                !--! BEGIN: [Header] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-5 border border-gray-2 theme-options-set mt-5">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Header</label>
                     <div class="row g-2 theme-options-items app-header" id="appHeaderList">
@@ -832,8 +835,8 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Header] !-->
-                <!--! BEGIN: [Skins] !-->
+                !--! END: [Header] !--
+                !--! BEGIN: [Skins] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-5 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Skins</label>
                     <div class="row g-2 theme-options-items app-skin" id="appSkinList">
@@ -847,8 +850,8 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Skins] !-->
-                <!--! BEGIN: [Typography] !-->
+                !--! END: [Skins] !--
+                !--! BEGIN: [Typography] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-0 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Typography</label>
                     <div class="row g-2 theme-options-items font-family" id="fontFamilyList">
@@ -942,7 +945,7 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Typography] !-->
+                !--! END: [Typography] !--
             </div>
             <div class="customizer-sidebar-footer px-4 ht-60 border-top d-flex align-items-center gap-2">
                 <div class="flex-fill w-50">
@@ -953,7 +956,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!--! ================================================================ !-->
     <!--! [End] Theme Customizer !-->
@@ -978,7 +981,7 @@
     <!-- <script src="assets/js/proposal-init.min.js"></script> -->
     <!--! END: Apps Init !-->
     <!--! BEGIN: Theme Customizer  !-->
-    <script src="assets/js/theme-customizer-init.min.js"></script>
+    <!-- <script src="assets/js/theme-customizer-init.min.js"></script> -->
     <script src="js/ver_productos.js"></script>
 
     <!--! END: Theme Customizer !-->

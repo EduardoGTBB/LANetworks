@@ -6,8 +6,7 @@ $(document).ready(function () {
     let preciosProductos = {};
     let rowCount = 0;
 
-    /* let windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>'; */
-    window.windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
+    window.windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
     let isEditMultiSucursal = false;
 
     //>>>==========================================
@@ -47,27 +46,6 @@ $(document).ready(function () {
     //>>> ==============================================
     //>>> 2. CARGAR TABLA PRINCIPAL CON DATATABLES
     //>>> ==============================================
-
-    {/* <td>
-        <div class="hstack gap-3">
-            <div><a class="d-block fw-bold">${folioVisual}</a></div>
-            <div class="avatar-image avatar-md rounded">
-                img class="img-fluid" src="assets/images/gallery/icono_cot.jpg">
-            </div>
-        </div>
-    </td>
-    if (estatusTexto !== 'Autorizada (información completa)' && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
-                        let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || (estatusTexto === 'Por aprobar' && yaTieneDirecciones === 0));
-                        let colorIcon = urgeDireccion ? 'text-warning' : 'text-primary';
-                        let latido = urgeDireccion ? 'style="animation: pulse 2s infinite;"' : '';
-                        let claseFondo = urgeDireccion ? 'bg-soft-warning border border-warning' : 'bg-soft-light border border-light';
-
-                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}" class="avatar-text avatar-md ${claseFondo}" ${latido}>
-                                                <abbr title="${urgeDireccion ? '¡Faltan Direcciones! Haz clic aquí.' : 'Gestionar Direcciones'}" style="text-decoration:none;">
-                                                    <i class="feather-map-pin ${colorIcon}"></i>
-                                                </abbr>
-                                            </a>`;
-                    } */}
     function cargarTablaPrincipal() {
         $.ajax({
             url: 'api/api_ver_cotizaciones.php?action=leer',
@@ -106,27 +84,24 @@ $(document).ready(function () {
 
                     let btnCompletarVenta = '';
                     let yaTieneDirecciones = parseInt(cot.tiene_dir) || 0;
-                    let equiposSinDir = parseInt(cot.equipos_sin_dir) || 0; // ✨ Leemos la columna de equipos sin dirección
+                    let equiposSinDir = parseInt(cot.equipos_sin_dir) || 0;
 
                     if (estatusTexto !== 'Autorizada (información completa)' && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
 
                         let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || ((estatusTexto === 'Por aprobar' || estatusTexto === 'Guardado') && yaTieneDirecciones === 0));
                         let alertaEdicionIncompleta = (yaTieneDirecciones > 0 && equiposSinDir > 0);
 
-                        // Valores por defecto (TU COLOR ACTUAL)
                         let colorIcon = 'text-primary';
                         let latido = '';
                         let claseFondo = 'bg-soft-light border border-light';
                         let textoTooltip = 'Gestionar Direcciones';
 
                         if (alertaEdicionIncompleta) {
-                            // 🔴 ESTADO CRÍTICO (ROJO)
                             colorIcon = 'text-danger';
                             latido = 'style="animation: pulse 1.5s infinite;"';
                             claseFondo = 'bg-soft-danger border border-danger';
                             textoTooltip = '¡Alerta! Equipos nuevos sin dirección. Haz clic aquí para corregir.';
                         } else if (urgeDireccion) {
-                            // 🟡 ADVERTENCIA (AMARILLO)
                             colorIcon = 'text-warning';
                             latido = 'style="animation: pulse 2s infinite;"';
                             claseFondo = 'bg-soft-warning border border-warning';
@@ -147,6 +122,52 @@ $(document).ready(function () {
                         btnEliminar = `<a href="#" class="avatar-text avatar-md btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2 text-danger"></i></abbr></a>`;
                     }
 
+                    let contenedorAcciones = '';
+
+                    if (typeof ES_CLIENTE_PORTAL !== 'undefined' && !ES_CLIENTE_PORTAL) {
+                        // VISTA EJECUTIVOS (LAN): Se muestran 5 botones distribuidos en 2 filas
+                        let btnPdfLab = `
+                            <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}&tipo=lab" target="_blank" class="avatar-text avatar-md">
+                                <abbr title="Generar PDF Laboratorio" style="text-decoration:none;">
+                                    <i class="feather-thermometer text-info" style="font-size: 1.1rem;"></i>
+                                </abbr>
+                            </a>`;
+
+                        contenedorAcciones = `
+                            <div class="d-flex flex-column align-items-center gap-2">
+                                <!-- Primera Fila (3 Botones: Direcciones, Imprimir, Lab) -->
+                                <div class="d-flex justify-content-center gap-2">
+                                    ${btnCompletarVenta}
+                                    <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md">
+                                        <abbr title="Imprimir PDF (Cotización Comercial)" style="text-decoration:none;"><i class="feather-printer"></i></abbr>
+                                    </a>
+                                    ${btnPdfLab}
+                                </div>
+                                <!-- Segunda Fila (2 Botones: Editar, Eliminar) -->
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}">
+                                        <abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr>
+                                    </a>
+                                    ${btnEliminar}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // VISTA CLIENTES (PORTAL B2B): Oculta el botón de Laboratorio y centra en 1 sola fila
+                        contenedorAcciones = `
+                            <div class="hstack gap-2 justify-content-center">
+                                ${btnCompletarVenta}
+                                <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md">
+                                    <abbr title="Imprimir PDF" style="text-decoration:none;"><i class="feather-printer"></i></abbr>
+                                </a>
+                                <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}">
+                                    <abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr>
+                                </a>
+                                ${btnEliminar}
+                            </div>
+                        `;
+                    }
+
                     let tr = `
                         <tr>
                             <td>
@@ -156,6 +177,7 @@ $(document).ready(function () {
                                     </div>
                                     <a class="d-block fw-bold mb-0 text-dark fs-14">${folioVisual}</a>
                                 </div>
+                            </td>
                             <td><span class="d-block fw-bold">${cot.fecha_cot}</span></td>
                             <td>
                                 <span class="d-block fw-bold text-uppercase">${razonSoc}</span>
@@ -165,16 +187,19 @@ $(document).ready(function () {
                             <td><span class="badge ${badgeColor}">${estatusTexto}</span></td>
                             <td class="text-center">
                                 <div class="hstack gap-2 justify-content-center">
-                                    ${btnCompletarVenta}
-                                    <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md"><abbr title="Imprimir" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>
-                                    <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>
-                                    ${btnEliminar}
+                                    ${contenedorAcciones}
                                 </div>
                             </td>
                         </tr>
                     `;
                     tbody.append(tr);
                 });
+
+                // ${btnCompletarVenta}
+                //                     <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md"><abbr title="Imprimir" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>
+                //                     ${btnPdfLab}
+                //                     <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>
+                //                     ${btnEliminar}
 
                 if ($.fn.DataTable) {
                     $tabla.DataTable({
@@ -205,6 +230,15 @@ $(document).ready(function () {
     //>>>============================================== 
     //>>>           3. MODAL DE EDICIÓN
     //>>>============================================== 
+
+    function verificarBotonFondoEdicion() {
+        let cantidadFilas = $('#tab_logic_edit tbody tr.fila-producto').length;
+        if (cantidadFilas >= 4) {
+            $('#edit_btn_add_row_bottom').slideDown('fast'); // Forzamos mostrar
+        } else {
+            $('#edit_btn_add_row_bottom').slideUp('fast'); // Forzamos ocultar
+        }
+    }
 
     function construirFila(index, id_detalle_cot = 0, prod_id = '', precio = '', qty = 1, total = '', isCalib = true, esServicio = false, isDesglose = false, sucursal_destino_id = '') {
         let opciones = '<option value="">Selecciona...</option>';
@@ -251,7 +285,11 @@ $(document).ready(function () {
                     <input type="hidden" name="id_detalle[]" value="${id_detalle_cot}">
                     <input type="number" name="cantidad_cot[]" class="form-control edit-qty" step="1" min="1" value="${qty}" required>
                 </td>
-                <td class="align-middle"><select class="form-control select-prod-modal" name="productos[]" required>${opciones}</select></td>
+                <td class="align-middle">
+                    <select class="form-control select-prod-modal" name="productos[]" required>${opciones}</select>
+                    <!-- ✨ Puntos de calibración aquí debajo del select -->
+                    <div class="puntos-calibracion-wrapper mt-2" style="display:none;"></div>
+                </td>
                 ${tdSucursal}
                 <td class="align-middle">
                     <div class="modulo-config">
@@ -278,45 +316,126 @@ $(document).ready(function () {
         `;
     }
 
-    /* function cargarSucursales(usuarioId, preseleccion_suc = null) {
+    let sucursalesCacheEdit = []; // ✨ NUEVO: Caché para leer plazas en edición
+
+    // ✨ NUEVA LÓGICA DE PLAZAS (EDICIÓN)
+    function actualizarPlazaInformativaEdicion() {
+        let $infoPlaza = $('#edit_info_plaza');
+        let $wrapperPlaza = $('#wrapper_info_plaza_edit');
+        let usuarioId = $('#edit_select_solicitante').val();
+
+        if (!usuarioId) {
+            $wrapperPlaza.slideUp('fast'); 
+            return;
+        }
+
+        if (isEditMultiSucursal) {
+            let todasLasPlazas = new Set();
+            let tieneSucursalesPropias = sucursalesCacheEdit.some(suc => suc.id_sae != 1);
+            
+            sucursalesCacheEdit.forEach(suc => {
+                if (tieneSucursalesPropias && suc.id_sae == 1) return; // Anti-contaminación Matriz
+                if (suc.nombres_plazas) {
+                    suc.nombres_plazas.split(',').forEach(p => todasLasPlazas.add(p.trim()));
+                }
+            });
+            
+            let plazasArray = Array.from(todasLasPlazas);
+            $infoPlaza.empty();
+            
+            if (plazasArray.length > 0) {
+                let textoPlazas = plazasArray.join(', ');
+                $infoPlaza.append(`<option value="">${textoPlazas}</option>`);
+            } else {
+                $infoPlaza.append('<option value="">Sin plaza registrada</option>');
+            }
+            
+            $infoPlaza.prop('disabled', true);
+            $wrapperPlaza.slideDown('fast');
+        } else {
+            let suc_id = $('#edit_select_sucursal').val();
+            
+            if (suc_id && sucursalesCacheEdit.length > 0) {
+                let sucursal = sucursalesCacheEdit.find(s => s.id_sucursal == suc_id);
+                $infoPlaza.empty();
+                
+                if (sucursal && sucursal.nombres_plazas) {
+                    let plazas = sucursal.nombres_plazas.split(',');
+                    if (plazas.length === 1) {
+                        $infoPlaza.append(`<option value="${plazas[0]}">${plazas[0]}</option>`);
+                        $infoPlaza.prop('disabled', true);
+                    } else {
+                        plazas.forEach(p => {
+                            $infoPlaza.append(`<option value="${p.trim()}">${p.trim()}</option>`);
+                        });
+                        $infoPlaza.prop('disabled', false);
+                    }
+                } else {
+                    let nombreRespaldo = (sucursal && sucursal.id_sae == 1) ? 'MATRIZ (Sin Plaza Asignada)' : 'Sin plaza registrada';
+                    $infoPlaza.append(`<option value="">${nombreRespaldo}</option>`);
+                    $infoPlaza.prop('disabled', true);
+                }
+                $wrapperPlaza.slideDown('fast');
+            } else {
+                $wrapperPlaza.slideUp('fast');
+            }
+        }
+    }
+
+    // ✨ CARGA LAS SUCURSALES Y LLENA EL CACHÉ EN EDICIÓN
+    function cargarSucursalesEdicion(usuarioId, preseleccion_suc = null) {
         let $selectSuc = $('#edit_select_sucursal');
         $selectSuc.empty().append('<option value="">Cargando...</option>');
 
         if (usuarioId) {
             $.ajax({
                 url: 'api/api_cotizador.php?action=get_sucursales_usuario&usuario_id=' + usuarioId,
-                method: 'GET', dataType: 'json',
+                method: 'GET',
+                dataType: 'json',
                 success: function (data) {
+                    sucursalesCacheEdit = data; 
+                    
                     $selectSuc.empty();
-                    windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
+                    window.windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
 
                     if (data.length === 0) {
                         $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
-                        windowSucursalesOpcionesEdit = '<option value="" disabled>Sin sucursales asignadas</option>';
+                        window.windowSucursalesOpcionesEdit = '<option value="" disabled>Sin sucursales asignadas</option>';
                     } else {
                         $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
                         data.forEach(suc => {
-                            $selectSuc.append(`<option value="${suc.id_sucursal}">${suc.nombre_sucursal} (${suc.estado})</option>`);
-                            windowSucursalesOpcionesEdit += `<option value="${suc.id_sucursal}">${suc.nombre_sucursal}</option>`;
+                            let nombreVisual = suc.nombre_listo_para_mostrar || suc.nombre_sucursal;
+                            $selectSuc.append(`<option value="${suc.id_sucursal}">${nombreVisual}</option>`);
+                            window.windowSucursalesOpcionesEdit += `<option value="${suc.id_sucursal}">${nombreVisual}</option>`;
                         });
+
                         if (preseleccion_suc) {
-                            $selectSuc.val(preseleccion_suc).trigger('change');
+                            $selectSuc.val(preseleccion_suc);
+                        } else if (data.length === 1 && !isEditMultiSucursal) {
+                            $selectSuc.val(data[0].id_sucursal);
                         }
                     }
 
                     $('.select-sucursal-fila-edit').each(function() {
                         let valToSelect = $(this).attr('data-selected-suc');
-                        $(this).html(windowSucursalesOpcionesEdit);
+                        $(this).html(window.windowSucursalesOpcionesEdit);
                         if (valToSelect) {
                             $(this).val(valToSelect);
                         }
                     });
+
+                    actualizarPlazaInformativaEdicion();
+                },
+                error: function () {
+                    $selectSuc.empty().append('<option value="">Error al cargar</option>');
                 }
             });
         } else {
-            $selectSuc.empty().append('<option value="">Selecciona un solicitante primero...</option>');
+            sucursalesCacheEdit = [];
+            $selectSuc.empty().append('<option value="">Esperando al solicitante...</option>');
+            actualizarPlazaInformativaEdicion();
         }
-    } */
+    }
 
     function cargarSolicitantes(id_empresa, preseleccion = null, isReadOnly = false, preseleccion_suc = null) {
         $.ajax({
@@ -327,14 +446,9 @@ $(document).ready(function () {
                 $selSol.empty().append('<option value="">Selecciona...</option>');
                 users.forEach(u => { $selSol.append(`<option value="${u.id_usuario}">${u.nombre} ${u.apellido_pat} ${u.apellido_mat}</option>`); });
 
-                /* if (preseleccion) {
-                    $selSol.val(preseleccion);
-                    cargarSucursales(preseleccion, preseleccion_suc);
-                } */
                 if (preseleccion) {
                     $selSol.val(preseleccion);
-                    // En ver_cotizaciones_all.js tienes $selSol.data('old', preseleccion).val(preseleccion); déjalo así.
-                    cargarSelectSucursales(preseleccion, '#edit_select_sucursal', '.select-sucursal-fila-edit', preseleccion_suc);
+                    cargarSucursalesEdicion(preseleccion, preseleccion_suc);
                 }
 
                 $selSol.select2({ dropdownParent: $('#modalEditarCotizacion') });
@@ -355,12 +469,13 @@ $(document).ready(function () {
 
     $('#edit_select_solicitante').on('change', function () {
         let val = $(this).val();
-        // En ver_cotizaciones_all.js usas data('old') para evitar re-cargas innecesarias
         if (!val || $(this).data('old') === val) return;
         $(this).data('old', val);
+        cargarSucursalesEdicion(val, null);
+    });
 
-        cargarSelectSucursales(val, '#edit_select_sucursal', '.select-sucursal-fila-edit', null);
-        /* cargarSucursales($(this).val(), null);  */
+    $('#edit_select_sucursal').on('change', function () {
+        actualizarPlazaInformativaEdicion();
     });
 
     let previousTipoPrecio = '';
@@ -378,7 +493,7 @@ $(document).ready(function () {
     //& EDITAR EL MODAL Y LLENAR DATOS
     $(document).on('click', '.btn-editar-modal', function (e) {
         e.preventDefault();
-        window.productoAgregadoEnEdicion = false; // ✨ BANDERA APAGADA
+        window.productoAgregadoEnEdicion = false;
         let id_cot = $(this).data('id');
         let folioVisualModal = $(this).data('folio');
         $('#modal_folio_badge').text(folioVisualModal.includes('-') ? folioVisualModal : '#' + folioVisualModal);
@@ -420,66 +535,30 @@ $(document).ready(function () {
                 if (estatusBD === 'Autorizada (sin dirección)') estatusBD = 'Autorizada (información completa)';
                 $('#edit_estatus').val(estatusBD).trigger('change');
 
-                let $colSolicitante = $('#edit_select_solicitante').closest('div[class*="col-"]');
-                let $colPrecio      = $('#tipo_precio').closest('div[class*="col-"]');
-                let $colEstatus     = $('#fila_estatus_lan');
-                let $colCliente     = $('#edit_select_empresa').closest('div[class*="col-"]');
-                let $colSucursal    = $('#edit_select_sucursal').closest('div[class*="col-"]');
-                let $colTipoProd    = $('#edit_filtro_tipo_producto').closest('div[class*="col-"]');
-                let $colDivision    = $('#division').closest('div[class*="col-"]');
+                // ✨ LÓGICA DE VISIBILIDAD (Sin destruir las cards)
+                let $wrapSucursal = $('#wrapper_selector_sucursal_edit');
+                let $wrapPrecio   = $('#tipo_precio').closest('.mb-4');
+                let $wrapEstatus  = $('#fila_estatus_lan');
 
-                function setColClass($el, colClass) {
-                    $el.removeClass(function (index, className) {
-                        return (className.match(/(^|\s)col-\S+/g) || []).join(' ');
-                    }).addClass(colClass);
-                }
-
-                setColClass($colCliente, 'col-md-4');
-                setColClass($colDivision, 'col-md-4');
-                setColClass($colSolicitante, 'col-md-4');
-                $colPrecio.show();
-                $colEstatus.show();
+                $wrapPrecio.show();
+                $wrapEstatus.show();
                 $selEmp.prop('disabled', false);
-                $colSucursal.insertAfter($colSolicitante);
 
                 if (isEditMultiSucursal) {
-                    $colSucursal.hide();
+                    $wrapSucursal.hide();
                     $('#edit_select_sucursal').prop('required', false);
                     $('.col-edit-multisucursal').show();
                 } else {
-                    $colSucursal.show();
+                    $wrapSucursal.show();
                     $('#edit_select_sucursal').prop('required', true);
                     $('.col-edit-multisucursal').hide();
                 }
 
-                // ✨ LÓGICA EXCLUSIVA PARA EL PORTAL B2B (CLIENTES)
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-                    $colPrecio.hide();
-                    $colEstatus.hide();
-                    
-                    if (isEditMultiSucursal) {
-                        // MULTISUCURSAL: Expande Cliente y División a media pantalla (6+6)
-                        setColClass($colDivision, 'col-md-6');
-                        setColClass($colCliente, 'col-md-6');
-                    } else {
-                        // SUCURSAL ÚNICA: Acomoda División, Cliente y Sucursal en una sola fila (4+4+4)
-                        setColClass($colDivision, 'col-md-4');
-                        setColClass($colCliente, 'col-md-4');
-                        setColClass($colSucursal, 'col-md-4');
-                        
-                        // Ordenamos para que queden juntos en HTML uno tras otro
-                        $colCliente.insertAfter($colDivision);
-                        $colSucursal.insertAfter($colCliente);
-                    }
-
-                    // Solicitante y Tipo de Producto llenan la segunda fila (6+6)
-                    setColClass($colSolicitante, 'col-md-6');
-                    setColClass($colTipoProd, 'col-md-6');
-                    $colTipoProd.insertAfter($colSolicitante);
-                    
+                    $wrapPrecio.hide();
+                    $wrapEstatus.hide();
                     $selEmp.prop('disabled', true);
 
-                    // Campos ocultos para mantener los valores
                     if ($('#hidden_edit_empresa').length === 0) {
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
@@ -533,6 +612,8 @@ $(document).ready(function () {
                     rowCount++;
                 });
 
+                verificarBotonFondoEdicion();
+
                 $('.select-prod-modal').select2({ 
                     theme: 'bootstrap-5',
                     dropdownParent: $('#modalEditarCotizacion'),
@@ -542,8 +623,12 @@ $(document).ready(function () {
                 if (isReadOnly) {
                     $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', true);
                     $('#edit_add_row').hide();
+                    $('#edit_btn_add_row_bottom').hide(); // ✨ Escondemos el de abajo
                     $('.btn-eliminar-fila-unica').hide();
                     $('#formEditarCotizacion button[type="submit"]').hide();
+                }else {
+                    // ✨ Solo verificamos y mostramos el botón si se puede editar
+                    verificarBotonFondoEdicion();
                 }
 
                 $('#modalEditarCotizacion').modal('show');
@@ -554,23 +639,22 @@ $(document).ready(function () {
     //>>>==============================================
     //>>>  4. MATEMÁTICAS Y FILAS DINÁMICAS EN MODAL
     //>>>==============================================
-    $("#edit_add_row").click(function () {
+    $("#edit_add_row, #edit_btn_add_row_bottom").click(function () {
         $("#edit_tbody_productos").append(construirFila(rowCount, 0, '', '', 1, '', false, false, false, ''));
-        window.productoAgregadoEnEdicion = true; // ✨ BANDERA ENCENDIDA
+        window.productoAgregadoEnEdicion = true; 
+        
         let filtroActual = $('#edit_filtro_tipo_producto').val();
         $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
         if (filtroActual === 'NUEVO' || filtroActual === 'USADO') {
             $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
         }
 
-        // $(`#edit_addr${rowCount} .select-prod-modal`).select2({ dropdownParent: $('#modalEditarCotizacion') });
         $(`#edit_addr${rowCount} .select-prod-modal`).select2({ 
             theme: 'bootstrap-5',
             dropdownParent: $('#modalEditarCotizacion'),
             width: '100%'
         });
 
-        // ✨ Inicializamos la sucursal clonada con el tema correcto y su placeholder
         $(`#edit_addr${rowCount} .select-sucursal-fila-edit`).select2({ 
             theme: 'bootstrap-5',
             dropdownParent: $('#modalEditarCotizacion'), 
@@ -579,6 +663,7 @@ $(document).ready(function () {
         });
         rowCount++;
         recalcularNumerosFila();
+        verificarBotonFondoEdicion();
     });
 
     $(document).on('click', '.btn-eliminar-fila-unica', function (e) {
@@ -587,16 +672,16 @@ $(document).ready(function () {
             $(this).closest('tr').remove();
             recalcularNumerosFila();
             calcEditTotal();
+            verificarBotonFondoEdicion();
         } else {
             alert("La cotización debe tener al menos un producto.");
         }
     });
 
-    // ✨ RASTREADOR PROTEGIDO: Solo alteramos el texto visible del td sin destruir el input hidden
     function recalcularNumerosFila() {
         $('#edit_tbody_productos tr.fila-producto').each(function (index) {
             $(this).find('.fila-numero').contents().filter(function () {
-                return this.nodeType === 3; // Selecciona solo el texto (los números)
+                return this.nodeType === 3; 
             }).replaceWith(index + 1);
         });
     }
@@ -617,7 +702,30 @@ $(document).ready(function () {
         let prodSelect = row.find('.select-prod-modal');
         let prodId = prodSelect.val();
         let pData = preciosProductos[prodId];
-        if (!pData) return;
+        let $puntosWrapper = row.find('.puntos-calibracion-wrapper');
+
+        if (!pData) {
+            row.find('.edit-price').val('');
+            row.find('.edit-total').val('');
+            row.find('.info-desglose').html('');
+            $puntosWrapper.hide().empty();
+            row.find('.chk-incluir').prop('disabled', false);
+            row.find('.chk-desglosar').prop('disabled', false);
+            return;
+        }
+
+        // ✨ LÓGICA ULTRA-SEGURA: PUNTOS DE CALIBRACIÓN
+        let ptos = pData.puntos_calibracion;
+        if (ptos !== null && ptos !== undefined && String(ptos).trim() !== '' && String(ptos).trim() !== 'null') {
+            let puntosFormateados = String(ptos).trim().replace(/\n/g, '<br>');
+            $puntosWrapper.html(`
+                <span class="badge bg-soft-success text-success px-2 py-1 fs-11 w-100 shadow-sm mt-1" style="white-space: normal; text-align: left; line-height: 1.4; border-left: 3px solid #28a745;">
+                    <i class="feather-target me-1 fw-bold"></i> Ptos de calibración: ${puntosFormateados}
+                </span>
+            `).slideDown('fast');
+        } else {
+            $puntosWrapper.hide().empty();
+        }
 
         let qty = parseFloat(row.find('.edit-qty').val()) || 0;
         let tipoPrecio = $('#tipo_precio').val();
@@ -723,10 +831,7 @@ $(document).ready(function () {
 
                     if (estatusSeleccionado.includes('Autorizada') || window.productoAgregadoEnEdicion) {
                         alert("Cambios guardados. Serás redirigido para verificar las direcciones de los equipos.");
-
-                        // Reseteamos la bandera por seguridad
                         window.productoAgregadoEnEdicion = false;
-
                         window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val() + '&editado=1';
                     } else {
                         alert("Cambios guardados exitosamente.");
@@ -799,14 +904,42 @@ $(document).ready(function () {
                 $selectProd.select2('destroy');
             }
 
-            /* $selectProd.html(opcionesActualizadas).val(idProductoActual);
-            $selectProd.select2({ dropdownParent: $('#modalEditarCotizacion') }); */
             $selectProd.html(opcionesActualizadas).val(idProductoActual);
             $selectProd.select2({ 
-                theme: 'bootstrap-5', // ✨ Mantenemos el tema al recargar por filtros
+                theme: 'bootstrap-5', 
                 dropdownParent: $('#modalEditarCotizacion'),
                 width: '100%'
             });
         });
     });
+
+    let $modalContainer = $('#modalEditarCotizacion');
+    let $modalScroll = $('#formEditarCotizacion');
+    let $btnTopModal = $('#btnBackToTopModal');
+    
+    if ($btnTopModal.length) {
+        // 1. Detectar el scroll DENTRO del cuerpo del modal
+        $modalScroll.on('scroll', function() {
+            // Si el interior del modal ha bajado más de 200px, mostramos el botón
+            if ($(this).scrollTop() > 200) {
+                $btnTopModal.css('display', 'flex');
+            } else {
+                $btnTopModal.css('display', 'none');
+            }
+        });
+
+        // 2. Acción al hacer clic: subir el scroll del cuerpo del modal
+        $btnTopModal.on('click', function() {
+            // Usamos Vanilla JS apuntando al elemento DOM del formulario [0]
+            $modalScroll[0].scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 3. Ciberseguridad/Limpieza: Ocultar el botón si el modal se cierra de golpe
+        $modalContainer.on('hidden.bs.modal', function () {
+            $btnTopModal.css('display', 'none');
+        });
+    }
 });

@@ -3,6 +3,15 @@ $(document).ready(function () {
     $('#clave_product, #descripcion_product, #marca_product').on('input', function() {
         $(this).val($(this).val().toUpperCase());
     }); 
+
+    $.get('api/api_ver_productos.php?action=get_puntos', function(data) {
+        let $datalist = $('#lista_puntos');
+        $datalist.empty();
+        data.forEach(p => { 
+            // Insertamos las opciones como sugerencias de autocompletado
+            $datalist.append(`<option value="${p}">`); 
+        });
+    }, 'json');
     
     function cargarProductos() {
         const formatoMoneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
@@ -48,8 +57,19 @@ $(document).ready(function () {
                         <span class="d-block fs-11"><b>Tipo:</b> ${tipo}</span>
                         <span class="d-block fs-11"><b>Estado:</b> ${estado}</span>
                     `;
+                    
+                    let badgePuntos = '';
+                    if (prod.puntos_calibracion && String(prod.puntos_calibracion).trim() !== '' && String(prod.puntos_calibracion).trim() !== 'null') {
+                        let ptosFormateados = String(prod.puntos_calibracion).trim().replace(/\n/g, '<br>');
+                        badgePuntos = `
+                            <div class="mt-2">
+                                <span class="badge bg-soft-primary text-primary px-2 py-1 fs-11 shadow-sm d-inline-block" style="white-space: normal; text-align: left; line-height: 1.4; border-left: 3px solid #0d6efd;">
+                                    <i class="feather-target me-1 fw-bold"></i> Ptos de calibración: ${ptosFormateados}
+                                </span>
+                            </div>
+                        `;
+                    }
 
-                    // hstack gap-3 
                     let tr = `
                         <tr>
                             <td class="text-center align-middle">
@@ -61,7 +81,10 @@ $(document).ready(function () {
                                 </div>
                             </td>
                             <td>${atributos}</td>
-                            <td><span class="d-block text-truncate" style="max-width: 250px;">${prod.descripcion_product}</span></td>
+                            <td>
+                                <span class="d-block text-wrap">${prod.descripcion_product}</span>
+                                ${badgePuntos}
+                            </td>
                             <td><span class="text-primary fw-bold">${formatoMoneda.format(p_farmacia)}</span><br><small class="text-muted">+ ${formatoMoneda.format(c_farmacia)} calib</small></td>
                             <td><span class="text-success fw-bold">${formatoMoneda.format(p_publico)}</span><br><small class="text-muted">+ ${formatoMoneda.format(c_publico)} calib</small></td>
                             <td>${estatusBadge}</td>
@@ -101,6 +124,7 @@ $(document).ready(function () {
 
     // NUEVO PRODUCTO
     $('#btnNuevoProducto').on('click', function() {
+        $('#puntos_calibracion').val('');
         $('#formProducto')[0].reset();
         
         $('#producto_action').val('crear');
@@ -146,6 +170,7 @@ $(document).ready(function () {
                     $('#marca_product').val(res.marca_product || 'N/A');
                     $('#tipo_product').val(res.tipo_product || 'N/A');
                     $('#estado_product').val(res.estado_product || 'N/A');
+                    $('#puntos_calibracion').val(res.puntos_calibracion || '');
                     
                     $('#estatus_prod').prop('checked', res.estatus === 'Y');
 

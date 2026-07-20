@@ -397,6 +397,65 @@ function obtenerTodasLasCotizaciones(PDO $pdo): array
 }
 // |------Fin_Ver_todas_las_Cotizaciones_Users_Admin------
 
+
+// |------Inicio_Cancela_cotizaciones_mayores_a_X_días.------
+function cancelarCotizacionesAntiguas(PDO $conexion, int $dias_limite): int {
+    try {
+        $sql = "UPDATE cotizaciones 
+                SET estatus = 'Cancelada' 
+                WHERE estatus NOT IN ('Cancelada', 'Completada', 'Ganada', 'Perdida') 
+                AND fecha_cotizacion <= DATE_SUB(NOW(), INTERVAL :dias DAY)";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(':dias', $dias_limite, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->rowCount();
+    } catch (PDOException $e) {
+        error_log("Error BD cancelarCotizacionesAntiguas: " . $e->getMessage());
+        return 0;
+    }
+}
+
+// |------Inicio_Obtiene_empleados_LAN_con_cotizaciones_pendientes_(con menos de X días)------
+function obtenerEmpleadosCotizacionesPendientes(PDO $conexion, int $dias_limite): array {
+    try {
+        $sql = "SELECT e.id_empleado, e.correo, e.nombre, COUNT(c.id_cotizacion) as total_pendientes 
+                FROM empleados e
+                INNER JOIN cotizaciones c ON e.id_empleado = c.id_empleado
+                WHERE c.estatus NOT IN ('Cancelada', 'Completada', 'Ganada', 'Perdida') 
+                AND c.fecha_cotizacion > DATE_SUB(NOW(), INTERVAL :dias DAY)
+                GROUP BY e.id_empleado";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(':dias', $dias_limite, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error BD obtenerEmpleadosCotizacionesPendientes: " . $e->getMessage());
+        return [];
+    }
+}
+
+
+// |------Inicio_Obtiene_Clientes_B2B_con_cotizaciones pendientes (con menos de X días).------
+function obtenerClientesCotizacionesPendientes(PDO $conexion, int $dias_limite): array {
+    try {
+        $sql = "SELECT cl.id_cliente, cl.correo, cl.razon_social, COUNT(c.id_cotizacion) as total_pendientes 
+                FROM clientes cl
+                INNER JOIN cotizaciones c ON cl.id_cliente = c.id_cliente
+                WHERE c.estatus NOT IN ('Cancelada', 'Completada', 'Ganada', 'Perdida') 
+                AND c.fecha_cotizacion > DATE_SUB(NOW(), INTERVAL :dias DAY)
+                GROUP BY cl.id_cliente";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(':dias', $dias_limite, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error BD obtenerClientesCotizacionesPendientes: " . $e->getMessage());
+        return [];
+    }
+}
+
+
+
 // >>> ==============================================
 // >>>       FIN: FUNCIONES COTIZACIONES
 // >>> ============================================== 
@@ -1046,8 +1105,8 @@ function insertarProduct(PDO $pdo, array $datos): void
         $pdo->beginTransaction();
 
         // 1. Insertar Producto (Removido nombre_product)
-        $sql = "INSERT INTO productos (clave_product, descripcion_product, marca_product, tipo_product, estado_product, foto_product, estatus) 
-                VALUES (:clave, :desc, :marca, :tipo, :estado, :foto, :estatus)";
+        $sql = "INSERT INTO productos (clave_product, descripcion_product, marca_product, tipo_product, estado_product, puntos_calibracion,foto_product, estatus) 
+                VALUES (:clave, :desc, :marca, :tipo, :estado, :puntos,:foto, :estatus)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':clave'   => $datos['clave_product'],
@@ -1055,6 +1114,7 @@ function insertarProduct(PDO $pdo, array $datos): void
             ':marca'   => $datos['marca_product'],
             ':tipo'    => $datos['tipo_product'],
             ':estado'  => $datos['estado_product'],
+            ':puntos'  => $datos['puntos_calibracion'],
             ':foto'    => $datos['foto_product'],
             ':estatus' => $datos['estatus']
         ]);
@@ -1089,7 +1149,10 @@ function actualizarProduct(PDO $pdo, array $datos): void
                 descripcion_product = :desc, 
                 marca_product = :marca,
                 tipo_product = :tipo,
-                estado_product = :estado, foto_product = :foto, estatus = :estatus
+                estado_product = :estado,
+                puntos_calibracion = :puntos,
+                foto_product = :foto, 
+                estatus = :estatus
                 WHERE id_product = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -1098,6 +1161,7 @@ function actualizarProduct(PDO $pdo, array $datos): void
             ':marca'   => $datos['marca_product'],
             ':tipo'    => $datos['tipo_product'],
             ':estado'  => $datos['estado_product'],
+            ':puntos'  => $datos['puntos_calibracion'],
             ':foto'    => $datos['foto_product'],
             ':estatus' => $datos['estatus'],
             ':id'      => $datos['id_product']
@@ -1366,7 +1430,7 @@ function obtenerDomicilioPorCotizacion(PDO $pdo, int $id_cotizacion)
 }
 
 // [fn] Sucursales por Usuario (Modelo Muchos a Muchos)
-function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array
+/* function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array
 {
     // 1. Traemos las sucursales únicas asignadas directamente al usuario
     $sql = "SELECT s.* FROM sucursales s
@@ -1379,6 +1443,68 @@ function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array
 
     // 2. Inyección Única: Traemos la sucursal matriz (id_sae = 1) de la empresa (Máximo 1 fila)
     $sqlMatriz = "SELECT s.* FROM sucursales s
+                  INNER JOIN usuarios u ON s.Empresa_id = u.Empresa_id
+                  WHERE u.id_usuario = :usuario_id AND s.id_sae = 1 AND s.estatus = 'Y' 
+                  LIMIT 1";
+                  
+    $stmtMatriz = $pdo->prepare($sqlMatriz);
+    $stmtMatriz->execute([':usuario_id' => $id_usuario]);
+    $matriz = $stmtMatriz->fetch(PDO::FETCH_ASSOC);
+
+    // 3. La agregamos al listado únicamente si no estaba previamente enlazada
+    if ($matriz) {
+        $existe = false;
+        foreach ($sucursales as $sRow) {
+            if ($sRow['id_sucursal'] == $matriz['id_sucursal']) {
+                $existe = true;
+                break;
+            }
+        }
+        if (!$existe) {
+            $sucursales[] = $matriz;
+        }
+    }
+
+    // 4. LÓGICA DE NEGOCIO CENTRALIZADA PARA EL NOMBRE VISUAL (MVC Backend)
+    foreach ($sucursales as &$suc) {
+        $nombreVisual = trim($suc['nombre_sucursal'] ?? '');
+        
+        if ($nombreVisual === '' && $suc['id_sae'] == 1) {
+            $nombreVisual = 'SUCURSAL MATRIZ (Sin Sucursal)';
+        } elseif ($nombreVisual === '') {
+            $nombreVisual = 'SUCURSAL SAE: ' . ($suc['id_sae'] ?? 'S/N');
+        }
+
+        $suc['nombre_listo_para_mostrar'] = $nombreVisual;
+    }
+    unset($suc); 
+
+    return $sucursales;
+} */
+
+function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array
+{
+    // 1. Traemos las sucursales únicas asignadas directamente al usuario con sus plazas
+    $sql = "SELECT s.*,
+                   (SELECT GROUP_CONCAT(p.nombre_plaza SEPARATOR ', ') 
+                    FROM sucursal_plaza sp 
+                    JOIN plazas p ON sp.Plaza_id = p.id_plaza 
+                    WHERE sp.Sucursal_id = s.id_sucursal) as nombres_plazas
+            FROM sucursales s
+            INNER JOIN usuario_sucursal us ON s.id_sucursal = us.Sucursal_id
+            WHERE us.Usuario_id = :usuario_id AND s.estatus = 'Y'";
+            
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':usuario_id' => $id_usuario]);
+    $sucursales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // 2. Inyección Única: Traemos la sucursal matriz (id_sae = 1) de la empresa (Máximo 1 fila) con sus plazas
+    $sqlMatriz = "SELECT s.*,
+                         (SELECT GROUP_CONCAT(p.nombre_plaza SEPARATOR ', ') 
+                          FROM sucursal_plaza sp 
+                          JOIN plazas p ON sp.Plaza_id = p.id_plaza 
+                          WHERE sp.Sucursal_id = s.id_sucursal) as nombres_plazas
+                  FROM sucursales s
                   INNER JOIN usuarios u ON s.Empresa_id = u.Empresa_id
                   WHERE u.id_usuario = :usuario_id AND s.id_sae = 1 AND s.estatus = 'Y' 
                   LIMIT 1";

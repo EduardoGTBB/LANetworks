@@ -111,200 +111,284 @@
                                 <!-- <form enctype="multipart/form-data" id="nueva_cotizacion" action="?php echo trim(stripcslashes(strip_tags(htmlspecialchars($_SERVER['PHP_SELF'])))); ?>" method="POST" name="nueva_cotizacion"> -->
                                 <form id="nueva_cotizacion">
                                     <input type="hidden" name="fecha_cot" value="<?php echo date('Y-m-d'); ?>">
-                                    <div class="row">
+                                    <!-- <div class="row">
                                         <div class="col-md-6 mb-4">
-                                            <label class="form-label">División de LAN</label>
+                                            <label class="form-label fw-bold" style="color: #dc3545 !important;"><i class="feather-briefcase me-1"></i>División de LAN</label>
                                             <select class="form-control" id="division" name="division"
                                                 data-select2-selector="status" required>
                                                 <option value="">Selecciona una división...</option>
-                                                <option value="LA NETWORKS & TECHNOLOGIES">LA NETWORKS & TECHNOLOGIES, SA DE CV</option>
+                                                <option value="LA NETWORKS & TECHNOLOGIES">LA NETWORKS & SMART TECHNOLOGIES SA DE CV</option>
                                                 <option value="LA NETWORKS ANALITICAL">LA NETWORKS ANALITICAL, SA DE CV</option>
                                             </select>
                                         </div>
                                         <div class="col-md-6 mb-4">
-                                            <label class="form-label">Solicitante</label>
+                                            <label class="form-label fw-bold" style="color: #0d6efd !important;"><i class="feather-users me-1"></i>Solicitante</label>
                                             <select class="form-control" id="select_solicitante" name="Usuario_id" data-select2-selector="status" required>
                                                 <option value="">Selecciona un solicitante...</option>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold">Tipo de Distribución</label>
-                                            <div class="d-flex gap-4 mt-2">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="tipo_sucursal_flujo" id="rad_unica" value="unica" checked>
-                                                    <label class="form-check-label fw-semibold" for="rad_unica">
-                                                        🏢 Sucursal Única
-                                                    </label>
+                                    </div> -->
+
+                                    <div class="row mb-4">
+                                        <div class="col-lg-6 mb-4 mb-lg-0">
+                                            <div class="card border-primary h-100 shadow-sm">
+                                                <div class="card-header bg-primary text-white py-3">
+                                                    <h6 class="mb-0 text-white fw-bold"><i class="feather-user me-2"></i>Datos Comerciales</h6>
                                                 </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="tipo_sucursal_flujo" id="rad_multi" value="multisucursal">
-                                                    <label class="form-check-label fw-semibold" for="rad_multi">
-                                                        📦 Multi-sucursal (Masivo)
-                                                    </label>
+                                                <div class="card-body">
+                                                    <div class="mb-4">
+                                                        <label class="form-label text-dark fw-bold"><i class="feather-briefcase me-1 text-primary"></i>División de LAN</label>
+                                                        <!-- <select class="form-control border-primary bg-light" id="division" name="division" data-select2-selector="status" required> -->
+                                                        <select class="form-control border-primary bg-light" id="division_visual" disabled>
+                                                            <!-- <option value="">Selecciona una división...</option> -->
+                                                            <option value="LA NETWORKS & SMART TECHNOLOGIES" selected>LA NETWORKS & SMART TECHNOLOGIES SA DE CV</option>
+                                                            <!-- <option value="LA NETWORKS ANALITICAL">LA NETWORKS ANALITICAL, SA DE CV</option> -->
+                                                        </select>
+                                                        <!-- ✨ Campo oculto que SI envía la información de forma segura al backend -->
+                                                        <input type="hidden" name="division" value="LA NETWORKS & SMART TECHNOLOGIES">
+                                                    </div>
+
+                                                    <div class="mb-4">
+                                                        <label class="form-label text-dark fw-bold"><i class="feather-users me-1 text-primary"></i>Solicitante</label>
+                                                        <select class="form-control border-primary" id="select_solicitante" name="Usuario_id" data-select2-selector="status" required>
+                                                            <option value="">Selecciona un solicitante...</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-primary"></i>Tipo de Distribución</label>
+                                                        <div class="d-flex gap-4 mt-2">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo" id="rad_unica" value="unica" checked>
+                                                                <label class="form-check-label fw-semibold" for="rad_unica">🏢 Sucursal Única</label>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo" id="rad_multi" value="multisucursal">
+                                                                <label class="form-check-label fw-semibold" for="rad_multi">📦 Multi-sucursal (Masivo)</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+                                        <!-- <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-bold">Tipo de Distribución</label>
+                                                <div class="d-flex gap-4 mt-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="tipo_sucursal_flujo" id="rad_unica" value="unica" checked>
+                                                        <label class="form-check-label fw-semibold" for="rad_unica">
+                                                            🏢 Sucursal Única
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="tipo_sucursal_flujo" id="rad_multi" value="multisucursal">
+                                                        <label class="form-check-label fw-semibold" for="rad_multi">
+                                                            📦 Multi-sucursal (Masivo)
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold">¿Qué tipo de producto se cotizará?</label>
-                                            <!-- <select class="form-control max-select" name="filtro_estado_producto" id="filtro_estado_producto">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-bold" style="color: #198754 !important;"><i class="feather-filter me-1"></i>¿Qué tipo de producto se cotizará?</label>
+                                                !-- <select class="form-control max-select" name="filtro_estado_producto" id="filtro_estado_producto">
                                                 <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
                                                 <option value="NUEVO">✨ Solo Equipos Nuevos</option>
                                                 <option value="USADO">🔧 Solo Equipos Usados</option>
                                                 <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
-                                            </select> -->
-                                            <select name="categoria" id="filtro_estado_producto" class="form-control max-select">
-                                                <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
-                                                <option value="NUEVO">✨ Solo Equipos Nuevos</option>
-                                                <option value="USADO">🔧 Solo Equipos Usados</option>
-                                                <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6 mb-3" id="wrapper_selector_sucursal">
-                                            <label for="select_sucursal" class="form-label fw-bold">Sucursal Destino</label>
-                                            <select class="form-control border-primary" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" requerid>
-                                                <option value="">Selecciona una sucursal...</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6 mb-4">
-                                            <label class="form-label">Selecciona el precio que se utilizara</span></label>
-                                            <select class="form-control" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
-                                                <option value="">Selecciona el tipo de precio...</option>
-                                                <option value="Farmacia">Farmacia</option>
-                                                <option value="Público">Público</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <hr class="mt-0 mb-3">
-
-                                    <div class="row mb-4 align-items-center">
-                                        <div class="col-lg-12">
-                                            <div class="mb-4">
-                                                <h5 class="fw-bold">Añadir productos:</h5>
-                                                <span class="fs-12 text-muted">Agrega los productos a cotizar</span>
+                                            </select> --
+                                                <select name="categoria" id="filtro_estado_producto" class="form-control max-select">
+                                                    <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
+                                                    <option value="NUEVO">✨ Solo Equipos Nuevos</option>
+                                                    <option value="USADO">🔧 Solo Equipos Usados</option>
+                                                    <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
+                                                </select>
                                             </div>
-                                            <div class="d-flex justify-content-end gap-2 mt-3 mb-3">
-                                                <!-- <button id="delete_row" class="btn btn-md bg-soft-danger text-danger">Eliminar</button> -->
-                                                <button id="add_row" class="btn btn-md btn-primary">Agregar producto</button>
+
+                                            <div class="col-md-6 mb-3" id="wrapper_selector_sucursal">
+                                                <label for="select_sucursal" class="form-label fw-bold" style="color: #0d6efd !important;"><i class="feather-map-pin me-1"></i>Sucursal Destino</label>
+                                                <select class="form-control border-primary" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" requerid>
+                                                    <option value="">Selecciona una sucursal...</option>
+                                                </select>
                                             </div>
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered overflow-hidden" id="tab_logic">
-                                                    <thead>
-                                                        <tr class="single-item">
-                                                            <th class="text-center wd-80">Item</th>
-                                                            <th class="text-center wd-150">Cantidad</th>
-                                                            <th class="text-center wd-400">Producto</th>
-                                                            <th class="text-center wd-250 col-multisucursal" style="display:none">Sucursal Destino</th>
-                                                            <th class="text-center wd-250">Desglose de Calibración</th>
-                                                            <th class="text-center wd-150">Precio unitario</th>
-                                                            <th class="text-center wd-200">Total</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr id="addr0">
-                                                            <td>1</td>
-                                                            <td>
-                                                                <input type="number" name="cantidad_cot[]" placeholder="Cantidad" class="form-control qty" step="1" min="1" value="1">
-                                                            </td>
-                                                            <td>
-                                                                <select class="form-control product-select" name="productos[]" required data-select2-selector="status">
-                                                                    <option value="">Selecciona un producto...</option>
-                                                                    <!-- <option value="1">[B-LITIO] Bateria Litio CR-2025</option> -->
-                                                                </select>
-                                                            </td>
-                                                            <td class="col-multisucursal" style="display: none;">
-                                                                <select class="form-select form-select-sm select-sucursal-fila" name="sucursal_fila[]">
-                                                                    <option value="">Selecciona destino...</option>
-                                                                </select>
-                                                            </td>
-                                                            <!--//>>> INICIO -->
-                                                            <td class="align-middle">
-                                                                <div class="modulo-config">
-                                                                    <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
-                                                                        <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="chk_incluir_0" checked style="cursor: pointer;">
-                                                                        <label class="form-check-label fs-12 fw-bold text-dark text-start" for="chk_incluir_0" style="cursor: pointer; padding-top: 2px;">
-                                                                            Incluir Calibración
-                                                                        </label>
+
+                                            <div class="col-md-6 mb-4">
+                                                <label class="form-label fw-bold" style="color: #198754 !important;"><i class="feather-tag me-1"></i>Selecciona el precio que se utilizara</span></label>
+                                                <select class="form-control" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
+                                                    <option value="">Selecciona el tipo de precio...</option>
+                                                    <option value="Farmacia">Farmacia</option>
+                                                    <option value="Público">Público</option>
+                                                </select>
+                                            </div>
+                                        </div> -->
+
+                                        <div class="col-lg-6">
+                                            <div class="card border-success h-100 shadow-sm">
+                                                <div class="card-header bg-success text-white py-3">
+                                                    <h6 class="mb-0 text-white fw-bold"><i class="feather-settings me-2"></i>Parámetros de Cotización</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-4">
+                                                        <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
+                                                        <select name="categoria" id="filtro_estado_producto" class="form-control border-success max-select">
+                                                            <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
+                                                            <option value="NUEVO">✨ Solo Equipos Nuevos</option>
+                                                            <option value="USADO">🔧 Solo Equipos Usados</option>
+                                                            <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-4">
+                                                        <label class="form-label text-dark fw-bold"><i class="feather-tag me-1 text-success"></i>Selecciona el precio que se utilizará</label>
+                                                        <select class="form-control border-success" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
+                                                            <option value="">Selecciona el tipo de precio...</option>
+                                                            <option value="Farmacia">Farmacia</option>
+                                                            <option value="Público">Público</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-2" id="wrapper_selector_sucursal">
+                                                        <label for="select_sucursal" class="form-label text-dark fw-bold"><i class="feather-map-pin me-1 text-success"></i>Sucursal Destino</label>
+                                                        <select class="form-control border-success" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" requerid>
+                                                            <option value="">Selecciona una sucursal...</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-2" id="wrapper_info_plaza" style="display: none;">
+                                                        <label class="form-label text-dark fw-bold"><i class="feather-map me-1 text-success"></i>Plaza Asignada</label>
+                                                        <select class="form-control border-success bg-light shadow-sm" id="info_plaza" disabled>
+                                                            <option value="">Esperando sucursal...</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr class="mt-4 mb-4">
+
+                                        <div class="row mb-4 align-items-center">
+                                            <div class="col-lg-12">
+                                                <div class="mb-4">
+                                                    <h5 class="fw-bold">Añadir productos:</h5>
+                                                    <span class="fs-12 text-muted">Agrega los productos a cotizar</span>
+                                                </div>
+                                                <div class="d-flex justify-content-end gap-2 mt-3 mb-3">
+                                                    <!-- <button id="delete_row" class="btn btn-md bg-soft-danger text-danger">Eliminar</button> -->
+                                                    <button id="add_row" class="btn btn-md btn-primary">Agregar producto</button>
+                                                </div>
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered overflow-hidden" id="tab_logic">
+                                                        <thead>
+                                                            <tr class="single-item">
+                                                                <th class="text-center wd-80">Item</th>
+                                                                <th class="text-center wd-150">Cantidad</th>
+                                                                <th class="text-center wd-400">Producto</th>
+                                                                <th class="text-center wd-250 col-multisucursal" style="display:none">Sucursal Destino</th>
+                                                                <th class="text-center wd-250">Desglose de Calibración</th>
+                                                                <th class="text-center wd-150">Precio unitario</th>
+                                                                <th class="text-center wd-200">Total</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr id="addr0">
+                                                                <td>1</td>
+                                                                <td>
+                                                                    <input type="number" name="cantidad_cot[]" placeholder="Cantidad" class="form-control qty" step="1" min="1" value="1">
+                                                                </td>
+                                                                <td>
+                                                                    <select class="form-control product-select" name="productos[]" required data-select2-selector="status">
+                                                                        <option value="">Selecciona un producto...</option>
+                                                                    </select>
+                                                                    <div class="puntos-calibracion-wrapper mt-2" style="display:none;"></div>
+                                                                </td>
+                                                                <td class="col-multisucursal" style="display: none;">
+                                                                    <select class="form-select form-select-sm select-sucursal-fila" name="sucursal_fila[]">
+                                                                        <option value="">Selecciona destino...</option>
+                                                                    </select>
+                                                                </td>
+                                                                <!--//>>> INICIO -->
+                                                                <td class="align-middle">
+                                                                    <div class="modulo-config">
+                                                                        <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
+                                                                            <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="chk_incluir_0" checked style="cursor: pointer;">
+                                                                            <label class="form-check-label fs-12 fw-bold text-dark text-start" for="chk_incluir_0" style="cursor: pointer; padding-top: 2px;">
+                                                                                Incluir Calibración
+                                                                            </label>
+                                                                        </div>
+                                                                        <div class="form-check d-flex justify-content-center align-items-center gap-2">
+                                                                            <input type="hidden" name="desglosar[]" class="hidden-desglose" value="N">
+                                                                            <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="chk_desglosar_0" style="cursor: pointer;">
+                                                                            <label class="form-check-label fs-11 text-muted text-start" for="chk_desglosar_0" style="cursor: pointer; padding-top: 2px;">
+                                                                                Desglosar partida
+                                                                            </label>
+                                                                        </div>
                                                                     </div>
-                                                                    <div class="form-check d-flex justify-content-center align-items-center gap-2">
-                                                                        <input type="hidden" name="desglosar[]" class="hidden-desglose" value="N">
-                                                                        <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="chk_desglosar_0" style="cursor: pointer;">
-                                                                        <label class="form-check-label fs-11 text-muted text-start" for="chk_desglosar_0" style="cursor: pointer; padding-top: 2px;">
-                                                                            Desglosar partida
-                                                                        </label>
+                                                                    <div class="info-desglose text-center mt-2"></div>
+                                                                </td>
+                                                                <!-- //<<< FIN -->
+                                                                <td>
+                                                                    <input type="number" name="unitario[]" placeholder="0.00" class="form-control price" step="any">
+                                                                </td>
+                                                                <td>
+                                                                    <div class="d-flex align-items-center gap-2">
+                                                                        <input type="number" name="total[]" placeholder="0.00" class="form-control total" readonly="">
+                                                                        <a href="#" class="text-danger btn-eliminar-fila" title="Eliminar fila" style="font-size: 1.2rem;"><i class="feather-trash-2"></i></a>
                                                                     </div>
-                                                                </div>
-                                                                <div class="info-desglose text-center mt-2"></div>
-                                                            </td>
-                                                            <!-- //<<< FIN -->
-                                                            <td>
-                                                                <input type="number" name="unitario[]" placeholder="0.00" class="form-control price" step="any">
-                                                            </td>
-                                                            <td>
-                                                                <div class="d-flex align-items-center gap-2">
-                                                                    <input type="number" name="total[]" placeholder="0.00" class="form-control total" readonly="">
-                                                                    <a href="#" class="text-danger btn-eliminar-fila" title="Eliminar fila" style="font-size: 1.2rem;"><i class="feather-trash-2"></i></a>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <button type="button" id="btn_add_row_bottom" class="btn btn-light text-primary w-100 fw-bold mt-3 mb-4 shadow-sm d-none" style="border: 2px dashed #0d6efd !important; border-radius: 8px;">
+                                                    <i class="feather-plus-circle me-2 fs-14"></i>AÑADIR NUEVO PRODUCTO AQUÍ
+                                                </button>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row mb-4 d-flex justify-content-end">
-                                        <div class="col-lg-8 mt-2">
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Notas / Observaciones adicionales:</label>
-                                                <textarea name="comentarios" id="comentarios" class="form-control" rows="4"></textarea>
-                                                <small class="text-muted">Estas notas aparecerán en el PDF de la cotización.</small>
+                                        <div class="row mb-4 d-flex justify-content-end">
+                                            <div class="col-lg-8 mt-2">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Notas / Observaciones adicionales:</label>
+                                                    <textarea name="comentarios" id="comentarios" class="form-control" rows="4"></textarea>
+                                                    <small class="text-muted">Estas notas aparecerán en el PDF de la cotización.</small>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-lg-4 mt-2">
-                                            <!--<div class="mb-4">
+                                            <div class="col-lg-4 mt-2">
+                                                <!--<div class="mb-4">
                                                 <h5 class="fw-bold">Total cotización:</h5>
                                                 <span class="fs-12 text-muted">Grand total proposal</span>
                                             </div>-->
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered" id="tab_logic_total">
-                                                    <tbody>
-                                                        <tr class="single-item">
-                                                            <th class="fs-10 text-dark text-uppercase">Sub Total</th>
-                                                            <td class="w-50"><input type="number" name="sub_total" placeholder="0.00" class="form-control border-0 bg-transparent p-0" id="sub_total" readonly=""></td>
-                                                        </tr>
-                                                        <tr class="single-item">
-                                                            <th class="fs-10 text-dark text-uppercase">IVA</th>
-                                                            <td class="w-50">
-                                                                <div class="input-group mb-2 mb-sm-0">
-                                                                    <input type="number" class="form-control border-0 bg-transparent p-0" id="tax" placeholder="16" value="16" name="porcentaje_iva">
-                                                                    <div class="input-group-addon">%</div>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                        <!--<tr class="single-item">
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered" id="tab_logic_total">
+                                                        <tbody>
+                                                            <tr class="single-item">
+                                                                <th class="fs-10 text-dark text-uppercase">Sub Total</th>
+                                                                <td class="w-50"><input type="number" name="sub_total" placeholder="0.00" class="form-control border-0 bg-transparent p-0" id="sub_total" readonly=""></td>
+                                                            </tr>
+                                                            <tr class="single-item">
+                                                                <th class="fs-10 text-dark text-uppercase">IVA</th>
+                                                                <td class="w-50">
+                                                                    <div class="input-group mb-2 mb-sm-0">
+                                                                        <input type="number" class="form-control border-0 bg-transparent p-0" id="tax" placeholder="16" value="16" name="porcentaje_iva">
+                                                                        <div class="input-group-addon">%</div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <!--<tr class="single-item">
                                                             <th class="fs-10 text-dark text-uppercase">Tax Amount</th>
                                                             <td class="w-25"><input type="number" name="tax_amount" id="tax_amount" placeholder="0.00" class="form-control border-0 bg-transparent p-0" readonly=""></td>
                                                         </tr>-->
-                                                        <tr class="single-item">
-                                                            <th class="fs-10 text-dark text-uppercase bg-gray-100">Total<br><small>(Precio + IVA)</small></th>
-                                                            <td class="bg-gray-100 w-50"><input type="number" name="total_amount" id="total_amount" placeholder="0.00" class="form-control border-0 bg-transparent p-0 fw-700 text-dark" readonly=""></td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                                            <tr class="single-item">
+                                                                <th class="fs-10 text-dark text-uppercase bg-gray-100">Total<br><small>(Precio + IVA)</small></th>
+                                                                <td class="bg-gray-100 w-50"><input type="number" name="total_amount" id="total_amount" placeholder="0.00" class="form-control border-0 bg-transparent p-0 fw-700 text-dark" readonly=""></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div class="row mt-3 mb-4">
-                                        <div class="col-lg-12 d-flex justify-content-center">
-                                            <button type="submit" class="btn btn-primary">Guardar</button>
+                                        <div class="row mt-3 mb-4">
+                                            <div class="col-lg-12 d-flex justify-content-center">
+                                                <button type="submit" class="btn btn-primary">Guardar</button>
+                                            </div>
                                         </div>
-                                    </div>
                                 </form>
                             </div>
                         </div>
@@ -316,6 +400,10 @@
 
         <?php include('views/include/footer.php'); ?>
     </main>
+
+    <button type="button" id="btnBackToTop" class="btn btn-primary shadow-lg" title="Volver al inicio">
+        <i class="feather-arrow-up" style="font-size: 1.2rem; font-weight: bold;"></i>
+    </button>
     <!--! ================================================================ !-->
     <!--! [End] Main Content !-->
     <!--! ================================================================ !-->
@@ -663,7 +751,7 @@
     <!--! ================================================================ !-->
     <!--! BEGIN: Theme Customizer !-->
     <!--! ================================================================ !-->
-    <div class="theme-customizer">
+    <!-- <div class="theme-customizer">
         <div class="customizer-handle">
             <a href="javascript:void(0);" class="cutomizer-open-trigger bg-primary">
                 <i class="feather-settings"></i>
@@ -677,7 +765,7 @@
                 </a>
             </div>
             <div class="customizer-sidebar-body position-relative p-4" data-scrollbar-target="#psScrollbarInit">
-                <!--! BEGIN: [Navigation] !-->
+                !--! BEGIN: [Navigation] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-5 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Navigation</label>
                     <div class="row g-2 theme-options-items app-navigation" id="appNavigationList">
@@ -691,8 +779,8 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Navigation] !-->
-                <!--! BEGIN: [Header] !-->
+                !--! END: [Navigation] !--
+                !--! BEGIN: [Header] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-5 border border-gray-2 theme-options-set mt-5">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Header</label>
                     <div class="row g-2 theme-options-items app-header" id="appHeaderList">
@@ -706,8 +794,8 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Header] !-->
-                <!--! BEGIN: [Skins] !-->
+                !--! END: [Header] !--
+                !--! BEGIN: [Skins] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-5 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Skins</label>
                     <div class="row g-2 theme-options-items app-skin" id="appSkinList">
@@ -721,8 +809,8 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Skins] !-->
-                <!--! BEGIN: [Typography] !-->
+                !--! END: [Skins] !--
+                !--! BEGIN: [Typography] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-0 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Typography</label>
                     <div class="row g-2 theme-options-items font-family" id="fontFamilyList">
@@ -816,7 +904,7 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Typography] !-->
+                !--! END: [Typography] !--
             </div>
             <div class="customizer-sidebar-footer px-4 ht-60 border-top d-flex align-items-center gap-2">
                 <div class="flex-fill w-50">
@@ -827,7 +915,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!--! ================================================================ !-->
     <!--! [End] Theme Customizer !-->
@@ -853,7 +941,7 @@
     <!-- <script src="assets/js/proposal-create-init.min.js"></script> -->
     <!--! END: Apps Init !-->
     <!--! BEGIN: Theme Customizer  !-->
-    <script src="assets/js/theme-customizer-init.min.js"></script>
+    <!-- <script src="assets/js/theme-customizer-init.min.js"></script> -->
 
     <script>
         const ES_CLIENTE_PORTAL = <?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
@@ -916,6 +1004,8 @@
             $("#total_amount").val((tax_sum + total).toFixed(2));
         }
     </script> -->
+    
 </body>
+
 
 </html>

@@ -1,12 +1,9 @@
-//* Nueva estructura 
-//& Es de prueba
 $(document).ready(function() {
     var uniqueIdCounter = 1; 
     var preciosProductos = {}; 
-
-    /* //& Prueba */
     var windowProductos = [];
-    /* var windowSucursalesOpciones = '<option value="">Selecciona destino...</option>'; */
+    var sucursalesCache = []; // ✨ CACHÉ DE SUCURSALES
+
     window.windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
     if ($.fn.select2) {
         $('#filtro_estado_producto').select2({
@@ -14,7 +11,6 @@ $(document).ready(function() {
             minimumResultsForSearch: Infinity // Oculta la lupa de búsqueda para que se vea más limpio
         });
     }
-    /* //& Prueba */
 
     $(document).on('change', '.chk-desglosar', function() {
         $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
@@ -27,7 +23,7 @@ $(document).ready(function() {
         $('#select_sucursal').closest('.col-md-6').removeClass('col-md-6').addClass('col-md-12');
     }
 
-    // 1. CARGAR DATOS INICIALES (EMPRESAS Y PRODUCTOS)
+    // >>> 1. CARGAR DATOS INICIALES (EMPRESAS Y PRODUCTOS)
     $.ajax({
         url: 'api/api_cotizador.php?action=get_empresas',
         method: 'GET', dataType: 'json',
@@ -50,29 +46,6 @@ $(document).ready(function() {
         }
     });
 
-    /* //° $.ajax({
-        url: 'api/api_cotizador.php?action=get_productos',
-        method: 'GET', dataType: 'json',
-        success: function(data) {
-            let $selectProd = $('.product-select'); 
-            $selectProd.empty().append('<option value="">Selecciona un producto...</option>');
-            $('#filtro_estado_producto').trigger('change');
-            
-            data.forEach(prod => {
-                preciosProductos[prod.id_product] = prod;
-                let claveMayus = prod.clave_product.toUpperCase();
-                let descMayus = prod.descripcion_product.toUpperCase();
-                
-                // >>> MAGIA: Identificamos si es un Servicio desde que se carga
-                let esServicio = (claveMayus.includes('SERVICIO') || descMayus.includes('SERVICIO'));
-
-                $('#filtro_estado_producto').trigger('change');
-                
-                $selectProd.append(`<option value="${prod.id_product}" data-servicio="${esServicio}">[${claveMayus}] ${descMayus}</option>`);
-            });
-        }
-    }); */
-    /* //& Prueba */
     $.ajax({
         url: 'api/api_cotizador.php?action=get_productos',
         method: 'GET', dataType: 'json',
@@ -147,20 +120,18 @@ $(document).ready(function() {
         let tipo = $(this).val();
         if (tipo === 'multisucursal') {
             $('#wrapper_selector_sucursal').fadeOut('fast');
-            $('#select_sucursal').val('').trigger('change.select2').prop('required', false);; 
-
+            $('#select_sucursal').val('').trigger('change.select2').prop('required', false);
             $('.col-multisucursal').fadeIn('fast');
         } else {
             $('#wrapper_selector_sucursal').fadeIn('fast');
             $('#select_sucursal').prop('required', true);
-
             $('.col-multisucursal').fadeOut('fast');
             $('.select-sucursal-fila').val('');
         }
+        actualizarPlazaInformativa();
     });
-    /* //& Prueba */
 
-    // 2. EVENTOS DE DROPDOWNS (SOLICITANTE Y SUCURSALES)
+    // >>> 2. EVENTOS DE DROPDOWNS (SOLICITANTE Y SUCURSALES)
     function cargarSolicitantes(empresaId) {
         var $selectSol = $('#select_solicitante');
         $selectSol.empty().append('<option value="">Cargando solicitantes...</option>');
@@ -192,58 +163,142 @@ $(document).ready(function() {
 
     /* $('#select_solicitante').on('change', function() {
         let usuarioId = $(this).val();
+        // Llamada a la utilidad centralizada (MVC Limpio)
+        cargarSelectSucursales(usuarioId, '#select_sucursal', '.select-sucursal-fila', null);
+    }); */
+    // ✨ INTERCEPTOR UNIFICADO: CARGA CACHÉ Y PLAZA A PRUEBA DE FALLOS
+    $('#select_solicitante').on('change', function () {
+        let usuarioId = $(this).val();
         let $selectSuc = $('#select_sucursal');
-        $selectSuc.empty().append('<option value="">Cargando...</option>');
 
         if (usuarioId) {
+            $selectSuc.empty().append('<option value="">Cargando...</option>');
+
             $.ajax({
                 url: 'api/api_cotizador.php?action=get_sucursales_usuario&usuario_id=' + usuarioId,
-                method: 'GET', dataType: 'json',
-                success: function(data) {
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    sucursalesCache = data; // Guardamos en caché
+                    
                     $selectSuc.empty();
-                    if(data.length === 0) {
+                    if (data.length === 0) {
                         $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
-                        windowSucursalesOpciones = '<option value="">Sin sucursales</option>';
+                        window.windowSucursalesOpciones = '<option value="">Sin sucursales</option>';
                     } else {
                         $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
-                        windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
+                        window.windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
 
                         data.forEach(suc => {
-                            // ✨ MAGIA: Si no tiene nombre y es la SAE 1, le ponemos un distintivo genial
-                            let nombreVisual = suc.nombre_sucursal ? suc.nombre_sucursal.trim() : '';
-                            
-                            if (nombreVisual === '' && suc.id_sae == 1) {
-                                nombreVisual = 'SUCURSAL MATRIZ (Sin Sucursal)';
-                            } else if (nombreVisual === '') {
-                                nombreVisual = `SUCURSAL SAE: ${suc.id_sae}`;
-                            }
-                            // Formatear estado solo si existe, para no mostrar un "null"
-                            let textEstado = suc.estado ? ` (${suc.estado})` : '';
-
-                            $selectSuc.append(`<option value="${suc.id_sucursal}">${nombreVisual}${textEstado}</option>`);
-                            windowSucursalesOpciones += `<option value="${suc.id_sucursal}">${nombreVisual}</option>`;
+                            let nombreVisual = suc.nombre_listo_para_mostrar || suc.nombre_sucursal;
+                            $selectSuc.append(`<option value="${suc.id_sucursal}">${nombreVisual}</option>`);
+                            window.windowSucursalesOpciones += `<option value="${suc.id_sucursal}">${nombreVisual}</option>`;
                         });
 
-                        if(data.length === 1) $selectSuc.val(data[0].id_sucursal).trigger('change');
+                        if (data.length === 1) {
+                            $selectSuc.val(data[0].id_sucursal).trigger('change');
+                        }
                     }
-                    $('.select-sucursal-fila').html(windowSucursalesOpciones);
+                    
+                    $('.select-sucursal-fila').html(window.windowSucursalesOpciones);
+                    actualizarPlazaInformativa();
+                },
+                error: function () {
+                    $selectSuc.empty().append('<option value="">Error al cargar</option>');
                 }
             });
         } else {
+            sucursalesCache = [];
             $selectSuc.empty().append('<option value="">Esperando al solicitante...</option>');
+            $('.select-sucursal-fila').html('<option value="">Selecciona destino...</option>');
+            actualizarPlazaInformativa();
         }
-    }); */
-    $('#select_solicitante').on('change', function() {
-        let usuarioId = $(this).val();
-        // Llamada a la utilidad centralizada (MVC Limpio)
-        cargarSelectSucursales(usuarioId, '#select_sucursal', '.select-sucursal-fila', null);
     });
+
+    $('#select_sucursal').on('change', function() {
+        actualizarPlazaInformativa();
+    });
+
+    // ✨ LÓGICA DE PLAZAS: EXACTAMENTE COMO LA SOLICITASTE
+    function actualizarPlazaInformativa() {
+        let tipoFlujo = $('input[name="tipo_sucursal_flujo"]:checked').val();
+        let $infoPlaza = $('#info_plaza');
+        let $wrapperPlaza = $('#wrapper_info_plaza');
+        let usuarioId = $('#select_solicitante').val();
+
+        if (!usuarioId) {
+            $wrapperPlaza.slideUp('fast'); 
+            return;
+        }
+
+        if (tipoFlujo === 'multisucursal') {
+            // ✨ MODO MULTISUCURSAL: Recolectamos todas las plazas asociadas
+            let todasLasPlazas = new Set();
+            
+            // Verificamos si el usuario tiene sucursales propias (que no sean la matriz global)
+            let tieneSucursalesPropias = sucursalesCache.some(suc => suc.id_sae != 1);
+            
+            // Recorremos la caché y extraemos las plazas sin repetir
+            sucursalesCache.forEach(suc => {
+                // Filtro Anti-Contaminación: Ignoramos la matriz para el resumen visual, a menos que sea su única sucursal
+                if (tieneSucursalesPropias && suc.id_sae == 1) return;
+
+                if (suc.nombres_plazas) {
+                    suc.nombres_plazas.split(',').forEach(p => todasLasPlazas.add(p.trim()));
+                }
+            });
+            
+            let plazasArray = Array.from(todasLasPlazas);
+            $infoPlaza.empty();
+            
+            if (plazasArray.length > 0) {
+                // Si tiene 1 o varias plazas, las unimos y las mostramos
+                let textoPlazas = plazasArray.join(', ');
+                $infoPlaza.append(`<option value="">${textoPlazas}</option>`);
+            } else {
+                // Respaldo si sus sucursales no tienen plaza asignada
+                $infoPlaza.append('<option value="">Sin plaza registrada</option>');
+            }
+            
+            $infoPlaza.prop('disabled', true);
+            $wrapperPlaza.slideDown('fast'); // Se muestra de inmediato
+        } else {
+            // MODO SUCURSAL ÚNICA: Solo aparece HASTA que elijan la sucursal
+            let suc_id = $('#select_sucursal').val();
+            
+            if (suc_id && sucursalesCache.length > 0) {
+                let sucursal = sucursalesCache.find(s => s.id_sucursal == suc_id);
+                $infoPlaza.empty();
+                
+                if (sucursal && sucursal.nombres_plazas) {
+                    let plazas = sucursal.nombres_plazas.split(',');
+                    if (plazas.length === 1) {
+                        $infoPlaza.append(`<option value="${plazas[0]}">${plazas[0]}</option>`);
+                        $infoPlaza.prop('disabled', true);
+                    } else {
+                        plazas.forEach(p => {
+                            $infoPlaza.append(`<option value="${p.trim()}">${p.trim()}</option>`);
+                        });
+                        $infoPlaza.prop('disabled', false);
+                    }
+                } else {
+                    let nombreRespaldo = (sucursal && sucursal.id_sae == 1) ? 'MATRIZ (Sin Plaza Asignada)' : 'Sin plaza registrada';
+                    $infoPlaza.append(`<option value="">${nombreRespaldo}</option>`);
+                    $infoPlaza.prop('disabled', true);
+                }
+                $wrapperPlaza.slideDown('fast'); // ¡Aparece al seleccionar destino!
+            } else {
+                // Si aún no eligen la Sucursal Destino, permanece oculta
+                $wrapperPlaza.slideUp('fast');
+            }
+        }
+    }
 
     $('#tipo_precio').on('change', function() {
         $('#tab_logic tbody tr').each(function() { calculateTotal($(this)); });
     });
 
-    // 4. EVENTOS DE LAS FILAS
+    // >>> 4. EVENTOS DE LAS FILAS
     $(document).on('change', '.product-select, .chk-config', function() {
         let row = $(this).closest('tr');
         calculateTotal(row);
@@ -254,21 +309,27 @@ $(document).ready(function() {
         calculateTotal(row);
     });
 
-    // 5. AGREGAR/ELIMINAR FILAS
-    $("#add_row").click(function(e) {
+    // ✨ FUNCIÓN MOSTRAR BOTÓN FONDO
+    function verificarBotonFondo() {
+        let cantidadFilas = $('#tab_logic tbody tr').length;
+        if (cantidadFilas >= 4) {
+            $('#btn_add_row_bottom').removeClass('d-none');
+        } else {
+            $('#btn_add_row_bottom').addClass('d-none');
+        }
+    }
+
+    // >>> 5. AGREGAR/ELIMINAR FILAS
+    $("#add_row, #btn_add_row_bottom").click(function(e) {
         e.preventDefault();
         var nuevaFila = $("#addr0").clone();
         
-        /* //& Prueba */
-        /* nuevaFila.find('.select-sucursal-fila').html(windowSucursalesOpciones).val(''); */
         nuevaFila.find('.select-sucursal-fila').html(window.windowSucursalesOpciones).val('');
         nuevaFila.attr('id', 'addr' + uniqueIdCounter);
         nuevaFila.find("input[type='text'], input[type='number']").val('');
         nuevaFila.find('.qty').val(1);
 
-        /* //& Prueba */
-        
-        // >>> AJUSTE: Siempre clona las filas con el checkbox APAGADO pero ACTIVO
+        // &AJUSTE: Siempre clona las filas con el checkbox APAGADO pero ACTIVO
         nuevaFila.find('.chk-incluir').attr('id', 'chk_incluir_' + uniqueIdCounter).prop('checked', true).prop('disabled', true);
         nuevaFila.find('label[for^="chk_incluir"]').attr('for', 'chk_incluir_' + uniqueIdCounter);
         
@@ -277,6 +338,8 @@ $(document).ready(function() {
 
         nuevaFila.find('.hidden-desglose').val('N');
         nuevaFila.find('.info-desglose').html('');
+
+        nuevaFila.find('.puntos-calibracion-wrapper').hide().empty();
         
         nuevaFila.find('.select2-container').remove();
         nuevaFila.find('select').removeClass('select2-hidden-accessible').removeAttr('data-select2-id aria-hidden tabindex');
@@ -300,6 +363,7 @@ $(document).ready(function() {
 
         uniqueIdCounter++;
         recalcularNumeros(); 
+        verificarBotonFondo(); // Verifica las 7 filas
     });
 
     $(document).on('click', '.btn-eliminar-fila', function(e) {
@@ -308,6 +372,7 @@ $(document).ready(function() {
             $(this).closest('tr').remove();
             recalcularNumeros();
             calc_total();
+            verificarBotonFondo(); // Verifica las 7 filas
         } else {
             alert("La cotización debe tener al menos un producto.");
         }
@@ -321,20 +386,37 @@ $(document).ready(function() {
 
     $("#tax").on("keyup change", function() { calc_total(); });
 
-    // 6. FUNCIONES MATEMÁTICAS PRINCIPALES
+    // >>> 6. FUNCIONES MATEMÁTICAS PRINCIPALES
     function calculateTotal(row) {
         let productSelect = row.find('.product-select');
         let prodId = productSelect.val();
         
         let pData = preciosProductos[prodId]; 
+        let $puntosWrapper = row.find('.puntos-calibracion-wrapper');
+        
         if (!pData) {
             row.find('.price').val('');
             row.find('.total').val('');
             row.find('.info-desglose').html('');
+            $puntosWrapper.slideUp('fast').empty();
             row.find('.chk-incluir').prop('disabled', false);
             row.find('.chk-desglosar').prop('disabled', false);
             calc_total();
             return;
+        }
+
+        let ptos = pData.puntos_calibracion;
+        
+        // Verificamos que no sea null, ni undefined, ni la palabra "null", ni un campo vacío
+        if (ptos !== null && ptos !== undefined && String(ptos).trim() !== '' && String(ptos).trim() !== 'null') {
+            let puntosFormateados = String(ptos).trim().replace(/\n/g, '<br>');
+            $puntosWrapper.html(`
+                <span class="badge bg-soft-success text-success px-2 py-1 fs-11 w-100 shadow-sm mt-1" style="white-space: normal; text-align: left; line-height: 1.4; border-left: 3px solid #28a745;">
+                    <i class="feather-target me-1 fw-bold"></i> Ptos de calibración: ${puntosFormateados}
+                </span>
+            `).slideDown('fast');
+        } else {
+            $puntosWrapper.hide().empty();
         }
 
         let qty = parseFloat(row.find('.qty').val()) || 0;
@@ -411,7 +493,7 @@ $(document).ready(function() {
         $("#total_amount").val((sub_total + tax_sum).toFixed(2));
     }
 
-    // 7. ENVIAR EL FORMULARIO
+    // >>> 7. ENVIAR EL FORMULARIO
     $('#nueva_cotizacion').on('submit', function(e) {
         e.preventDefault(); 
         $('#tab_logic tbody tr').each(function() { calculateTotal($(this)); });
@@ -432,15 +514,6 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
-                    //& Bloque donde a los admin no los manda a direcciones
-                    /* //° if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-                        window.location.href = 'finalizar_venta.php?id=' + response.id_cotizacion;
-                    } else {
-                        alert(response.message);
-                        window.location.href = 'ver_cotizaciones.php';
-                    } */
-
-                    //& Manda a direcciones al guardar
                     alert(response.message);
                     window.location.href = 'finalizar_venta.php?id=' + response.id_cotizacion;
                 } else {
@@ -454,4 +527,27 @@ $(document).ready(function() {
             }
         });
     });
+
+    // >>> 8. BOTÓN VOLVER ARRIBA (SCROLL TO TOP) <<<
+    let $btnTop = $('#btnBackToTop');
+    
+    if ($btnTop.length) {
+        // Detectar el scroll de la ventana
+        $(window).on('scroll', function() {
+            if ($(this).scrollTop() > 200) {
+                $btnTop.css('display', 'flex');
+            } else {
+                $btnTop.css('display', 'none');
+            }
+        });
+
+        // Acción al hacer clic
+        $btnTop.on('click', function() {
+            // Usamos Vanilla JS dentro del evento de jQuery para un rendimiento más fluido
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
 });

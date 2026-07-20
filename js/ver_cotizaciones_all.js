@@ -6,9 +6,9 @@ $(document).ready(function () {
     let preciosProductos = {};
     let rowCount = 0;
 
-    // let windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
     window.windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
     let isEditMultiSucursal = false;
+    let sucursalesCacheEdit = []; // ✨ Caché para leer plazas en edición
 
     //>>>==========================================
     //>>> 1. CARGA INICIAL DE DATOS MAESTROS
@@ -63,7 +63,6 @@ $(document).ready(function () {
                 }
 
                 data.forEach(function (cot) {
-                    // Folio Visual
                     let folioVisual = cot.folio_especial ? cot.folio_especial : cot.id_cotizacion.toString().padStart(5, '0');
                     let razonSoc = cot.razon_social ? cot.razon_social : 'Sin Empresa';
 
@@ -84,26 +83,22 @@ $(document).ready(function () {
                     let btnDirecciones = '';
                     let yaTieneDirecciones = parseInt(cot.tiene_dir) || 0;
                     let equiposSinDir = parseInt(cot.equipos_sin_dir) || 0;
-                    // ✨ Lógica inteligente del botón de direcciones
+
                     if (estatusTexto !== 'Autorizada (información completa)' && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
-                        
                         let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || ((estatusTexto === 'Por aprobar' || estatusTexto === 'Guardado') && yaTieneDirecciones === 0));
                         let alertaEdicionIncompleta = (yaTieneDirecciones > 0 && equiposSinDir > 0);
 
-                        // Valores por defecto (TU COLOR ACTUAL)
                         let colorIcon = 'text-primary';
                         let latido = '';
                         let claseFondo = 'bg-soft-light border border-light';
                         let textoTooltip = 'Gestionar Direcciones';
 
                         if (alertaEdicionIncompleta) {
-                            // 🔴 ESTADO CRÍTICO (ROJO)
                             colorIcon = 'text-danger';
                             latido = 'style="animation: pulse 1.5s infinite;"';
                             claseFondo = 'bg-soft-danger border border-danger';
                             textoTooltip = '¡Alerta! Equipos nuevos sin dirección. Haz clic aquí para corregir.';
                         } else if (urgeDireccion) {
-                            // 🟡 ADVERTENCIA (AMARILLO)
                             colorIcon = 'text-warning';
                             latido = 'style="animation: pulse 2s infinite;"';
                             claseFondo = 'bg-soft-warning border border-warning';
@@ -123,6 +118,33 @@ $(document).ready(function () {
                     } else {
                         btnEliminar = `<a href="#" class="avatar-text avatar-md btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2 text-danger"></i></abbr></a>`;
                     }
+                    
+                    let btnPdfLab = `
+                        <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}&tipo=lab" target="_blank" class="avatar-text avatar-md">
+                            <abbr title="Generar PDF Laboratorio (Sin Precios)" style="text-decoration:none;">
+                                <i class="feather-thermometer text-info" style="font-size: 1.1rem;"></i>
+                            </abbr>
+                        </a>`;
+
+                    let contenedorAcciones = `
+                        <div class="d-flex flex-column align-items-center gap-2">
+                            <!-- Primera Fila (3 Botones: Direcciones, Imprimir, Lab) -->
+                            <div class="d-flex justify-content-center gap-2">
+                                ${btnDirecciones}
+                                <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md">
+                                    <abbr title="Imprimir PDF (Cotización Comercial)" style="text-decoration:none;"><i class="feather-printer"></i></abbr>
+                                </a>
+                                ${btnPdfLab}
+                            </div>
+                            <!-- Segunda Fila (2 Botones: Editar, Eliminar) -->
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}">
+                                    <abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr>
+                                </a>
+                                ${btnEliminar}
+                            </div>
+                        </div>
+                    `;
 
                     let tr = `
                         <tr>
@@ -142,10 +164,7 @@ $(document).ready(function () {
                             <td><span class="badge ${badgeColor}">${estatusTexto}</span></td>
                             <td class="text-center">
                                 <div class="hstack gap-2 justify-content-center">
-                                    ${btnDirecciones}
-                                    <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md"><abbr title="Imprimir" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>
-                                    <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>
-                                    ${btnEliminar}
+                                    ${contenedorAcciones}
                                 </div>
                             </td>
                         </tr>
@@ -153,6 +172,10 @@ $(document).ready(function () {
                     tbody.append(tr);
                 });
 
+                // ${btnDirecciones}
+                // <a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md"><abbr title="Imprimir" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>
+                // <a href="#" class="avatar-text avatar-md btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>
+                // ${btnEliminar}
                 if ($.fn.DataTable) {
                     $tabla.DataTable({
                         language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
@@ -173,6 +196,132 @@ $(document).ready(function () {
     //>>>============================================== 
     //>>>           3. MODAL DE EDICIÓN
     //>>>============================================== 
+    function verificarBotonFondoEdicion() {
+        let cantidadFilas = $('#tab_logic_edit tbody tr.fila-producto').length;
+        if (cantidadFilas >= 4) {
+            $('#edit_btn_add_row_bottom').slideDown('fast');
+        } else {
+            $('#edit_btn_add_row_bottom').slideUp('fast');
+        }
+    }
+
+    function actualizarPlazaInformativaEdicion() {
+        let $infoPlaza = $('#edit_info_plaza');
+        let $wrapperPlaza = $('#wrapper_info_plaza_edit');
+        let usuarioId = $('#edit_select_solicitante').val();
+
+        if (!usuarioId) {
+            $wrapperPlaza.slideUp('fast'); 
+            return;
+        }
+
+        if (isEditMultiSucursal) {
+            let todasLasPlazas = new Set();
+            let tieneSucursalesPropias = sucursalesCacheEdit.some(suc => suc.id_sae != 1);
+            
+            sucursalesCacheEdit.forEach(suc => {
+                if (tieneSucursalesPropias && suc.id_sae == 1) return; // Anti-contaminación Matriz
+                if (suc.nombres_plazas) {
+                    suc.nombres_plazas.split(',').forEach(p => todasLasPlazas.add(p.trim()));
+                }
+            });
+            
+            let plazasArray = Array.from(todasLasPlazas);
+            $infoPlaza.empty();
+            
+            if (plazasArray.length > 0) {
+                let textoPlazas = plazasArray.join(', ');
+                $infoPlaza.append(`<option value="">${textoPlazas}</option>`);
+            } else {
+                $infoPlaza.append('<option value="">Sin plaza registrada</option>');
+            }
+            
+            $infoPlaza.prop('disabled', true);
+            $wrapperPlaza.slideDown('fast');
+        } else {
+            let suc_id = $('#edit_select_sucursal').val();
+            
+            if (suc_id && sucursalesCacheEdit.length > 0) {
+                let sucursal = sucursalesCacheEdit.find(s => s.id_sucursal == suc_id);
+                $infoPlaza.empty();
+                
+                if (sucursal && sucursal.nombres_plazas) {
+                    let plazas = sucursal.nombres_plazas.split(',');
+                    if (plazas.length === 1) {
+                        $infoPlaza.append(`<option value="${plazas[0]}">${plazas[0]}</option>`);
+                        $infoPlaza.prop('disabled', true);
+                    } else {
+                        plazas.forEach(p => {
+                            $infoPlaza.append(`<option value="${p.trim()}">${p.trim()}</option>`);
+                        });
+                        $infoPlaza.prop('disabled', false);
+                    }
+                } else {
+                    let nombreRespaldo = (sucursal && sucursal.id_sae == 1) ? 'MATRIZ (Sin Plaza Asignada)' : 'Sin plaza registrada';
+                    $infoPlaza.append(`<option value="">${nombreRespaldo}</option>`);
+                    $infoPlaza.prop('disabled', true);
+                }
+                $wrapperPlaza.slideDown('fast');
+            } else {
+                $wrapperPlaza.slideUp('fast');
+            }
+        }
+    }
+
+    function cargarSucursalesEdicion(usuarioId, preseleccion_suc = null) {
+        let $selectSuc = $('#edit_select_sucursal');
+        $selectSuc.empty().append('<option value="">Cargando...</option>');
+
+        if (usuarioId) {
+            $.ajax({
+                url: 'api/api_cotizador.php?action=get_sucursales_usuario&usuario_id=' + usuarioId,
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    sucursalesCacheEdit = data; 
+                    
+                    $selectSuc.empty();
+                    window.windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
+
+                    if (data.length === 0) {
+                        $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
+                        window.windowSucursalesOpcionesEdit = '<option value="" disabled>Sin sucursales asignadas</option>';
+                    } else {
+                        $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
+                        data.forEach(suc => {
+                            let nombreVisual = suc.nombre_listo_para_mostrar || suc.nombre_sucursal;
+                            $selectSuc.append(`<option value="${suc.id_sucursal}">${nombreVisual}</option>`);
+                            window.windowSucursalesOpcionesEdit += `<option value="${suc.id_sucursal}">${nombreVisual}</option>`;
+                        });
+
+                        if (preseleccion_suc) {
+                            $selectSuc.val(preseleccion_suc);
+                        } else if (data.length === 1 && !isEditMultiSucursal) {
+                            $selectSuc.val(data[0].id_sucursal);
+                        }
+                    }
+
+                    $('.select-sucursal-fila-edit').each(function() {
+                        let valToSelect = $(this).attr('data-selected-suc');
+                        $(this).html(window.windowSucursalesOpcionesEdit);
+                        if (valToSelect) {
+                            $(this).val(valToSelect);
+                        }
+                    });
+
+                    actualizarPlazaInformativaEdicion();
+                },
+                error: function () {
+                    $selectSuc.empty().append('<option value="">Error al cargar</option>');
+                }
+            });
+        } else {
+            sucursalesCacheEdit = [];
+            $selectSuc.empty().append('<option value="">Esperando al solicitante...</option>');
+            actualizarPlazaInformativaEdicion();
+        }
+    }
+
     function construirFila(index, id_detalle_cot = 0, prod_id = '', precio = '', qty = 1, total = '', isCalib = true, esServicio = false, isDesglose = false, sucursal_destino_id = '') {
         let opciones = '<option value="">Selecciona...</option>';
         let filtroActual = $('#edit_filtro_tipo_producto').val() || 'TODOS';
@@ -222,7 +371,11 @@ $(document).ready(function () {
                     <span class="num-fila-txt">${index + 1}</span>
                 </td>
                 <td class="align-middle"><input type="number" name="cantidad_cot[]" class="form-control edit-qty" step="1" min="1" value="${qty}" required></td>
-                <td class="align-middle"><select class="form-control select-prod-modal" name="productos[]" required>${opciones}</select></td>
+                <td class="align-middle">
+                    <select class="form-control select-prod-modal" name="productos[]" required>${opciones}</select>
+                    <!-- ✨ Puntos de calibración aquí debajo del select -->
+                    <div class="puntos-calibracion-wrapper mt-2" style="display:none;"></div>
+                </td>
                 ${tdSucursal}
                 <td class="align-middle">
                     <div class="modulo-config">
@@ -270,8 +423,7 @@ $(document).ready(function () {
 
                 if (preseleccion) {
                     $selSol.data('old', preseleccion.toString()).val(preseleccion);
-                    // Llamada a la utilidad global:
-                    cargarSelectSucursales(preseleccion, '#edit_select_sucursal', '.select-sucursal-fila-edit', preseleccion_suc);
+                    cargarSucursalesEdicion(preseleccion, preseleccion_suc);
                 }
 
                 $selSol.select2({ dropdownParent: $('#modalEditarCotizacion') });
@@ -299,7 +451,11 @@ $(document).ready(function () {
         let val = $(this).val();
         if (!val || $(this).data('old') === val) return;
         $(this).data('old', val);
-        cargarSucursales(val, null);
+        cargarSucursalesEdicion(val, null);
+    });
+
+    $('#edit_select_sucursal').on('change', function () {
+        actualizarPlazaInformativaEdicion();
     });
 
     let previousTipoPrecio = '';
@@ -367,15 +523,39 @@ $(document).ready(function () {
                 $selEmp.data('old', cot.Empresa_id.toString()).val(cot.Empresa_id);
                 $selEmp.select2({ dropdownParent: $('#modalEditarCotizacion') });
 
-                let $colSucursal = $('#edit_select_sucursal').closest('div[class^="col-"]');
+                // ✨ NUEVA LÓGICA DE VISIBILIDAD DE TARJETAS
+                let $wrapSucursal = $('#wrapper_selector_sucursal_edit');
+                let $wrapPrecio   = $('#tipo_precio').closest('.mb-4');
+                let $wrapEstatus  = $('#fila_estatus_lan');
+
+                $wrapPrecio.show();
+                $wrapEstatus.show();
+                $selEmp.prop('disabled', false);
+
                 if (isEditMultiSucursal) {
-                    $colSucursal.hide();
+                    $wrapSucursal.hide();
                     $('#edit_select_sucursal').prop('required', false);
                     $('.col-edit-multisucursal').show();
                 } else {
-                    $colSucursal.show();
+                    $wrapSucursal.show();
                     $('#edit_select_sucursal').prop('required', true);
                     $('.col-edit-multisucursal').hide();
+                }
+
+                if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
+                    $wrapPrecio.hide();
+                    $wrapEstatus.hide();
+                    $selEmp.prop('disabled', true);
+
+                    if ($('#hidden_edit_empresa').length === 0) {
+                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
+                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
+                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_estatus" name="estatus" value="${cot.estatus ? cot.estatus : 'Guardado'}">`);
+                    } else {
+                        $('#hidden_edit_empresa').val(cot.Empresa_id);
+                        $('#hidden_edit_precio').val(cot.tipo_precio);
+                        $('#hidden_edit_estatus').val(cot.estatus ? cot.estatus : 'Guardado');
+                    }
                 }
 
                 cargarSolicitantes(cot.Empresa_id, cot.Usuario_empresa_id, isReadOnly, cot.Sucursal_id);
@@ -413,13 +593,11 @@ $(document).ready(function () {
                         }
                     }
 
-                    // Pasamos el item.id_detalle_cot
                     $tbody.append(construirFila(index, item.id_detalle_cot, item.Product_id, item.precio_unitario, item.cantidad, item.precio_extendido, isCalibIncluida, esServicio, item.desglosar === 'Y', item.sucursal_destino_id ));
                     calculateRowEdit($(`#edit_addr${index}`));
                     rowCount++;
                 });
 
-                /* $('.select-prod-modal').select2({ dropdownParent: $('#modalEditarCotizacion') }); */
                 $('.select-prod-modal').select2({ 
                     theme: 'bootstrap-5',
                     dropdownParent: $('#modalEditarCotizacion'),
@@ -429,8 +607,11 @@ $(document).ready(function () {
                 if (isReadOnly) {
                     $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', true);
                     $('#edit_add_row').hide();
+                    $('#edit_btn_add_row_bottom').hide();
                     $('.btn-eliminar-fila-unica').hide();
                     $('#formEditarCotizacion button[type="submit"]').hide();
+                } else {
+                    verificarBotonFondoEdicion();
                 }
 
                 $('#modalEditarCotizacion').modal('show');
@@ -438,7 +619,7 @@ $(document).ready(function () {
         });
     });
 
-    $("#edit_add_row").click(function () {
+    $("#edit_add_row, #edit_btn_add_row_bottom").click(function () {
         $("#edit_tbody_productos").append(construirFila(rowCount, 0, '', '', 1, '', false, false, false, ''));
         window.productoAgregadoEnEdicion = true; // ✨ BANDERA ENCENDIDA
         $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
@@ -448,8 +629,6 @@ $(document).ready(function () {
             $(`#edit_chk_incluir_${rowCount}`).prop('checked', true);
         }
 
-        /* $(`#edit_addr${rowCount} .select-prod-modal`).select2({ dropdownParent: $('#modalEditarCotizacion') }); */
-        // ✨ Agregamos el buscador de sucursal en la nueva fila del modal
         $(`#edit_addr${rowCount} .select-prod-modal`).select2({ 
             theme: 'bootstrap-5',
             dropdownParent: $('#modalEditarCotizacion'),
@@ -462,13 +641,18 @@ $(document).ready(function () {
             width: '100%', 
             placeholder: "Selecciona destino..." 
         });
-        rowCount++; recalcularNumerosFila();
+        rowCount++; 
+        recalcularNumerosFila();
+        verificarBotonFondoEdicion();
     });
 
     $(document).on('click', '.btn-eliminar-fila-unica', function (e) {
         e.preventDefault();
         if ($('#edit_tbody_productos tr.fila-producto').length > 1) {
-            $(this).closest('tr').remove(); recalcularNumerosFila(); calcEditTotal();
+            $(this).closest('tr').remove(); 
+            recalcularNumerosFila(); 
+            calcEditTotal();
+            verificarBotonFondoEdicion();
         } else { alert("La cotización debe tener al menos un producto."); }
     });
 
@@ -494,7 +678,30 @@ $(document).ready(function () {
         let prodSelect = row.find('.select-prod-modal');
         let prodId = prodSelect.val();
         let pData = preciosProductos[prodId];
-        if (!pData) return;
+        let $puntosWrapper = row.find('.puntos-calibracion-wrapper');
+
+        if (!pData) {
+            row.find('.edit-price').val('');
+            row.find('.edit-total').val('');
+            row.find('.info-desglose').html('');
+            $puntosWrapper.hide().empty();
+            row.find('.chk-incluir').prop('disabled', false);
+            row.find('.chk-desglosar').prop('disabled', false);
+            return;
+        }
+
+        // ✨ LÓGICA ULTRA-SEGURA: PUNTOS DE CALIBRACIÓN (Color Azul Corporativo)
+        let ptos = pData.puntos_calibracion;
+        if (ptos !== null && ptos !== undefined && String(ptos).trim() !== '' && String(ptos).trim() !== 'null') {
+            let puntosFormateados = String(ptos).trim().replace(/\n/g, '<br>');
+            $puntosWrapper.html(`
+                <span class="badge bg-soft-success text-success px-2 py-1 fs-11 w-100 shadow-sm mt-1" style="white-space: normal; text-align: left; line-height: 1.4; border-left: 3px solid #28a745;">
+                    <i class="feather-target me-1 fw-bold"></i> Ptos de calibración: ${puntosFormateados}
+                </span>
+            `).slideDown('fast');
+        } else {
+            $puntosWrapper.hide().empty();
+        }
 
         let qty = parseFloat(row.find('.edit-qty').val()) || 0;
         let tipoPrecio = $('#tipo_precio').val();
@@ -513,7 +720,7 @@ $(document).ready(function () {
         let incluirCalib = row.find('.chk-incluir').is(':checked');
         let desglosar = row.find('.chk-desglosar').is(':checked');
 
-        if(!tipoPrecio) {
+        if (!tipoPrecio) {
             row.find('.info-desglose').html('<small class="text-danger fw-bold">Falta lista de precios</small>');
             return;
         }
@@ -594,13 +801,9 @@ $(document).ready(function () {
                     
                     let estatusSeleccionado = $('#edit_estatus').val();
 
-                    // ✨ MAGIA: Solo redirigimos si el estatus incluye "Autorizada", conservando los parámetros.
                     if (estatusSeleccionado.includes('Autorizada') || window.productoAgregadoEnEdicion) {
                         alert("Cambios guardados. Serás redirigido para verificar las direcciones de los equipos.");
-                        
-                        // Reseteamos la bandera por seguridad
                         window.productoAgregadoEnEdicion = false; 
-                        
                         window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val() + '&from=all&editado=1';
                     } else {
                         alert("Cambios guardados exitosamente.");
@@ -667,8 +870,6 @@ $(document).ready(function () {
             if ($selectProd.hasClass('select2-hidden-accessible')) {
                 $selectProd.select2('destroy'); 
             }
-            /* $selectProd.html(opcionesActualizadas).val(idProductoActual);
-            $selectProd.select2({ dropdownParent: $('#modalEditarCotizacion') }); */
             $selectProd.html(opcionesActualizadas).val(idProductoActual);
             $selectProd.select2({ 
                 theme: 'bootstrap-5',
@@ -677,4 +878,33 @@ $(document).ready(function () {
             });
         });
     });
+    let $modalContainer = $('#modalEditarCotizacion');
+    let $modalScroll = $('#formEditarCotizacion');
+    let $btnTopModal = $('#btnBackToTopModal');
+    
+    if ($btnTopModal.length) {
+        // 1. Detectar el scroll DENTRO del cuerpo del modal
+        $modalScroll.on('scroll', function() {
+            // Si el interior del modal ha bajado más de 200px, mostramos el botón
+            if ($(this).scrollTop() > 200) {
+                $btnTopModal.css('display', 'flex');
+            } else {
+                $btnTopModal.css('display', 'none');
+            }
+        });
+
+        // 2. Acción al hacer clic: subir el scroll del cuerpo del modal
+        $btnTopModal.on('click', function() {
+            // Usamos Vanilla JS apuntando al elemento DOM del formulario [0]
+            $modalScroll[0].scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 3. Ciberseguridad/Limpieza: Ocultar el botón si el modal se cierra de golpe
+        $modalContainer.on('hidden.bs.modal', function () {
+            $btnTopModal.css('display', 'none');
+        });
+    }
 });

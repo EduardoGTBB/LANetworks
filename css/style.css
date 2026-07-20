@@ -71,6 +71,50 @@
     transform: translateX(0);
 }
 
+/* --- Estilos del Botón Volver Arriba --- */
+#btnBackToTop {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: none; /* Oculto por defecto, se muestra vía JS */
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+#btnBackToTop:hover {
+    opacity: 1;
+    transform: scale(1.1); /* Efecto de crecimiento al pasar el mouse */
+}
+
+/* --- Estilos del Botón Volver Arriba (Modal) --- */
+#btnBackToTopModal {
+    position: absolute; /* ✨ CLAVE: Absolute lo encierra dentro de la caja del modal */
+    bottom: 25px;       /* Distancia desde el borde inferior de la caja blanca */
+    left: 30px;         /* ✨ CLAVE: Alineado a la zona izquierda, lejos de los botones de acción */
+    z-index: 1060;      
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: none;      /* Controlado por el JS */
+    align-items: center;
+    justify-content: center;
+    opacity: 0.9;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2); /* Sombra elegante */
+    transition: all 0.3s ease;
+}
+
+#btnBackToTopModal:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    background-color: #0d6efd; /* Forzamos el azul de Bootstrap al pasar el mouse */
+    color: #fff;
+}
 
 /* >>> ============================================== */
 /* >>>              INICIO MULTISELECT                */
@@ -270,3 +314,4 @@ span.select2.select2-container.form-control {
     padding-bottom: 8px !important;
     line-height: 1.4 !important;
 }
+

@@ -79,7 +79,7 @@
     <!--! ================================================================ !-->
     <!--! BEGIN: Theme Customizer !-->
     <!--! ================================================================ !-->
-    <div class="theme-customizer">
+    <!-- <div class="theme-customizer">
         <div class="customizer-handle">
             <a href="javascript:void(0);" class="cutomizer-open-trigger bg-primary">
                 <i class="feather-settings"></i>
@@ -93,7 +93,7 @@
                 </a>
             </div>
             <div class="customizer-sidebar-body position-relative p-4" data-scrollbar-target="#psScrollbarInit">
-                <!--! BEGIN: [Skins] !-->
+                !--! BEGIN: [Skins] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-5 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Skins</label>
                     <div class="row g-2 theme-options-items app-skin" id="appSkinList">
@@ -107,8 +107,8 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Skins] !-->
-                <!--! BEGIN: [Typography] !-->
+                !--! END: [Skins] !--
+                !--! BEGIN: [Typography] !--
                 <div class="position-relative px-3 pb-3 pt-4 mt-3 mb-0 border border-gray-2 theme-options-set">
                     <label class="py-1 px-2 fs-8 fw-bold text-uppercase text-muted text-spacing-2 bg-white border border-gray-2 position-absolute rounded-2 options-label" style="top: -12px">Typography</label>
                     <div class="row g-2 theme-options-items font-family" id="fontFamilyList">
@@ -202,7 +202,7 @@
                         </div>
                     </div>
                 </div>
-                <!--! END: [Typography] !-->
+                !--! END: [Typography] !--
             </div>
             <div class="customizer-sidebar-footer px-4 ht-60 border-top d-flex align-items-center gap-2">
                 <div class="flex-fill w-50">
@@ -213,7 +213,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
     <!--! ================================================================ !-->
     <!--! [End] Theme Customizer !-->
     <!--! ================================================================ !-->
@@ -228,7 +228,7 @@
     <script src="assets/js/common-init.min.js"></script>
     <!--! END: Apps Init !-->
     <!--! BEGIN: Theme Customizer  !-->
-    <script src="assets/js/theme-customizer-init.min.js"></script>
+    <!-- <script src="assets/js/theme-customizer-init.min.js"></script> -->
     <!--! END: Theme Customizer !-->
 </body>
 
