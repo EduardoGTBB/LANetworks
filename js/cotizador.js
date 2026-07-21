@@ -1,6 +1,6 @@
-$(document).ready(function() {
-    var uniqueIdCounter = 1; 
-    var preciosProductos = {}; 
+$(document).ready(function () {
+    var uniqueIdCounter = 1;
+    var preciosProductos = {};
     var windowProductos = [];
     var sucursalesCache = []; // ✨ CACHÉ DE SUCURSALES
 
@@ -12,31 +12,44 @@ $(document).ready(function() {
         });
     }
 
-    $(document).on('change', '.chk-desglosar', function() {
-        $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
+    $(document).on('change', '.chk-desglosar', function () {
+        $(this).siblings('.hidden-desglose').val($(this).is(':checked') ? 'Y' : 'N');
     });
 
     if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
         let $tipoPrecio = $('#tipo_precio');
-        $tipoPrecio.val('Público').trigger('change.select2');
-        $tipoPrecio.closest('.col-md-6').hide();
-        $('#select_sucursal').closest('.col-md-6').removeClass('col-md-6').addClass('col-md-12');
+        // 1. Asignar 'Público', bloquear el select y notificar a Select2
+        $tipoPrecio.val('Público')
+            .prop('disabled', true)
+            .trigger('change.select2')
+            .trigger('change');
+
+        // 2. Bloquear interacciones del ratón por CSS (Refuerzo UX)
+        $tipoPrecio.next('.select2-container').css({
+            'pointer-events': 'none',
+            'opacity': '0.7'
+        });
+
+        // 3. Crear input hidden de respaldo para enviar 'tipo_precio' en el POST de AJAX
+        if ($('#hidden_tipo_precio').length === 0) {
+            $('#nueva_cotizacion').append('<input type="hidden" id="hidden_tipo_precio" name="tipo_precio" value="Público">');
+        }
     }
 
     // >>> 1. CARGAR DATOS INICIALES (EMPRESAS Y PRODUCTOS)
     $.ajax({
         url: 'api/api_cotizador.php?action=get_empresas',
         method: 'GET', dataType: 'json',
-        success: function(data) {
-            let $select = $('#select_empresa'); 
-            if($select.length){
+        success: function (data) {
+            let $select = $('#select_empresa');
+            if ($select.length) {
                 $select.empty().append('<option value="">Selecciona un cliente...</option>');
                 data.forEach(emp => $select.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`));
-                
+
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-                    $select.val(PORTAL_EMPRESA_ID).trigger('change.select2').trigger('change'); 
-                    $select.prop('disabled', true); 
-                    if($('#hidden_empresa').length === 0){
+                    $select.val(PORTAL_EMPRESA_ID).trigger('change.select2').trigger('change');
+                    $select.prop('disabled', true);
+                    if ($('#hidden_empresa').length === 0) {
                         $('#nueva_cotizacion').append(`<input type="hidden" id="hidden_empresa" name="Empresa_id" value="${PORTAL_EMPRESA_ID}">`);
                     }
                 }
@@ -49,44 +62,44 @@ $(document).ready(function() {
     $.ajax({
         url: 'api/api_cotizador.php?action=get_productos',
         method: 'GET', dataType: 'json',
-        success: function(data) {
+        success: function (data) {
             windowProductos = data; // Almacenamos todo el catálogo
             data.forEach(prod => {
                 preciosProductos[prod.id_product] = prod;
             });
-            
+
             // Obligamos al filtro a pintar la lista inicial
             $('#filtro_estado_producto').trigger('change');
         }
     });
 
-    $(document).on('change', '#filtro_estado_producto', function() {
+    $(document).on('change', '#filtro_estado_producto', function () {
         let filtro = $(this).val();
-        
+
         if (!windowProductos || windowProductos.length === 0) return;
-        
+
         // Buscamos específicamente los dropdowns de la tabla
         let $selects = $('.product-select');
-        
-        $selects.each(function() {
+
+        $selects.each(function () {
             let $select = $(this);
-            let valorActual = $select.val(); 
-            
+            let valorActual = $select.val();
+
             // Destruir plugin visual temporalmente para limpiar
             if ($select.hasClass('select2-hidden-accessible')) {
                 $select.select2('destroy');
             }
-            
+
             $select.html('<option value="">Selecciona un producto...</option>');
-            
+
             // Recorremos y pintamos según la base de datos
-            windowProductos.forEach(function(prod) {
+            windowProductos.forEach(function (prod) {
                 // Leemos directamente de la columna real (estado_product)
                 let estadoBD = prod.estado_product ? prod.estado_product.toUpperCase().trim() : 'N/A';
-                
+
                 // Si el filtro es TODOS, o si el estado de la BD coincide con el filtro:
                 if (filtro === 'TODOS' || estadoBD === filtro) {
-                    
+
                     let idProd = prod.id_product;
                     let clave = prod.clave_product || '';
                     let desc = prod.descripcion_product || '';
@@ -96,27 +109,27 @@ $(document).ready(function() {
 
                     /*  let nombreAMostrar = clave ? `[${clave}] ${desc}` : desc; */
                     let nombreAMostrar = clave ? `[${clave}] ${desc}${textoMarca}` : `${desc}${textoMarca}`;
-                    
+
                     let esServicio = (estadoBD === 'CALIBRACION');
 
                     $select.append(`<option value="${idProd}" data-servicio="${esServicio}">${nombreAMostrar}</option>`);
                 }
             });
-            
+
             // Restaurar selección previa si aplica
             if (valorActual) {
                 $select.val(valorActual);
             }
-            
+
             // Reactivar Select2
-            $select.select2({ 
-                theme: 'bootstrap-5', 
-                width: '100%' 
+            $select.select2({
+                theme: 'bootstrap-5',
+                width: '100%'
             });
         });
     });
 
-    $(document).on('change', 'input[name="tipo_sucursal_flujo"]', function() {
+    $(document).on('change', 'input[name="tipo_sucursal_flujo"]', function () {
         let tipo = $(this).val();
         if (tipo === 'multisucursal') {
             $('#wrapper_selector_sucursal').fadeOut('fast');
@@ -138,21 +151,21 @@ $(document).ready(function() {
         $.ajax({
             url: 'api/api_cotizador.php?action=get_usuarios&empresa_id=' + empresaId,
             method: 'GET', dataType: 'json',
-            success: function(data) {
+            success: function (data) {
                 $selectSol.empty();
-                if(data.length === 0) {
+                if (data.length === 0) {
                     $selectSol.append('<option value="" disabled>No hay solicitantes en esta empresa</option>');
                 } else {
                     $selectSol.append('<option value="">Selecciona un solicitante...</option>');
                     data.forEach(usr => {
                         $selectSol.append(`<option value="${usr.id_usuario}">${usr.nombre} ${usr.apellido_pat} ${usr.apellido_mat}</option>`);
                     });
-                    
+
                     if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
                         $selectSol.val(PORTAL_USUARIO_ID).trigger('change.select2').trigger('change');
-                        $selectSol.prop('disabled', true); 
+                        $selectSol.prop('disabled', true);
 
-                        if($('#hidden_usuario').length === 0){
+                        if ($('#hidden_usuario').length === 0) {
                             $('#nueva_cotizacion').append(`<input type="hidden" id="hidden_usuario" name="Usuario_id" value="${PORTAL_USUARIO_ID}">`);
                         }
                     }
@@ -180,7 +193,7 @@ $(document).ready(function() {
                 dataType: 'json',
                 success: function (data) {
                     sucursalesCache = data; // Guardamos en caché
-                    
+
                     $selectSuc.empty();
                     if (data.length === 0) {
                         $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
@@ -199,7 +212,7 @@ $(document).ready(function() {
                             $selectSuc.val(data[0].id_sucursal).trigger('change');
                         }
                     }
-                    
+
                     $('.select-sucursal-fila').html(window.windowSucursalesOpciones);
                     actualizarPlazaInformativa();
                 },
@@ -215,7 +228,7 @@ $(document).ready(function() {
         }
     });
 
-    $('#select_sucursal').on('change', function() {
+    $('#select_sucursal').on('change', function () {
         actualizarPlazaInformativa();
     });
 
@@ -227,17 +240,17 @@ $(document).ready(function() {
         let usuarioId = $('#select_solicitante').val();
 
         if (!usuarioId) {
-            $wrapperPlaza.slideUp('fast'); 
+            $wrapperPlaza.slideUp('fast');
             return;
         }
 
         if (tipoFlujo === 'multisucursal') {
             // ✨ MODO MULTISUCURSAL: Recolectamos todas las plazas asociadas
             let todasLasPlazas = new Set();
-            
+
             // Verificamos si el usuario tiene sucursales propias (que no sean la matriz global)
             let tieneSucursalesPropias = sucursalesCache.some(suc => suc.id_sae != 1);
-            
+
             // Recorremos la caché y extraemos las plazas sin repetir
             sucursalesCache.forEach(suc => {
                 // Filtro Anti-Contaminación: Ignoramos la matriz para el resumen visual, a menos que sea su única sucursal
@@ -247,10 +260,10 @@ $(document).ready(function() {
                     suc.nombres_plazas.split(',').forEach(p => todasLasPlazas.add(p.trim()));
                 }
             });
-            
+
             let plazasArray = Array.from(todasLasPlazas);
             $infoPlaza.empty();
-            
+
             if (plazasArray.length > 0) {
                 // Si tiene 1 o varias plazas, las unimos y las mostramos
                 let textoPlazas = plazasArray.join(', ');
@@ -259,17 +272,17 @@ $(document).ready(function() {
                 // Respaldo si sus sucursales no tienen plaza asignada
                 $infoPlaza.append('<option value="">Sin plaza registrada</option>');
             }
-            
+
             $infoPlaza.prop('disabled', true);
             $wrapperPlaza.slideDown('fast'); // Se muestra de inmediato
         } else {
             // MODO SUCURSAL ÚNICA: Solo aparece HASTA que elijan la sucursal
             let suc_id = $('#select_sucursal').val();
-            
+
             if (suc_id && sucursalesCache.length > 0) {
                 let sucursal = sucursalesCache.find(s => s.id_sucursal == suc_id);
                 $infoPlaza.empty();
-                
+
                 if (sucursal && sucursal.nombres_plazas) {
                     let plazas = sucursal.nombres_plazas.split(',');
                     if (plazas.length === 1) {
@@ -294,17 +307,17 @@ $(document).ready(function() {
         }
     }
 
-    $('#tipo_precio').on('change', function() {
-        $('#tab_logic tbody tr').each(function() { calculateTotal($(this)); });
+    $('#tipo_precio').on('change', function () {
+        $('#tab_logic tbody tr').each(function () { calculateTotal($(this)); });
     });
 
     // >>> 4. EVENTOS DE LAS FILAS
-    $(document).on('change', '.product-select, .chk-config', function() {
+    $(document).on('change', '.product-select, .chk-config', function () {
         let row = $(this).closest('tr');
         calculateTotal(row);
     });
 
-    $(document).on('keyup change', '.qty', function() {
+    $(document).on('keyup change', '.qty', function () {
         let row = $(this).closest('tr');
         calculateTotal(row);
     });
@@ -320,10 +333,10 @@ $(document).ready(function() {
     }
 
     // >>> 5. AGREGAR/ELIMINAR FILAS
-    $("#add_row, #btn_add_row_bottom").click(function(e) {
+    $("#add_row, #btn_add_row_bottom").click(function (e) {
         e.preventDefault();
         var nuevaFila = $("#addr0").clone();
-        
+
         nuevaFila.find('.select-sucursal-fila').html(window.windowSucursalesOpciones).val('');
         nuevaFila.attr('id', 'addr' + uniqueIdCounter);
         nuevaFila.find("input[type='text'], input[type='number']").val('');
@@ -332,7 +345,7 @@ $(document).ready(function() {
         // &AJUSTE: Siempre clona las filas con el checkbox APAGADO pero ACTIVO
         nuevaFila.find('.chk-incluir').attr('id', 'chk_incluir_' + uniqueIdCounter).prop('checked', true).prop('disabled', true);
         nuevaFila.find('label[for^="chk_incluir"]').attr('for', 'chk_incluir_' + uniqueIdCounter);
-        
+
         nuevaFila.find('.chk-desglosar').attr('id', 'chk_desglosar_' + uniqueIdCounter).prop('checked', false).prop('disabled', false);
         nuevaFila.find('label[for^="chk_desglosar"]').attr('for', 'chk_desglosar_' + uniqueIdCounter);
 
@@ -340,7 +353,7 @@ $(document).ready(function() {
         nuevaFila.find('.info-desglose').html('');
 
         nuevaFila.find('.puntos-calibracion-wrapper').hide().empty();
-        
+
         nuevaFila.find('.select2-container').remove();
         nuevaFila.find('select').removeClass('select2-hidden-accessible').removeAttr('data-select2-id aria-hidden tabindex');
         nuevaFila.find('select option, select optgroup').removeAttr('data-select2-id');
@@ -351,22 +364,22 @@ $(document).ready(function() {
         $("#tab_logic tbody").append(nuevaFila);
 
         $('#filtro_estado_producto').trigger('change');
-        
+
         /* if ($.fn.select2) { $nuevoSelect.select2({ width: '100%' }); }*/
-        if ($.fn.select2) { 
-            nuevaFila.find('.select-sucursal-fila').select2({ 
-                theme: 'bootstrap-5', 
-                width: '100%', 
-                placeholder: "Selecciona destino..." 
+        if ($.fn.select2) {
+            nuevaFila.find('.select-sucursal-fila').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: "Selecciona destino..."
             });
         }
 
         uniqueIdCounter++;
-        recalcularNumeros(); 
+        recalcularNumeros();
         verificarBotonFondo(); // Verifica las 7 filas
     });
 
-    $(document).on('click', '.btn-eliminar-fila', function(e) {
+    $(document).on('click', '.btn-eliminar-fila', function (e) {
         e.preventDefault();
         if ($('#tab_logic tbody tr').length > 1) {
             $(this).closest('tr').remove();
@@ -379,21 +392,21 @@ $(document).ready(function() {
     });
 
     function recalcularNumeros() {
-        $('#tab_logic tbody tr').each(function(index) {
+        $('#tab_logic tbody tr').each(function (index) {
             $(this).find('td:first-child').text(index + 1);
         });
     }
 
-    $("#tax").on("keyup change", function() { calc_total(); });
+    $("#tax").on("keyup change", function () { calc_total(); });
 
     // >>> 6. FUNCIONES MATEMÁTICAS PRINCIPALES
     function calculateTotal(row) {
         let productSelect = row.find('.product-select');
         let prodId = productSelect.val();
-        
-        let pData = preciosProductos[prodId]; 
+
+        let pData = preciosProductos[prodId];
         let $puntosWrapper = row.find('.puntos-calibracion-wrapper');
-        
+
         if (!pData) {
             row.find('.price').val('');
             row.find('.total').val('');
@@ -406,7 +419,7 @@ $(document).ready(function() {
         }
 
         let ptos = pData.puntos_calibracion;
-        
+
         // Verificamos que no sea null, ni undefined, ni la palabra "null", ni un campo vacío
         if (ptos !== null && ptos !== undefined && String(ptos).trim() !== '' && String(ptos).trim() !== 'null') {
             let puntosFormateados = String(ptos).trim().replace(/\n/g, '<br>');
@@ -420,8 +433,8 @@ $(document).ready(function() {
         }
 
         let qty = parseFloat(row.find('.qty').val()) || 0;
-        let tipoPrecio = $('#tipo_precio').val(); 
-        
+        let tipoPrecio = $('#tipo_precio').val();
+
         // >>> LÓGICA DE SERVICIOS: Checar si el producto seleccionado es un servicio
         let optionSelected = productSelect.find('option:selected');
         let esServicio = optionSelected.data('servicio') === true || optionSelected.data('servicio') === 'true';
@@ -438,7 +451,7 @@ $(document).ready(function() {
         let incluirCalib = row.find('.chk-incluir').is(':checked');
         let desglosar = row.find('.chk-desglosar').is(':checked');
 
-        if(!tipoPrecio) {
+        if (!tipoPrecio) {
             row.find('.price').val('');
             row.find('.total').val('');
             row.find('.info-desglose').html('<small class="text-danger fw-bold">Selecciona el tipo de precio arriba</small>');
@@ -485,18 +498,18 @@ $(document).ready(function() {
 
     function calc_total() {
         var sub_total = 0;
-        $(".total").each(function() { sub_total += parseFloat($(this).val()) || 0; });
+        $(".total").each(function () { sub_total += parseFloat($(this).val()) || 0; });
         $("#sub_total").val(sub_total.toFixed(2));
-        
+
         var tax_percent = parseFloat($("#tax").val()) || 0;
         var tax_sum = (sub_total / 100) * tax_percent;
         $("#total_amount").val((sub_total + tax_sum).toFixed(2));
     }
 
     // >>> 7. ENVIAR EL FORMULARIO
-    $('#nueva_cotizacion').on('submit', function(e) {
-        e.preventDefault(); 
-        $('#tab_logic tbody tr').each(function() { calculateTotal($(this)); });
+    $('#nueva_cotizacion').on('submit', function (e) {
+        e.preventDefault();
+        $('#tab_logic tbody tr').each(function () { calculateTotal($(this)); });
 
         let btnSubmit = $(this).find('button[type="submit"]');
         let textoOriginal = btnSubmit.text();
@@ -512,7 +525,7 @@ $(document).ready(function() {
             type: 'POST',
             data: formData + '&action=crear',
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 if (response.status === 'success') {
                     alert(response.message);
                     window.location.href = 'finalizar_venta.php?id=' + response.id_cotizacion;
@@ -521,7 +534,7 @@ $(document).ready(function() {
                     btnSubmit.prop('disabled', false).text(textoOriginal);
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 alert("Ocurrió un error al guardar. Intenta nuevamente.");
                 btnSubmit.prop('disabled', false).text(textoOriginal);
             }
@@ -530,10 +543,10 @@ $(document).ready(function() {
 
     // >>> 8. BOTÓN VOLVER ARRIBA (SCROLL TO TOP) <<<
     let $btnTop = $('#btnBackToTop');
-    
+
     if ($btnTop.length) {
         // Detectar el scroll de la ventana
-        $(window).on('scroll', function() {
+        $(window).on('scroll', function () {
             if ($(this).scrollTop() > 200) {
                 $btnTop.css('display', 'flex');
             } else {
@@ -542,7 +555,7 @@ $(document).ready(function() {
         });
 
         // Acción al hacer clic
-        $btnTop.on('click', function() {
+        $btnTop.on('click', function () {
             // Usamos Vanilla JS dentro del evento de jQuery para un rendimiento más fluido
             window.scrollTo({
                 top: 0,

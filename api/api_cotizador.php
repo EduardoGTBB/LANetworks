@@ -50,8 +50,21 @@ try {
         $empresa_id = (int)($_POST['Empresa_id'] ?? 0);
         $usuario_id = (int)($_POST['Usuario_id'] ?? 0);
         $sucursal_id = (int)($_POST['Sucursal_id'] ?? 0);
-        $division    = trim($_POST['division'] ?? '');
-        $tipo_precio = trim($_POST['tipo_precio'] ?? '');
+        /* $division    = trim($_POST['division'] ?? ''); */
+        $division    = trim(filter_input(INPUT_POST, 'division', FILTER_SANITIZE_SPECIAL_CHARS) ?? '');
+
+        $es_cliente = isset($_SESSION['id_usuario_cliente']) && !empty($_SESSION['id_usuario_cliente']);
+        $id_user_admin = isset($_SESSION['id_user_admin']) ? (int)$_SESSION['id_user_admin'] : null;
+
+        if ($es_cliente) {
+            // Ignoramos completamente lo que mande el POST y forzamos por backend
+            $tipo_precio = 'Público';
+        } else {
+            // Si es un ejecutivo (admin), sanitizamos la entrada
+            $tipo_precio = trim(filter_input(INPUT_POST, 'tipo_precio', FILTER_SANITIZE_SPECIAL_CHARS) ?? '');
+        }
+
+        /* $tipo_precio = trim($_POST['tipo_precio'] ?? ''); */
 
         $categoria_raw = trim($_POST['categoria'] ?? 'TODOS');
         $categoria_limpia = 'Nuevo'; // Por defecto si mandan TODOS
@@ -99,8 +112,8 @@ try {
         }
 
 
-        $id_user_admin = isset($_SESSION['id_user_admin']) ? (int)$_SESSION['id_user_admin'] : null;
-        $es_cliente = isset($_SESSION['id_usuario_cliente']);
+        /* $id_user_admin = isset($_SESSION['id_user_admin']) ? (int)$_SESSION['id_user_admin'] : null;
+        $es_cliente = isset($_SESSION['id_usuario_cliente']); */
 
         // Datos principales
         $datosCotizacion = [
