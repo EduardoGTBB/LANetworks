@@ -265,11 +265,6 @@
                             <label class="form-label">Nombre Sucursal <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="nombre_sucursal" id="nombre_sucursal" placeholder="Ej. Narvarte Oriente">
                         </div>
-                        <!-- <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold">Plazas asociadas</label>
-                            <select class="form-control" name="Plaza_id[]" id="Plaza_id" multiple="multiple" data-select2-selector="status">
-                            </select>
-                        </div> -->
                     </div>
 
                     <div class="row bg-soft-light rounded p-3 mb-3 border border-light">
@@ -337,17 +332,13 @@
                     </div>
 
                     <hr class="my-3">
-                    <h6 class="fw-bold text-primary mb-3">Usuarios Permitidos</h6>
-                    <!-- <div class="mb-3">
-                        <label class="form-label">Selecciona quién puede solicitar entregas a esta sucursal:</label>
-                        <select class="form-control select2" name="usuarios[]" id="usuarios_multi" multiple="multiple" style="width: 100%;">
-                        </select>
-                    </div> -->
+
+                    <!-- <h6 class="fw-bold text-primary mb-3">Usuarios Permitidos</h6>
                     <div class="mb-3">
                         <label class="form-label text-muted small">Selecciona quién puede solicitar entregas a esta sucursal:</label>
                         <select class="form-control select2" name="usuarios[]" id="usuarios_multi" multiple="multiple" style="width: 100%;">
                         </select>
-                    </div>
+                    </div> -->
 
                     <div id="bloque_estatus_suc" class="row mt-3">
                         <div class="col-md-12">

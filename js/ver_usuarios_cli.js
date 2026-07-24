@@ -142,6 +142,8 @@ $(document).ready(function () {
         e.preventDefault();
         $('#formUsuario')[0].reset();
 
+        $('#Empresa_id').val('').trigger('change');
+
         $('.progress-bar div').css('background-color', '#e5e7eb');
         $('#usuario_password, #confirmar_password').attr('type', 'password');
 

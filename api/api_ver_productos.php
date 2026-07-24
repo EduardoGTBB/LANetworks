@@ -103,10 +103,10 @@ try {
                 'tipo_product'        => trim($_POST['tipo_product'] ?? 'N/A'),
                 'estado_product'      => trim($_POST['estado_product'] ?? 'N/A'),
                 'puntos_calibracion'  => trim($_POST['puntos_calibracion'] ?? ''),
-                'pf_equipo'           => (float)($_POST['pf_equipo'] ?? 0),
-                'pf_calib'            => (float)($_POST['pf_calib'] ?? 0),
-                'pp_equipo'           => (float)($_POST['pp_equipo'] ?? 0),
-                'pp_calib'            => (float)($_POST['pp_calib'] ?? 0),
+                'pf_equipo'           => (float)str_replace(',', '', $_POST['pf_equipo'] ?? '0'),
+                'pf_calib'            => (float)str_replace(',', '', $_POST['pf_calib'] ?? '0'),
+                'pp_equipo'           => (float)str_replace(',', '', $_POST['pp_equipo'] ?? '0'),
+                'pp_calib'            => (float)str_replace(',', '', $_POST['pp_calib'] ?? '0'),
                 'estatus'             => isset($_POST['estatus']) ? 'Y' : 'N',
                 'foto_product'        => $foto_final
             ];

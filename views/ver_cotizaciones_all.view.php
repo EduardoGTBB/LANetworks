@@ -98,7 +98,18 @@
                             <div class="card-header">
                                 <h5 class="card-title">Lista de cotizaciones</h5>
                                 <div class="card-header-action">
-                                    <div class="card-header-btn">
+                                    <!-- ✨ NUEVO FILTRO POR ESTATUS -->
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="feather-filter text-primary"></i>
+                                        <select id="filtro_estatus_tabla" class="form-select form-select-sm border-primary" style="width: 250px; cursor: pointer;">
+                                            <option value="">Mostrar todos los estatus</option>
+                                            <option value="Guardado">Guardado (En proceso)</option>
+                                            <option value="Por aprobar">Por aprobar (Revisión)</option>
+                                            <option value="Autorizada">Autorizadas</option>
+                                            <option value="No autorizada">No autorizadas</option>
+                                        </select>
+                                    </div>
+                                    <!-- <div class="card-header-btn">
                                         <div data-bs-toggle="tooltip" title="Delete">
                                             <a href="javascript:void(0);" class="avatar-text avatar-xs bg-danger" data-bs-toggle="remove"> </a>
                                         </div>
@@ -124,7 +135,7 @@
                                             <a href="javascript:void(0);" class="dropdown-item"><i class="feather-settings"></i>Settings</a>
                                             <a href="javascript:void(0);" class="dropdown-item"><i class="feather-life-buoy"></i>Tips & Tricks</a>
                                         </div>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                             <div class="card-body custom-card-action p-0">
@@ -144,13 +155,6 @@
                                         <tr>
                                             <td>
                                                 <div class="hstack gap-3">
-                                                    <!--<div class="avatar-image avatar-lg rounded">
-                                                                <img class="img-fluid" src="assets/images/gallery/icono_cot.jpg" alt="">
-                                                        </div>
-                                                        <div>
-                                                            <a href="javascript:void(0);" class="d-block">01</a>
-                                                            !--<span class="fs-12 text-muted">Electronics </span>--
-                                                        </div> -->
                                                     <div class="spinner-border text-primary mt-3" role="status">
                                                         <span class="visually-hidden">Cargando...</span>
                                                     </div>
@@ -301,7 +305,7 @@
                                     </div>
                                     <div class="mb-2" id="wrapper_info_plaza_edit" style="display: none;">
                                         <label class="form-label text-dark fw-bold"><i class="feather-map me-1 text-primary"></i>Plaza Asignada</label>
-                                        <select class="form-control border-primary bg-light shadow-sm" id="edit_info_plaza" disabled>
+                                        <select class="form-control border-primary bg-light shadow-sm" id="edit_info_plaza" name="Plaza_id" disabled>
                                             <option value="">Esperando sucursal...</option>
                                         </select>
                                     </div>
@@ -351,8 +355,8 @@
                                             <option value="">Esperando al solicitante...</option>
                                         </select>
                                     </div>
-                                    
-                                    
+
+
                                 </div>
                             </div>
                         </div>
@@ -375,15 +379,15 @@
 
                             <div class="table-responsive">
                                 <table class="table table-bordered overflow-hidden" id="tab_logic_edit">
-                                    <thead>
+                                    <thead class="bg-success">
                                         <tr class="single-item">
-                                            <th class="text-center wd-80">Ítem</th>
-                                            <th class="text-center wd-150">Cantidad</th>
-                                            <th class="text-center wd-400">Producto</th>
-                                            <th class="text-center wd-250 col-edit-multisucursal" style="display:none">Sucursal Destino</th>
-                                            <th class="text-center wd-250">Desglose de Calibración</th>
-                                            <th class="text-center wd-150">Precio U.</th>
-                                            <th class="text-center wd-200">Total</th>
+                                            <th class="text-center text-white wd-80">Ítem</th>
+                                            <th class="text-center text-white wd-150">Cantidad</th>
+                                            <th class="text-center text-white wd-400">Producto</th>
+                                            <th class="text-center text-white wd-250 col-edit-multisucursal" style="display:none">Sucursal Destino</th>
+                                            <th class="text-center text-white wd-250">Desglose de Calibración</th>
+                                            <th class="text-center text-white wd-150">Precio U.</th>
+                                            <th class="text-center text-white wd-200">Total</th>
                                         </tr>
                                     </thead>
                                     <tbody id="edit_tbody_productos">
@@ -404,13 +408,17 @@
                                 <small class="text-muted">Estas notas aparecerán en el PDF de la cotización.</small>
                             </div>
                         </div>
-                        
+
                         <div class="col-lg-4 mt-2">
                             <table class="table table-bordered">
                                 <tbody>
                                     <tr class="single-item">
                                         <th class="fs-10 text-dark text-uppercase">Sub Total</th>
-                                        <td class="w-50"><input type="number" name="sub_total" class="form-control border-0 bg-transparent p-0" id="edit_sub_total" readonly></td>
+                                        <td class="w-50">
+                                            <!-- <input type="number" name="sub_total" class="form-control border-0 bg-transparent p-0" id="edit_sub_total" readonly> -->
+                                            <input type="text" class="form-control border-0 bg-transparent p-0 text-end" id="edit_sub_total_visual" readonly placeholder="$0.00">
+                                            <input type="hidden" name="sub_total" id="edit_sub_total">
+                                        </td>
                                     </tr>
                                     <tr class="single-item">
                                         <th class="fs-10 text-dark text-uppercase">IVA</th>
@@ -423,7 +431,11 @@
                                     </tr>
                                     <tr class="single-item">
                                         <th class="fs-10 text-dark text-uppercase bg-gray-100">Total</th>
-                                        <td class="bg-gray-100 w-50"><input type="number" name="total_amount" id="edit_total_amount" class="form-control border-0 bg-transparent p-0 fw-700 text-dark" readonly></td>
+                                        <td class="bg-gray-100 w-50">
+                                            <!-- <input type="number" name="total_amount" id="edit_total_amount" class="form-control border-0 bg-transparent p-0 fw-700 text-dark" readonly> -->
+                                            <input type="text" id="edit_total_amount_visual" class="form-control border-0 bg-transparent p-0 fw-700 text-dark text-end fs-14" readonly placeholder="$0.00">
+                                            <input type="hidden" name="total_amount" id="edit_total_amount">
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -979,7 +991,7 @@
     <!--! BEGIN: Theme Customizer  !-->
     <!-- <script src="assets/js/theme-customizer-init.min.js"></script> -->
     <!--! END: Theme Customizer !-->
-    <script src="js/utils_sucursales.js"></script>
+    <!-- <script src="js/utils_sucursales.js"></script> -->
     <script src="js/ver_cotizaciones_all.js"></script>
 
     <!-- <script>

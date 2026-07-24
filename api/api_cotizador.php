@@ -50,8 +50,9 @@ try {
         $empresa_id = (int)($_POST['Empresa_id'] ?? 0);
         $usuario_id = (int)($_POST['Usuario_id'] ?? 0);
         $sucursal_id = (int)($_POST['Sucursal_id'] ?? 0);
-        /* $division    = trim($_POST['division'] ?? ''); */
-        $division    = trim(filter_input(INPUT_POST, 'division', FILTER_SANITIZE_SPECIAL_CHARS) ?? '');
+        $plaza_id = !empty($_POST['Plaza_id']) ? (int)$_POST['Plaza_id'] : null;
+        $division    = trim($_POST['division'] ?? '');
+        /* $division    = trim(filter_input(INPUT_POST, 'division', FILTER_SANITIZE_SPECIAL_CHARS) ?? ''); */
 
         $es_cliente = isset($_SESSION['id_usuario_cliente']) && !empty($_SESSION['id_usuario_cliente']);
         $id_user_admin = isset($_SESSION['id_user_admin']) ? (int)$_SESSION['id_user_admin'] : null;
@@ -68,7 +69,7 @@ try {
 
         $categoria_raw = trim($_POST['categoria'] ?? 'TODOS');
         $categoria_limpia = 'Nuevo'; // Por defecto si mandan TODOS
-        
+
         if ($categoria_raw === 'USADO') {
             $categoria_limpia = 'Usado';
         } elseif ($categoria_raw === 'CALIBRACION') {
@@ -119,6 +120,7 @@ try {
         $datosCotizacion = [
             'empresa_id'    => $empresa_id,
             'sucursal_id'   => $sucursal_id,
+            'plaza_id'      => $plaza_id,
             'id_user_admin' => $id_user_admin,
             'usuario_id'    => $usuario_id,
             'fecha_cot'     => $_POST['fecha_cot'] ?? date('Y-m-d'),
@@ -139,30 +141,27 @@ try {
         $unitarios     = $_POST['unitario'] ?? [];
         $totales       = $_POST['total'] ?? [];
         $desglosar_arr = $_POST['desglosar'] ?? [];
-        /* //& Prueba */
         $sucursales_fila = $_POST['sucursal_fila'] ?? [];
-        /* //& Prueba */
+        $equipos_ids   = $_POST['equipo_id'] ?? []; // ✨ NUEVA CAPTURA
+
         $detalles      = [];
 
         for ($i = 0; $i < count($productos_ids); $i++) {
             if (!empty($productos_ids[$i]) && (int)$cantidades[$i] > 0) {
-                /* //& Prueba */
                 $sucursal_destino = ($tipo_sucursal_flujo === 'multisucursal' && !empty($sucursales_fila[$i])) ? (int)$sucursales_fila[$i] : null;
                 if ($tipo_sucursal_flujo === 'multisucursal' && empty($sucursal_destino)) {
                     echo json_encode(['status' => 'error', 'message' => 'Falta seleccionar la Sucursal Destino para uno o más productos en la tabla.']);
                     exit;
                 }
-                /* //& Prueba */
 
                 $detalles[] = [
                     'producto_id'      => (int)$productos_ids[$i],
                     'cantidad'         => (int)$cantidades[$i],
-                    'precio_unitario'  => (float)$unitarios[$i],
+                    'precio_unitario'  => (float)str_replace(',', '', $unitarios[$i] ?? '0'),
                     'precio_extendido' => (float)$totales[$i],
                     'desglosar'        => $desglosar_arr[$i] ?? 'N',
-                    /* //& Prueba */
-                    'sucursal_destino_id' => $sucursal_destino
-                    /* //& Prueba */
+                    'sucursal_destino_id' => $sucursal_destino,
+                    'equipo_id'        => trim($equipos_ids[$i] ?? '')
                 ];
             }
         }
@@ -171,7 +170,7 @@ try {
             echo json_encode(['status' => 'error', 'message' => 'Debes agregar al menos un producto con cantidad válida.']);
             exit;
         }
-/* 
+        /* 
         $nuevo_folio = saveCotizacion($pdo, $datosCotizacion, $detalles);
         echo json_encode(['status' => 'success', 'message' => "La cotización #$nuevo_folio se guardó correctamente.", 'id_cotizacion' => $nuevo_folio]); */
         // 1. Guardamos la cotización y obtenemos su ID interno (Modelo)
@@ -186,8 +185,8 @@ try {
 
         // 4. Retornamos el JSON manteniendo el ID numérico para la redirección de JS
         echo json_encode([
-            'status'        => 'success', 
-            'message'       => "La cotización #$folio_mostrar se guardó correctamente.", 
+            'status'        => 'success',
+            'message'       => "La cotización #$folio_mostrar se guardó correctamente.",
             'id_cotizacion' => $id_cotizacion
         ]);
     }

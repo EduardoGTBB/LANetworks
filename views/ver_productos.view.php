@@ -275,7 +275,7 @@
                     <input type="hidden" name="action" id="producto_action" value="crear">
                     <input type="hidden" name="id_product" id="producto_id" value="">
                     <input type="hidden" name="foto_actual" id="foto_actual" value="">
-                    
+
                     <div class="row mb-4 align-items-center">
                         <div class="col-lg-4">
                             <label class="fw-semibold">Foto del Producto: </label>
@@ -320,16 +320,16 @@
                             <small class="text-muted">Escribe libremente los puntos o selecciona uno de tu historial dando doble clic en el campo.</small>
                         </div>
                     </div>
-                    
+
                     <div class="row bg-light p-3 rounded mb-3 border">
                         <h6 class="fw-bold text-primary"><i class="feather-tag me-2"></i>Precios FARMACIA</h6>
                         <div class="col-md-6">
                             <label class="form-label small">Precio Equipo</label>
-                            <input type="number" step="0.01" class="form-control" name="pf_equipo" id="pf_equipo" min="0" required>
+                            <input type="text" class="form-control precio-mask" name="pf_equipo" id="pf_equipo" placeholder="0.00" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small">Precio Calibración</label>
-                            <input type="number" step="0.01" class="form-control" name="pf_calib" id="pf_calib" min="0" required>
+                            <input type="text" class="form-control precio-mask" name="pf_calib" id="pf_calib" placeholder="0.00" required>
                         </div>
                     </div>
 
@@ -337,11 +337,11 @@
                         <h6 class="fw-bold text-success"><i class="feather-tag me-2"></i>Precios PÚBLICO</h6>
                         <div class="col-md-6">
                             <label class="form-label small">Precio Equipo</label>
-                            <input type="number" step="0.01" class="form-control" name="pp_equipo" id="pp_equipo" min="0" required>
+                            <input type="text" class="form-control precio-mask" name="pp_equipo" id="pp_equipo" placeholder="0.00" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small">Precio Calibración</label>
-                            <input type="number" step="0.01" class="form-control" name="pp_calib" id="pp_calib" min="0" required>
+                            <input type="text" class="form-control precio-mask" name="pp_calib" id="pp_calib" placeholder="0.00" required>
                         </div>
                     </div>
 

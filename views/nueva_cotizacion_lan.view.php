@@ -253,7 +253,7 @@
                                                     </div>
                                                     <div class="mb-2" id="wrapper_info_plaza" style="display: none;">
                                                         <label class="form-label text-dark fw-bold"><i class="feather-map me-1 text-success"></i>Plaza Asignada</label>
-                                                        <select class="form-control border-success bg-light shadow-sm" id="info_plaza" disabled>
+                                                        <select class="form-control border-success bg-light shadow-sm" id="info_plaza" name="Plaza_id" disabled>
                                                             <option value="">Esperando sucursal...</option>
                                                         </select>
                                                     </div>
@@ -275,20 +275,22 @@
                                                 </div>
                                                 <div class="table-responsive">
                                                     <table class="table table-bordered overflow-hidden" id="tab_logic">
-                                                        <thead>
+                                                        <thead class="bg-success">
                                                             <tr class="single-item">
-                                                                <th class="text-center wd-80">Item</th>
-                                                                <th class="text-center wd-150">Cantidad</th>
-                                                                <th class="text-center wd-400">Producto</th>
-                                                                <th class="text-center wd-250 col-multisucursal" style="display:none">Sucursal Destino</th>
-                                                                <th class="text-center wd-250">Desglose de Calibración</th>
-                                                                <th class="text-center wd-150">Precio unitario</th>
-                                                                <th class="text-center wd-200">Total</th>
+                                                                <th class="text-center text-white wd-80">Item</th>
+                                                                <th class="text-center text-white wd-150">Cantidad</th>
+                                                                <th class="text-center text-white wd-400">Producto</th>
+                                                                <th class="text-center text-white wd-250 col-multisucursal" style="display:none">Sucursal Destino</th>
+                                                                <th class="text-center text-white wd-250">Desglose de Calibración</th>
+                                                                <th class="text-center text-white wd-150">Precio unitario</th>
+                                                                <th class="text-center text-white wd-200">Total</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             <tr id="addr0">
-                                                                <td>1</td>
+                                                                <td class="text-center align-middle fila-numero">
+                                                                    <span class="num-fila-txt">1</span>
+                                                                </td>
                                                                 <td>
                                                                     <input type="number" name="cantidad_cot[]" placeholder="Cantidad" class="form-control qty" step="1" min="1" value="1">
                                                                 </td>
@@ -296,6 +298,7 @@
                                                                     <select class="form-control product-select" name="productos[]" required data-select2-selector="status">
                                                                         <option value="">Selecciona un producto...</option>
                                                                     </select>
+                                                                    <input type="text" name="equipo_id[]" class="form-control form-control-sm mt-2 equipo-id-input border-primary" placeholder="ID del equipo (Opcional)" style="display:none;">
                                                                     <div class="puntos-calibracion-wrapper mt-2" style="display:none;"></div>
                                                                 </td>
                                                                 <td class="col-multisucursal" style="display: none;">
@@ -304,7 +307,7 @@
                                                                     </select>
                                                                 </td>
                                                                 <!--//>>> INICIO -->
-                                                                <td class="align-middle">
+                                                                <!-- <td class="align-middle">
                                                                     <div class="modulo-config">
                                                                         <div class="form-check mb-2 d-flex justify-content-center align-items-center gap-2">
                                                                             <input class="form-check-input m-0 border-primary chk-incluir chk-config" type="checkbox" id="chk_incluir_0" checked style="cursor: pointer;">
@@ -321,14 +324,26 @@
                                                                         </div>
                                                                     </div>
                                                                     <div class="info-desglose text-center mt-2"></div>
+                                                                </td> -->
+                                                                <td class="align-middle text-center">
+                                                                    <div class="form-check d-flex justify-content-center align-items-center gap-2 mt-2">
+                                                                        <input type="hidden" name="desglosar[]" class="hidden-desglose" value="N">
+                                                                        <input class="form-check-input m-0 border-secondary chk-desglosar chk-config" type="checkbox" id="chk_desglosar_0" style="cursor: pointer;">
+                                                                        <label class="form-check-label fs-11 text-muted text-start" for="chk_desglosar_0" style="cursor: pointer; padding-top: 2px;">
+                                                                            Desglosar partida
+                                                                        </label>
+                                                                    </div>
+                                                                    <div class="info-desglose text-center mt-2"></div>
                                                                 </td>
                                                                 <!-- //<<< FIN -->
                                                                 <td>
-                                                                    <input type="number" name="unitario[]" placeholder="0.00" class="form-control price" step="any">
+                                                                    <!-- <input type="number" name="unitario[]" placeholder="0.00" class="form-control price" step="any"> -->
+                                                                    <input type="text" name="unitario[]" placeholder="0.00" class="form-control price precio-mask" autocomplete="off">
                                                                 </td>
                                                                 <td>
                                                                     <div class="d-flex align-items-center gap-2">
-                                                                        <input type="number" name="total[]" placeholder="0.00" class="form-control total" readonly="">
+                                                                        <input type="text" placeholder="$0.00" class="form-control total-visual fw-bold" readonly="">
+                                                                        <input type="hidden" name="total[]" class="total-hidden">
                                                                         <a href="#" class="text-danger btn-eliminar-fila" title="Eliminar fila" style="font-size: 1.2rem;"><i class="feather-trash-2"></i></a>
                                                                     </div>
                                                                 </td>
@@ -359,8 +374,13 @@
                                                         <tbody>
                                                             <tr class="single-item">
                                                                 <th class="fs-10 text-dark text-uppercase">Sub Total</th>
-                                                                <td class="w-50"><input type="number" name="sub_total" placeholder="0.00" class="form-control border-0 bg-transparent p-0" id="sub_total" readonly=""></td>
+                                                                <td class="w-50">
+                                                                    <!-- <input type="number" name="sub_total" placeholder="0.00" class="form-control border-0 bg-transparent p-0" id="sub_total" readonly=""> -->
+                                                                    <input type="text" class="form-control border-0 bg-transparent p-0 text-end" id="sub_total_visual" readonly placeholder="$0.00">
+                                                                    <input type="hidden" name="sub_total" id="sub_total_hidden">
+                                                                </td>
                                                             </tr>
+
                                                             <tr class="single-item">
                                                                 <th class="fs-10 text-dark text-uppercase">IVA</th>
                                                                 <td class="w-50">
@@ -370,13 +390,14 @@
                                                                     </div>
                                                                 </td>
                                                             </tr>
-                                                            <!--<tr class="single-item">
-                                                            <th class="fs-10 text-dark text-uppercase">Tax Amount</th>
-                                                            <td class="w-25"><input type="number" name="tax_amount" id="tax_amount" placeholder="0.00" class="form-control border-0 bg-transparent p-0" readonly=""></td>
-                                                        </tr>-->
+
                                                             <tr class="single-item">
                                                                 <th class="fs-10 text-dark text-uppercase bg-gray-100">Total<br><small>(Precio + IVA)</small></th>
-                                                                <td class="bg-gray-100 w-50"><input type="number" name="total_amount" id="total_amount" placeholder="0.00" class="form-control border-0 bg-transparent p-0 fw-700 text-dark" readonly=""></td>
+                                                                <td class="bg-gray-100 w-50">
+                                                                    <!-- <input type="number" name="total_amount" id="total_amount" placeholder="0.00" class="form-control border-0 bg-transparent p-0 fw-700 text-dark" readonly=""> -->
+                                                                    <input type="text" id="total_amount_visual" placeholder="$0.00" class="form-control border-0 bg-transparent p-0 fw-700 text-dark text-end fs-14" readonly>
+                                                                    <input type="hidden" name="total_amount" id="total_amount_hidden">
+                                                                </td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -949,7 +970,7 @@
         const PORTAL_USUARIO_ID = "<?php echo $_SESSION['id_usuario_cliente'] ?? ''; ?>";
     </script>
 
-    <script src="js/utils_sucursales.js"></script>
+    <!-- <script src="js/utils_sucursales.js"></script> -->
     <script src="js/cotizador.js"></script>
     <!--! END: Theme Customizer !-->
     <!-- <script>
@@ -1004,7 +1025,7 @@
             $("#total_amount").val((tax_sum + total).toFixed(2));
         }
     </script> -->
-    
+
 </body>
 
 

@@ -5,6 +5,7 @@ Pruebas/
 importar_plazas.php
 importar_sucursales.php
 importar_usuarios.php
+admin_importar_sucursales.php
 
 #CSV
 *.csv

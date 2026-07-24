@@ -8,6 +8,7 @@ define('DB_NAME','la_networks');
 define('DB_USER', 'root');
 define('DB_PASS','root');
 define('DB_CHARSET','utf8mb4');
+define('SUCURSAL_MATRIZ_NOMBRE', 'SUCURSAL (Sin Sucursal)');
 
 // Configuración de PDO
 

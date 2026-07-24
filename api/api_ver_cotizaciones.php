@@ -37,7 +37,7 @@ try {
             if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin') {
                 echo json_encode(obtenerTodasLasCotizaciones($pdo));
             } else {
-                echo json_encode([]); 
+                echo json_encode([]);
             }
         } elseif ($action === 'get_cotizacion') {
             $id = (int)($_GET['id'] ?? 0);
@@ -60,6 +60,7 @@ try {
             $empresa_id    = (int)($_POST['Empresa_id'] ?? 0);
             $usuario_id    = (int)($_POST['Usuario_id'] ?? 0);
             $sucursal_id   = (int)($_POST['Sucursal_id'] ?? 0);
+            $plaza_id = !empty($_POST['Plaza_id']) ? (int)$_POST['Plaza_id'] : null;
 
             $is_multi      = ($_POST['is_multisucursal'] ?? '0') === '1';
 
@@ -87,14 +88,14 @@ try {
             }
 
             // ✨ AQUÍ CAPTURAMOS EL RASTREADOR OCULTO
-            $ids_detalles  = $_POST['id_detalle'] ?? []; 
-            
+            $ids_detalles  = $_POST['id_detalle'] ?? [];
             $productos_ids = $_POST['productos'] ?? [];
             $cantidades    = $_POST['cantidad_cot'] ?? [];
             $unitarios     = $_POST['unitario'] ?? [];
             $totales       = $_POST['total'] ?? [];
             $desglosar_arr = $_POST['desglosar'] ?? [];
             $sucursales_fila = $_POST['sucursal_fila'] ?? [];
+            $equipos_ids   = $_POST['equipo_id'] ?? [];
 
             $detalles = [];
 
@@ -111,10 +112,11 @@ try {
                         'id_detalle'       => (int)($ids_detalles[$i] ?? 0), // ✨ LO INYECTAMOS AL ARRAY
                         'producto_id'      => (int)$productos_ids[$i],
                         'cantidad'         => (int)$cantidades[$i],
-                        'precio_unitario'  => (float)$unitarios[$i],
+                        'precio_unitario'  => (float)str_replace(',', '', $unitarios[$i] ?? '0'),
                         'precio_extendido' => (float)$totales[$i],
-                        'desglosar'        => $desglosar_arr[$i] ?? 'N', 
-                        'sucursal_destino_id' => $sucursal_destino
+                        'desglosar'        => $desglosar_arr[$i] ?? 'N',
+                        'sucursal_destino_id' => $sucursal_destino,
+                        'equipo_id'        => trim($equipos_ids[$i] ?? '')
                     ];
                 }
             }
@@ -138,6 +140,7 @@ try {
                 'empresa_id'    => $empresa_id,
                 'usuario_id'    => $usuario_id,
                 'sucursal_id'   => $sucursal_id,
+                'plaza_id'      => $plaza_id,
                 'importe_total' => (float)($_POST['sub_total'] ?? 0),
                 'precio_iva'    => (float)($_POST['total_amount'] ?? 0),
                 'division'      => trim($_POST['division'] ?? ''),
@@ -153,7 +156,7 @@ try {
             $id = (int)($_POST['id_cotizacion'] ?? 0);
 
             $cotizacion_actual = editarCotizacionporID($pdo, $id);
-            
+
             if ($cotizacion_actual) {
                 $estatus_actual = $cotizacion_actual['estatus'];
 
@@ -175,4 +178,3 @@ try {
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Error BD: ' . $e->getMessage()]);
 }
-?>

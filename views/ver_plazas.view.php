@@ -430,6 +430,14 @@
 
                     <div class="accordion" id="contenedor_domicilios">
                     </div>
+                    <!-- ✨ NUEVA SECCIÓN: USUARIOS PERMITIDOS EN LA PLAZA -->
+                    <hr class="my-3">
+                    <h6 class="fw-bold text-primary mb-3"><i class="feather-users me-2"></i>Usuarios Permitidos</h6>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Selecciona quién puede visualizar y solicitar entregas a esta plaza:</label>
+                        <select class="form-control select2" name="usuarios[]" id="usuarios_multi" multiple="multiple" style="width: 100%;">
+                        </select>
+                    </div>
 
                     <div id="bloque_estatus_suc" class="row mt-3">
                         <div class="col-md-12">

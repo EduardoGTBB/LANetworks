@@ -16,7 +16,7 @@
         <!-- [ Footer ] end -->
         <?php if($ver_whatsapp == 'Activado'): ?>
             <div id="back-top" >
-                <a href="https://api.whatsapp.com/send?phone=525639705165&text=%C2%A1Hola!%20Quisiera%20información%20sobre%20LA%20Networks,%20busco%20una%20cotización." 
+                <a href="https://api.whatsapp.com/send?phone=525639705165&text=Necesito%20ayuda%20con%20el%20cotizador" 
                     target="_blank">
                     <i class="fa-brands fa-whatsapp mx-1"></i>
                 </a>
