@@ -480,14 +480,46 @@ if ($es_multisucursal) {
                                         </div>
                                     <?php endif; ?>
 
-                                    <?php
+                                    <!-- ?php
                                     // ✨ Desgloses solo visibles si NO es laboratorio
                                     if (!$es_laboratorio && isset($d['desglosar']) && $d['desglosar'] === 'Y'):
                                         $pEquipo = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_equipo'] : $d['pp_equipo'];
                                         $pCalib = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_calibracion'] : $d['pp_calibracion'];
                                         $tEquipo = $pEquipo * $d['cantidad'];
                                         $tCalib  = $pCalib * $d['cantidad'];
+                                    ?> -->
+                                    <?php
+                                    // ✨ Desgloses solo visibles si NO es laboratorio
+                                    if (!$es_laboratorio && isset($d['desglosar']) && $d['desglosar'] === 'Y'):
+                                        $pEquipo = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_equipo'] : $d['pp_equipo'];
+                                        $pCalib = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_calibracion'] : $d['pp_calibracion'];
+                                        
+                                        $pAntesIva = $pEquipo + $pCalib;
+
+                                        // ✨ MAGIA: Si la cotización es de equipos usados, invertimos los valores
+                                        if (isset($cot['categoria']) && $cot['categoria'] === 'Usado') {
+                                            $pEquipo = 0;
+                                            $pCalib = $pAntesIva;
+                                        }
+
+                                        $tEquipo = $pEquipo * $d['cantidad'];
+                                        $tCalib  = $pCalib * $d['cantidad'];
                                     ?>
+
+                                        <!-- <div style="margin-top: 6px;">
+                                            ?php if ($d['cantidad'] > 1): ?>
+                                                <span style="color: #0d6efd; font-weight: bold; font-size: 10px; display: block;">
+                                                    Desglose Total (?php echo $d['cantidad']; ?> pz): Equipo ($?php echo number_format((float)$tEquipo, 2); ?>) + Calibración ($?php echo number_format((float)$tCalib, 2); ?>)
+                                                </span>
+                                                <span style="color: #777; font-size: 9px; display: block; margin-top: 2px;">
+                                                    <i>* Unitario (c/u): Equipo $?php echo number_format((float)$pEquipo, 2); ?> + Calib. $?php echo number_format((float)$pCalib, 2); ?></i>
+                                                </span>
+                                            ?php else: ?>
+                                                <span style="color: #0d6efd; font-weight: bold; font-size: 10px; display: block;">
+                                                    Desglose: Equipo ($?php echo number_format((float)$pEquipo, 2); ?>) + Calibración ($?php echo number_format((float)$pCalib, 2); ?>)
+                                                </span>
+                                            ?php endif; ?>
+                                        </div> -->
                                         <div style="margin-top: 6px;">
                                             <?php if ($d['cantidad'] > 1): ?>
                                                 <span style="color: #0d6efd; font-weight: bold; font-size: 10px; display: block;">
@@ -526,12 +558,13 @@ if ($es_multisucursal) {
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
-                    <!-- ✨ SUMATORIA DE EQUIPOS EN EL FOOTER -->
-                    <tfoot style="background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                    <tfoot style="-webkit-print-color-adjust: exact; print-color-adjust: exact;">
                         <tr>
-                            <td class="text-center fw-bold fs-6 border-2 border-dark" style="color: #000;"><?php echo $sumatoria_equipos; ?></td>
-                            <td colspan="<?php echo $es_laboratorio ? '2' : '4'; ?>" class="text-start fw-bold ps-3 border-2 border-dark" style="color: #000;">
-                                ◄ TOTAL DE EQUIPOS COTIZADOS
+                            <td class="text-center align-middle" style="background-color: #e6f7ff !important; color: #00a3f0 !important; border: 2px solid #00a3f0 !important; font-size: 13px; font-weight: 900;">
+                                <?php echo $sumatoria_equipos; ?>
+                            </td>
+                            <td colspan="<?php echo $es_laboratorio ? '2' : '4'; ?>" class="text-start align-middle" style="background-color: #e6f7ff !important; color: #00a3f0 !important; border: 2px solid #00a3f0 !important; font-size: 13px; font-weight: 900;">
+                                ◄ PIEZA(S) TOTALES EN ESTA COTIZACIÓN
                             </td>
                         </tr>
                     </tfoot>

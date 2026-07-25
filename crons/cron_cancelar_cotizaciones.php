@@ -1,15 +1,27 @@
 <?php
-    require __DIR__ . '/../admin_config.php';
-    require __DIR__ . '/../admin_funciones.php';
+declare(strict_types=1);
 
-    $conexion = conexion($bd_config);
-    if(!$conexion){
-        error_log("[" . date('Y-m-d H:i:s') . "] CRON ERROR: Sin conexión BD en cancelación.");
-        exit; // Usamos exit en lugar de header() para scripts de consola
-    }
+// 1. Requerir los archivos correctos del sistema actual
+require __DIR__ . '/../api/config.php'; 
+require __DIR__ . '/../lib/funciones_db.php';
 
-    // Ejecuta la función (que crearemos en admin_funciones.php)
-    $afectadas = cancelarCotizacionesAntiguas($conexion, 1);
-    // $afectadas = cancelarCotizacionesAntiguas($conexion, 30);
-    echo "CRON OK: $afectadas cotizaciones canceladas.";
+// 2. config.php genera automáticamente la variable $pdo
+if(!isset($pdo)){
+    error_log("[" . date('Y-m-d H:i:s') . "] CRON ERROR: Sin conexión BD en cancelación.");
+    exit("Error de conexión a la BD.\n");
+}
+
+try {
+    // 3. Ejecuta la función pasando el objeto $pdo
+    // El segundo parámetro son los días de tolerancia (ej. 30 días)
+    $afectadas = cancelarCotizacionesAntiguas($pdo, 1); 
+    
+    $mensaje = "CRON OK: $afectadas cotizaciones expiradas fueron canceladas.";
+    echo $mensaje . "\n";
+    error_log("[" . date('Y-m-d H:i:s') . "] " . $mensaje);
+
+} catch (Exception $e) {
+    error_log("[" . date('Y-m-d H:i:s') . "] CRON EXCEPTION: " . $e->getMessage());
+    echo "CRON ERROR: Revisa el log de errores.\n";
+}
 ?>
