@@ -3,10 +3,17 @@
 /* Archivo para la conexión a la BD.*/
 declare(strict_types=1);
 
+//Datos Servidor
 define('DB_HOST','localhost');
+define('DB_NAME','lan_cotizador');
+define('DB_USER', 'lan_cotizador');
+define('DB_PASS','@13jNzj27');
+
+//Datos Local
+/* define('DB_HOST','localhost');
 define('DB_NAME','la_networks');
 define('DB_USER', 'root');
-define('DB_PASS','root');
+define('DB_PASS','root'); */
 define('DB_CHARSET','utf8mb4');
 define('SUCURSAL_MATRIZ_NOMBRE', 'SIN SUCURSAL');
 
