@@ -10,7 +10,6 @@
         exit;
     }
 
-    // 🛡️ CORRECCIÓN: Quitamos el parámetro (7)
     // Pedimos al sistema TODO el universo de clientes con pendientes
     $clientes_pendientes = obtenerClientesCotizacionesPendientes($pdo);
     

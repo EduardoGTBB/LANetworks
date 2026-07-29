@@ -9,7 +9,6 @@
         exit;
     }
 
-    // 🛡️ CORRECCIÓN: Quitamos el parámetro numérico (2 o 7)
     // El VPS ya ejecuta esto semanalmente, así que pedimos TODO lo pendiente.
     $empleados_pendientes = obtenerEmpleadosCotizacionesPendientes($pdo);
     

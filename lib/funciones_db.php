@@ -429,19 +429,27 @@ function cancelarCotizacionesAntiguas(PDO $conexion, int $dias_limite): int {
 
 // |------Inicio_Obtiene_empleados_LAN_con_cotizaciones_pendientes_(con menos de X días)------
 function obtenerEmpleadosCotizacionesPendientes(PDO $pdo): array {
-    // Solo buscamos cotizaciones en estatus pendiente, sin importar la fecha
-    $sql = "SELECT 
-                u.email, 
-                u.nombre, 
-                COUNT(c.id) as total_pendientes
-            FROM usuarios_admin u
-            JOIN cotizacion c ON u.id = c.Usuario_admin_id
-            WHERE c.estatus IN ('Guardado', 'Por Aprobar')
-            GROUP BY u.id, u.email, u.nombre";
-            
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute();
-    return $stmt->fetchAll();
+    try {
+        // 🛡️ Solo buscamos cotizaciones en estatus pendiente, sin importar la fecha
+        $sql = "SELECT 
+                    u.email, 
+                    u.nombre, 
+                    COUNT(c.id_cotizacion) as total_pendientes
+                FROM usuarios_admin u
+                JOIN cotizacion c ON u.id_user_admin = c.Usuario_admin_id
+                WHERE c.estatus IN ('Guardado', 'Por Aprobar')
+                GROUP BY u.id_user_admin, u.email, u.nombre";
+                
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+    } catch (PDOException $e) {
+        // 🛡️ Ciberseguridad: Registro interno sin exponer la BD al usuario
+        error_log("Error BD obtenerEmpleadosCotizacionesPendientes: " . $e->getMessage());
+        return [];
+    }
 }
 
 // |------Inicio_Obtiene_Clientes_B2B_con_cotizaciones pendientes (con menos de X días).------
@@ -818,7 +826,7 @@ function verificarUsuarioClienteExistente(PDO $pdo, string $correo, int $id_usua
 function obtenerAllSucursales(PDO $pdo): array
 {
     $sql = "SELECT s.*, e.razon_social,
-                   (SELECT GROUP_CONCAT(p.nombre_plaza SEPARATOR ', ') 
+                    (SELECT GROUP_CONCAT(p.nombre_plaza SEPARATOR ', ') 
                     FROM sucursal_plaza sp 
                     JOIN plazas p ON sp.Plaza_id = p.id_plaza 
                     WHERE sp.Sucursal_id = s.id_sucursal) as nombres_plazas
