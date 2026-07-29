@@ -19,35 +19,35 @@ if (!empty($clientes_pendientes)) {
         $mail = new PHPMailer(true);
 
         try {
-            // ⚙️ Configuración del Servidor SMTP
+            // ⚙️ Configuración del Servidor SMTP (Usando Constantes)
             $mail->isSMTP();
             $mail->SMTPDebug  = 0;
-            $mail->Host       = $smtp_host;
+            $mail->Host       = SMTP_HOST;
             $mail->Port       = 465;
             $mail->SMTPSecure = 'ssl';
             $mail->SMTPAuth   = true;
-            $mail->Username   = $smtp_user;
-            $mail->Password   = $smtp_pass;
+            $mail->Username   = SMTP_USER;
+            $mail->Password   = SMTP_PASS;
             $mail->CharSet    = 'UTF-8';
 
             // 👤 Destinatario e Información del Cliente B2B
             $destinatario = $cliente['email'];
             $empresa = $cliente['razon_social'];
 
-            $mail->setFrom($smtp_user, 'LA Networks B2B');
-            $mail->addAddress($destinatario, $empresa); // Envío individual, protege la privacidad (GDPR)
+            $mail->setFrom(SMTP_USER, 'LA Networks B2B');
+            $mail->addAddress($destinatario, $empresa);
 
             // ✉️ Contenido del Correo Comercial
             $mail->isHTML(true);
             $mail->Subject = "Notificación de Cotizaciones Pendientes - LA NETWORKS";
             
-            $mail->Body = "
+            // Usando Sintaxis HEREDOC nativa de PHP para HTML limpio
+            $mail->Body = <<<HTML
                 <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; padding: 20px; border-radius: 8px;'>
                     <div style='text-align: center; margin-bottom: 20px;'>
-                        <!-- Reemplazar con la URL real de tu logotipo -->
-                        <img src='https://tudominio.com/assets/images/logo.png' alt='LA Networks' style='max-width: 150px;'>
+                        <img src='https://lupware.com/assets/images/logo.png' alt='LA Networks' style='max-width: 150px;'>
                     </div>
-                    <h2 style='color: #28a745;'>Estimado cliente ($empresa),</h2>
+                    <h2 style='color: #28a745;'>Estimado cliente ({$empresa}),</h2>
                     <p>Esperamos que se encuentre excelente.</p>
                     <p>Le informamos que tiene cotizaciones en su portal B2B que se encuentran en proceso y están próximas a su fecha de expiración.</p>
                     <p>Le invitamos a revisar su panel para autorizarlas o realizar las modificaciones necesarias y así garantizar los precios y disponibilidad de los equipos.</p>
@@ -58,14 +58,14 @@ if (!empty($clientes_pendientes)) {
                     <hr style='border: none; border-top: 1px solid #eee; margin-top: 30px;'>
                     <small style='color: #999; text-align: center; display: block;'>LA Networks & Smart Technologies SA de CV</small>
                 </div>
-            ";
+HTML;
 
             // 🚀 Ejecutar envío
             $mail->send();
-            echo "CRON OK: Recordatorio enviado al cliente B2B -> $destinatario \n";
+            echo "CRON OK: Recordatorio enviado al cliente B2B -> {$destinatario}\n";
 
         } catch (Exception $e) {
-            error_log("[" . date('Y-m-d H:i:s') . "] Error al enviar correo al cliente $destinatario: {$mail->ErrorInfo}");
+            error_log("[" . date('Y-m-d H:i:s') . "] Error al enviar correo al cliente {$destinatario}: {$mail->ErrorInfo}");
         }
     }
 }

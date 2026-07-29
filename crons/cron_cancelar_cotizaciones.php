@@ -14,7 +14,7 @@ if(!isset($pdo)){
 try {
     // 3. Ejecuta la función pasando el objeto $pdo
     // El segundo parámetro son los días de tolerancia (ej. 30 días)
-    $afectadas = cancelarCotizacionesAntiguas($pdo, 1); 
+    $afectadas = cancelarCotizacionesAntiguas($pdo, 30); 
     
     $mensaje = "CRON OK: $afectadas cotizaciones expiradas fueron canceladas.";
     echo $mensaje . "\n";

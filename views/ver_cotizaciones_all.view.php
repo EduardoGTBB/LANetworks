@@ -105,8 +105,8 @@
                                             <option value="">Mostrar todos los estatus</option>
                                             <option value="Guardado">Guardado (En proceso)</option>
                                             <option value="Por aprobar">Por aprobar (Revisión)</option>
-                                            <option value="Autorizada">Autorizadas</option>
-                                            <option value="No autorizada">No autorizadas</option>
+                                            <option value="Autorizada">Autorizadas (Aprobadas)</option>
+                                            <option value="No autorizada">No autorizadas (Rechazadas)</option>
                                         </select>
                                     </div>
                                     <!-- <div class="card-header-btn">
