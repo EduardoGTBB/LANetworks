@@ -10,7 +10,7 @@
     }
 
     // Obtenemos empleados con cotizaciones pendientes
-    $empleados_pendientes = obtenerEmpleadosCotizacionesPendientes($pdo, 2);
+    $empleados_pendientes = obtenerEmpleadosCotizacionesPendientes($pdo, 7);
     
     if(!empty($empleados_pendientes)){
         require __DIR__ . '/../mails/mail_recordatorio_empleados.php';

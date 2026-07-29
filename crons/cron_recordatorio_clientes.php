@@ -11,7 +11,7 @@
     }
 
     // Obtenemos clientes con cotizaciones pendientes de hace 2 días o más
-    $clientes_pendientes = obtenerClientesCotizacionesPendientes($pdo, 2);
+    $clientes_pendientes = obtenerClientesCotizacionesPendientes($pdo, 7);
     
     if(!empty($clientes_pendientes)){
         require __DIR__ . '/../mails/mail_recordatorio_clientes.php';
