@@ -428,43 +428,39 @@ function cancelarCotizacionesAntiguas(PDO $conexion, int $dias_limite): int {
 }
 
 // |------Inicio_Obtiene_empleados_LAN_con_cotizaciones_pendientes_(con menos de X días)------
-function obtenerEmpleadosCotizacionesPendientes(PDO $pdo, int $dias_limite): array {
-    try {
-        // Enlazamos con usuarios_admin y mapeamos los campos a 'email' y 'nombre'
-        $sql = "SELECT ua.id_user_admin, ua.usuario_lan AS email, ua.admin_nombre AS nombre, COUNT(c.id_cotizacion) as total_pendientes 
-                FROM usuarios_admin ua
-                INNER JOIN cotizacion c ON ua.id_user_admin = c.Usuario_admin_id
-                WHERE c.estatus IN ('Guardado', 'Por aprobar') 
-                AND c.fecha_cot <= DATE_SUB(NOW(), INTERVAL :dias DAY)
-                GROUP BY ua.id_user_admin";
-                
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':dias', $dias_limite, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        error_log("Error BD obtenerEmpleadosCotizacionesPendientes: " . $e->getMessage());
-        return [];
-    }
+function obtenerEmpleadosCotizacionesPendientes(PDO $pdo): array {
+    // Solo buscamos cotizaciones en estatus pendiente, sin importar la fecha
+    $sql = "SELECT 
+                u.email, 
+                u.nombre, 
+                COUNT(c.id) as total_pendientes
+            FROM usuarios_admin u
+            JOIN cotizacion c ON u.id = c.Usuario_admin_id
+            WHERE c.estatus IN ('Guardado', 'Por Aprobar')
+            GROUP BY u.id, u.email, u.nombre";
+            
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll();
 }
 
 // |------Inicio_Obtiene_Clientes_B2B_con_cotizaciones pendientes (con menos de X días).------
-function obtenerClientesCotizacionesPendientes(PDO $pdo, int $dias_limite): array {
+function obtenerClientesCotizacionesPendientes(PDO $pdo): array {
     try {
-        // Enlazamos con usuarios (clientes) y empresa, mapeando correo a 'email'
+        // 🛡️ CORRECCIÓN: Consulta limpia sin filtros de fecha
         $sql = "SELECT u.id_usuario, u.correo AS email, e.razon_social, COUNT(c.id_cotizacion) as total_pendientes 
                 FROM usuarios u
                 INNER JOIN cotizacion c ON u.id_usuario = c.Usuario_empresa_id
                 INNER JOIN empresa e ON u.Empresa_id = e.id_empresa
                 WHERE c.estatus IN ('Guardado', 'Por aprobar') 
-                AND c.fecha_cot <= DATE_SUB(NOW(), INTERVAL :dias DAY)
                 GROUP BY u.id_usuario";
                 
         $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':dias', $dias_limite, PDO::PARAM_INT);
+        // Ya no necesitamos bindParam porque la consulta es directa y 100% segura
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
+        // Log de errores seguro (Ciberseguridad)
         error_log("Error BD obtenerClientesCotizacionesPendientes: " . $e->getMessage());
         return [];
     }
