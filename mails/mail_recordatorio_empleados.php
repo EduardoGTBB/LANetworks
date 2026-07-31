@@ -8,9 +8,9 @@ if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) {
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require_once __DIR__ . '/../PHPMailer/src/Exception.php';
-require_once __DIR__ . '/../PHPMailer/src/PHPMailer.php';
-require_once __DIR__ . '/../PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/PHPMailer/src/Exception.php';
+require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
+require_once __DIR__ . '/PHPMailer/src/SMTP.php';
 
 if (!empty($empleados_pendientes)) {
     
@@ -48,7 +48,7 @@ if (!empty($empleados_pendientes)) {
                     <p>Te invitamos a ingresar al sistema para darles seguimiento, gestionar las direcciones o cancelarlas si ya no están vigentes.</p>
                     <br>
                     <div style='text-align: center;'>
-                        <a href='https://tudominio.com/ver_cotizaciones.php' style='background-color: #0d6efd; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Ir a Mis Cotizaciones</a>
+                        <a href='https://cotizador.la-analitical-mx.net/ver_cotizaciones.php' style='background-color: #0d6efd; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Ir a Mis Cotizaciones</a>
                     </div>
                     <hr style='border: none; border-top: 1px solid #eee; margin-top: 30px;'>
                     <small style='color: #999;'>Este es un mensaje automático del sistema, por favor no respondas a este correo.</small>

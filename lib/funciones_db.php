@@ -427,18 +427,18 @@ function cancelarCotizacionesAntiguas(PDO $conexion, int $dias_limite): int {
     }
 }
 
-// |------Inicio_Obtiene_empleados_LAN_con_cotizaciones_pendientes_(con menos de X días)------
+// |------Inicio_Obtiene_empleados_LAN_con_cotizaciones_pendientes------
 function obtenerEmpleadosCotizacionesPendientes(PDO $pdo): array {
     try {
-        // 🛡️ Solo buscamos cotizaciones en estatus pendiente, sin importar la fecha
+        // 🛡️ CORRECCIÓN: Mapeo de columnas reales usando Alias (AS)
         $sql = "SELECT 
-                    u.email, 
-                    u.nombre, 
+                    u.usuario_lan AS email, 
+                    u.admin_nombre AS nombre, 
                     COUNT(c.id_cotizacion) as total_pendientes
                 FROM usuarios_admin u
                 JOIN cotizacion c ON u.id_user_admin = c.Usuario_admin_id
-                WHERE c.estatus IN ('Guardado', 'Por Aprobar')
-                GROUP BY u.id_user_admin, u.email, u.nombre";
+                WHERE c.estatus IN ('Guardado', 'Por aprobar')
+                GROUP BY u.id_user_admin, u.usuario_lan, u.admin_nombre";
                 
         $stmt = $pdo->prepare($sql);
         $stmt->execute();
@@ -446,34 +446,38 @@ function obtenerEmpleadosCotizacionesPendientes(PDO $pdo): array {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
         
     } catch (PDOException $e) {
-        // 🛡️ Ciberseguridad: Registro interno sin exponer la BD al usuario
+        // 🛡️ Ciberseguridad: Registro interno sin exponer la BD en la interfaz
         error_log("Error BD obtenerEmpleadosCotizacionesPendientes: " . $e->getMessage());
         return [];
     }
 }
 
-// |------Inicio_Obtiene_Clientes_B2B_con_cotizaciones pendientes (con menos de X días).------
+// |------Inicio_Obtiene_Clientes_B2B_con_cotizaciones pendientes------
 function obtenerClientesCotizacionesPendientes(PDO $pdo): array {
     try {
-        // 🛡️ CORRECCIÓN: Consulta limpia sin filtros de fecha
-        $sql = "SELECT u.id_usuario, u.correo AS email, e.razon_social, COUNT(c.id_cotizacion) as total_pendientes 
+        // 🛡️ CORRECCIÓN: Mapeo de alias (AS) y agrupación estricta para MySQL 5.7+
+        $sql = "SELECT 
+                    u.id_usuario, 
+                    u.correo AS email, 
+                    e.razon_social, 
+                    COUNT(c.id_cotizacion) as total_pendientes 
                 FROM usuarios u
                 INNER JOIN cotizacion c ON u.id_usuario = c.Usuario_empresa_id
                 INNER JOIN empresa e ON u.Empresa_id = e.id_empresa
                 WHERE c.estatus IN ('Guardado', 'Por aprobar') 
-                GROUP BY u.id_usuario";
+                GROUP BY u.id_usuario, u.correo, e.razon_social";
                 
         $stmt = $pdo->prepare($sql);
-        // Ya no necesitamos bindParam porque la consulta es directa y 100% segura
         $stmt->execute();
+        
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
     } catch (PDOException $e) {
-        // Log de errores seguro (Ciberseguridad)
+        // 🛡️ Ciberseguridad: Log seguro del error
         error_log("Error BD obtenerClientesCotizacionesPendientes: " . $e->getMessage());
         return [];
     }
 }
-
 // >>> ==============================================
 // >>>       FIN: FUNCIONES COTIZACIONES
 // >>> ============================================== 
