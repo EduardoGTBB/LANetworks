@@ -14,18 +14,7 @@
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="inicio.php">Inicio</a></li>
                             <li class="breadcrumb-item">Cotizaciones</li>
-                            <!-- ?php
-                                // Buscamos el folio especial en la base de datos usando el ID
-                                $stmtF = $pdo->prepare("SELECT folio_especial FROM cotizacion WHERE id_cotizacion = ?");
-                                $stmtF->execute([$id_cotizacion]);
-                                $folioEspecial = $stmtF->fetchColumn();
-                                
-                                // Si tiene folio con letras (ej. 00004-U) lo usa, si no, formatea el ID a 5 dígitos
-                                $folioAMostrar = $folioEspecial ? $folioEspecial : str_pad((string)$id_cotizacion, 5, '0', STR_PAD_LEFT);
-                            ?> -->
                             <li class="breadcrumb-item">Direcciones Cotización <strong id="breadcrumb_folio">#Cargando...</strong></li>
-                            <!-- <li class="breadcrumb-item">Direcciones Cotización <strong>#?php echo $folioAMostrar; ?></strong></li> -->
-                            <!-- <li class="breadcrumb-item">Direcciones Cotizacion #?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></li> -->
                         </ul>
                         <!-- <h5 class="m-b-10">Formalizar Venta #?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></h5> -->
                     </div>
@@ -96,6 +85,8 @@
                                     <div class="row">
                                         <div class="col-12 col-sm-6 mb-3"><span>Calle y Número:</span><input type="text" class="form-control" id="cert_gral_calle"></div>
                                         <div class="col-12 col-sm-6 mb-3"><span>Colonia:</span><input type="text" class="form-control" id="cert_gral_colonia"></div>
+                                        <div class="col-12 col-sm-6 mb-3"><span>Entre Calle:</span><input type="text" class="form-control" id="cert_gral_entre" placeholder="Entre calle"></div>
+                                        <div class="col-12 col-sm-6 mb-3"><span>Y Calle:</span><input type="text" class="form-control" id="cert_gral_y" placeholder="Y calle"></div>
                                         <div class="col-12 col-sm-6 mb-3"><span>Localidad:</span><input type="text" class="form-control" id="cert_gral_localidad"></div>
                                         <div class="col-12 col-sm-6 mb-3"><span>Municipio:</span><input type="text" class="form-control" id="cert_gral_municipio"></div>
                                         <div class="col-12 col-sm-6 mb-2"><span>Estado:</span><input type="text" class="form-control" id="cert_gral_estado"></div>
@@ -139,6 +130,10 @@
                                             <span>Colonia:</span>
                                             <input type="text" class="form-control mb-3" id="envio_gral_colonia" placeholder="Colonia">
                                         </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 col-sm-6 mb-3"><span>Entre Calle:</span><input type="text" class="form-control" id="envio_gral_entre" placeholder="Entre calle"></div>
+                                        <div class="col-12 col-sm-6 mb-3"><span>Y Calle:</span><input type="text" class="form-control" id="envio_gral_y" placeholder="Y calle"></div>
                                     </div>
                                     <div class="row">
                                         <div class="col-12 col-sm-6 col-lg-6 mb-3">

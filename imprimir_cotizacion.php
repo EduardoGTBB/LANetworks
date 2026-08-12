@@ -19,7 +19,7 @@ if (!$id_cot) {
     exit("ID Inválido");
 }
 
-// 1. Datos Generales - Manteniendo tu lógica PDO original
+// 1. Datos Generales
 $sql = "SELECT c.*, e.*, dem.calle_numero, dem.colonia, dem.localidad, dem.codigo_postal, dem.municipio, dem.estado, 
         CONCAT(usu.nombre, ' ', usu.apellido_pat, ' ', usu.apellido_mat) as cliente, 
         CONCAT(u.admin_nombre, ' ', u.admin_apell_pat) as vendedor,
@@ -43,30 +43,14 @@ if (!$cot) {
 
 $es_multisucursal = empty($cot['Sucursal_id']);
 
-// 2. Detalles de la cotización - Manteniendo tu lógica PDO original
-/* $sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product,p.puntos_calibracion,
-           pf.pf_equipo, pf.pf_calibracion,
-           pp.pp_equipo, pp.pp_calibracion,
-           s_dest.nombre_sucursal AS nombre_sucursal_destino,
-           s_dest.estado AS estado_sucursal_destino,
-           c_dir.calle_numero_cert, c_dir.colonia_cert, c_dir.municipio_cert, c_dir.estado as estado_cert, c_dir.cp_cert,
-           e_dir.calle_numero_envio, e_dir.colonia_envio, e_dir.municipio_envio, e_dir.estado_envio, e_dir.cp_envio,
-           (SELECT GROUP_CONCAT(p.nombre_plaza SEPARATOR ', ') FROM sucursal_plaza sp JOIN plazas p ON sp.Plaza_id = p.id_plaza WHERE sp.Sucursal_id = s_dest.id_sucursal) as nombre_plaza
-           FROM detalle_cotizacion d
-           JOIN productos p ON d.Product_id = p.id_product
-           LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
-           LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
-           LEFT JOIN sucursales s_dest ON d.sucursal_destino_id = s_dest.id_sucursal
-           LEFT JOIN domicilio_cert_calib c_dir ON d.id_dom_cert = c_dir.id_domicilio_cert
-           LEFT JOIN domicilio_envio e_dir ON d.id_dom_envio = e_dir.id_domicilio_envio
-           WHERE d.Cotizacion_id = ?"; */
+// 2. Detalles de la cotización
 $sqlDet = "SELECT d.*, p.descripcion_product, p.clave_product,p.puntos_calibracion,
            pf.pf_equipo, pf.pf_calibracion,
            pp.pp_equipo, pp.pp_calibracion,
            s_dest.nombre_sucursal AS nombre_sucursal_destino,
            s_dest.estado AS estado_sucursal_destino,
-           c_dir.calle_numero_cert, c_dir.colonia_cert, c_dir.municipio_cert, c_dir.estado as estado_cert, c_dir.cp_cert,
-           e_dir.calle_numero_envio, e_dir.colonia_envio, e_dir.municipio_envio, e_dir.estado_envio, e_dir.cp_envio
+           c_dir.calle_numero_cert, c_dir.entre_calle_cert, c_dir.y_calle_cert, c_dir.colonia_cert, c_dir.municipio_cert, c_dir.estado as estado_cert, c_dir.cp_cert,
+           e_dir.calle_numero_envio, e_dir.entre_calle_envio, e_dir.y_calle_envio, e_dir.colonia_envio, e_dir.municipio_envio, e_dir.estado_envio, e_dir.cp_envio
            FROM detalle_cotizacion d
            JOIN productos p ON d.Product_id = p.id_product
            LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
@@ -136,10 +120,18 @@ if ($es_multisucursal) {
         if (!empty($d['calle_numero_envio'])) {
             $key_envio = trim($d['calle_numero_envio']) . '|' . trim($d['cp_envio']);
             if (!isset($envios_multisucursal[$key_envio])) {
+                
+                // Formateamos la dirección dinámica con "entre calle"
+                $calleMulti = htmlspecialchars($d['calle_numero_envio']);
+                if (!empty($d['entre_calle_envio']) && !empty($d['y_calle_envio'])) {
+                    $calleMulti .= ' Entre ' . htmlspecialchars($d['entre_calle_envio']) . ' y ' . htmlspecialchars($d['y_calle_envio']);
+                } elseif (!empty($d['entre_calle_envio'])) {
+                    $calleMulti .= ' Entre ' . htmlspecialchars($d['entre_calle_envio']);
+                }
+
                 $envios_multisucursal[$key_envio] = [
-                    // Si no tiene plaza asociada el detalle multisucursal, ponemos MATRIZ REGIONAL
                     'plaza' => 'DIRECCIÓN ASIGNADA',
-                    'texto' => htmlspecialchars($d['calle_numero_envio']) . ', Col. ' . htmlspecialchars($d['colonia_envio']) . ', C.P. ' . htmlspecialchars($d['cp_envio']) . ', ' . htmlspecialchars($d['municipio_envio']) . ', ' . htmlspecialchars($d['estado_envio'])
+                    'texto' => $calleMulti . ', Col. ' . htmlspecialchars($d['colonia_envio']) . ', C.P. ' . htmlspecialchars($d['cp_envio']) . ', ' . htmlspecialchars($d['municipio_envio']) . ', ' . htmlspecialchars($d['estado_envio'])
                 ];
             }
         }
@@ -314,61 +306,6 @@ if ($es_multisucursal) {
                 ?>
                 <p class="m-0"><strong>Atención a:</strong> <?php echo $cot['cliente']; ?></p>
                 <p class="m-0"><strong>PLAZA:</strong><?php echo $plaza_completa; ?></p>
-                <!-- ?php
-                $plaza_completa = 'Sin especificar';
-
-                if ($es_multisucursal) {
-                    // Buscamos los nombres de las plazas, ignorando a la sucursal matriz (id_sae = 1)
-                    $sqlPlazas = "SELECT DISTINCT pl.nombre_plaza
-                                  FROM detalle_cotizacion d
-                                  JOIN sucursales s ON d.sucursal_destino_id = s.id_sucursal
-                                  JOIN sucursal_plaza sp ON s.id_sucursal = sp.Sucursal_id
-                                  JOIN plazas pl ON sp.Plaza_id = pl.id_plaza
-                                  WHERE d.Cotizacion_id = ? AND pl.nombre_plaza IS NOT NULL AND s.id_sae != 1";
-                    $stmtPlazas = $pdo->prepare($sqlPlazas);
-                    $stmtPlazas->execute([$id_cot]);
-                    $plazas_multi = $stmtPlazas->fetchAll(PDO::FETCH_COLUMN);
-
-                    if (count($plazas_multi) > 0) {
-                        // ✨ MAGIA: Si hay 1 o más plazas, simplemente une sus nombres con una coma
-                        // Ejemplo: "SALTILLO" o "SALTILLO, MONTERREY"
-                        $plaza_completa = mb_strtoupper(implode(', ', $plazas_multi), 'UTF-8');
-                    } else {
-                        // Si la consulta viene vacía, significa que es 100% para la Matriz
-                        $plaza_completa = 'SUCURSAL MATRIZ (DIRECCIÓN FISCAL)';
-                    }
-                } elseif (isset($cot['id_sae']) && $cot['id_sae'] == 1) {
-                    $plaza_real_matriz = null;
-                    foreach ($detalles as $d) {
-                        // Buscamos coincidencia exacta por la colonia y CP copiados en el envío
-                        if (!empty($d['colonia_envio']) && !empty($d['cp_envio'])) {
-                            $stmtP = $pdo->prepare("SELECT p.nombre_plaza FROM plaza_domicilio pd JOIN plazas p ON pd.Plaza_id = p.id_plaza WHERE pd.colonia = ? AND pd.cp = ? LIMIT 1");
-                            $stmtP->execute([$d['colonia_envio'], $d['cp_envio']]);
-                            $plaza_real_matriz = $stmtP->fetchColumn();
-                            if ($plaza_real_matriz) break;
-                        }
-                        // Si no hay envío, buscamos por los datos guardados del certificado
-                        if (!empty($d['colonia_cert']) && !empty($d['cp_cert'])) {
-                            $stmtP = $pdo->prepare("SELECT p.nombre_plaza FROM plaza_domicilio pd JOIN plazas p ON pd.Plaza_id = p.id_plaza WHERE pd.colonia = ? AND pd.cp = ? LIMIT 1");
-                            $stmtP->execute([$d['colonia_cert'], $d['cp_cert']]);
-                            $plaza_real_matriz = $stmtP->fetchColumn();
-                            if ($plaza_real_matriz) break;
-                        }
-                    }
-                    if ($plaza_real_matriz) {
-                        $plaza_completa = mb_strtoupper($plaza_real_matriz, 'UTF-8');
-                    } else {
-                        $plaza_completa = 'SUCURSAL MATRIZ (DIRECCIÓN FISCAL)';
-                    }
-                } elseif (!empty($cot['nombre_plaza'])) {
-                    // Si es sucursal única normal, pone su plaza directa
-                    $plaza_completa = mb_strtoupper(htmlspecialchars($cot['nombre_plaza']), 'UTF-8');
-                } elseif (!empty($cot['nombre_sucursal'])) {
-                    // Respaldo por si no tiene plaza pero sí sucursal
-                    $estado_texto = !empty($cot['sucursal_estado']) ? htmlspecialchars($cot['sucursal_estado']) . ', ' : '';
-                    $plaza_completa = mb_strtoupper($estado_texto . htmlspecialchars($cot['nombre_sucursal']), 'UTF-8');
-                }
-                ?> -->
             </div>
         </div>
 
@@ -376,7 +313,7 @@ if ($es_multisucursal) {
             <div class="col-12 small" style="line-height: 1.5; font-size: 10px;">
                 <p class="m-0"><strong>Razón Social:</strong> <?php echo htmlspecialchars($cot['razon_social'] ?? $cot['nombre_empresa']); ?></p>
 
-                <!-- ✨ OCULTAMOS DIRECCIÓN Y RFC SI ES LABORATORIO -->
+                <!-- OCULTAMOS DIRECCIÓN Y RFC SI ES LABORATORIO -->
                 <?php if (!$es_laboratorio): ?>
                     <p class="m-0">
                         <strong>Dirección:</strong>
@@ -395,22 +332,38 @@ if ($es_multisucursal) {
                 <?php if ($dir_cert): ?>
                     <div class="<?php echo $es_laboratorio ? 'col-12' : 'col-6'; ?>">
                         <div style="background-color: #f4f6f9; border-left: 4px solid #00a3f0; padding: 6px 10px; border-radius: 3px; font-size: 9px; line-height: 1.3;">
-                            <p class="m-0" style="color: #00a3f0; font-size: 10px;"><strong>■ DIRECCIÓN EN CERTIFICADO</strong></p>
+                            <p class="m-0" style="color: #00a3f0; font-size: 10px;"><strong>■ DIRECCIÓN DE CERTIFICADO</strong></p>
                             <p class="m-0 mt-1">
-                                <?php echo htmlspecialchars($dir_cert['calle_numero_cert'] . ', Col. ' . $dir_cert['colonia_cert']); ?><br>
+                                <?php 
+                                    $calleCert = htmlspecialchars($dir_cert['calle_numero_cert']);
+                                    if(!empty($dir_cert['entre_calle_cert']) && !empty($dir_cert['y_calle_cert'])) {
+                                        $calleCert .= ' Entre ' . htmlspecialchars($dir_cert['entre_calle_cert']) . ' y ' . htmlspecialchars($dir_cert['y_calle_cert']);
+                                    } elseif(!empty($dir_cert['entre_calle_cert'])) {
+                                        $calleCert .= ' Entre ' . htmlspecialchars($dir_cert['entre_calle_cert']);
+                                    }
+                                    echo $calleCert . ', Col. ' . htmlspecialchars($dir_cert['colonia_cert']); 
+                                ?><br>
                                 <strong>CP:</strong> <?php echo htmlspecialchars($dir_cert['cp_cert'] . ', ' . $dir_cert['municipio_cert'] . ', ' . $dir_cert['estado_cert']); ?>
                             </p>
                         </div>
                     </div>
                 <?php endif; ?>
 
-                <!-- ✨ OCULTAMOS ENVÍO SI ES LABORATORIO -->
+                <!-- OCULTAMOS ENVÍO SI ES LABORATORIO -->
                 <?php if ($dir_envio && !$es_laboratorio): ?>
                     <div class="col-6">
                         <div style="background-color: #f4f6f9; border-left: 4px solid #28a745; padding: 6px 10px; border-radius: 3px; font-size: 9px; line-height: 1.3;">
                             <p class="m-0 text-success" style="font-size: 10px;"><strong>■ DIRECCIÓN DE ENVÍO</strong></p>
                             <p class="m-0 mt-1">
-                                <?php echo htmlspecialchars($dir_envio['calle_numero_envio'] . ', Col. ' . $dir_envio['colonia_envio']); ?><br>
+                                <?php
+                                $calleEnvio = htmlspecialchars($dir_envio['calle_numero_envio']);
+                                if (!empty($dir_envio['entre_calle_envio']) && !empty($dir_envio['y_calle_envio'])) {
+                                    $calleEnvio .= ' Entre ' . htmlspecialchars($dir_envio['entre_calle_envio']) . ' y ' . htmlspecialchars($dir_envio['y_calle_envio']);
+                                } elseif (!empty($dir_envio['entre_calle_envio'])) {
+                                    $calleEnvio .= ' Entre ' . htmlspecialchars($dir_envio['entre_calle_envio']);
+                                }
+                                echo $calleEnvio . ', Col. ' . htmlspecialchars($dir_envio['colonia_envio']);
+                                ?><br>
                                 <strong>CP:</strong> <?php echo htmlspecialchars($dir_envio['cp_envio'] . ', ' . $dir_envio['municipio_envio'] . ', ' . $dir_envio['estado_envio']); ?>
                             </p>
                         </div>
@@ -480,20 +433,12 @@ if ($es_multisucursal) {
                                         </div>
                                     <?php endif; ?>
 
-                                    <!-- ?php
-                                    // ✨ Desgloses solo visibles si NO es laboratorio
-                                    if (!$es_laboratorio && isset($d['desglosar']) && $d['desglosar'] === 'Y'):
-                                        $pEquipo = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_equipo'] : $d['pp_equipo'];
-                                        $pCalib = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_calibracion'] : $d['pp_calibracion'];
-                                        $tEquipo = $pEquipo * $d['cantidad'];
-                                        $tCalib  = $pCalib * $d['cantidad'];
-                                    ?> -->
                                     <?php
-                                    // ✨ Desgloses solo visibles si NO es laboratorio
+                                    //  Desgloses solo visibles si NO es laboratorio
                                     if (!$es_laboratorio && isset($d['desglosar']) && $d['desglosar'] === 'Y'):
                                         $pEquipo = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_equipo'] : $d['pp_equipo'];
                                         $pCalib = ($cot['tipo_precio'] === 'Farmacia') ? $d['pf_calibracion'] : $d['pp_calibracion'];
-                                        
+
                                         $pAntesIva = $pEquipo + $pCalib;
 
                                         // ✨ MAGIA: Si la cotización es de equipos usados, invertimos los valores
@@ -505,21 +450,6 @@ if ($es_multisucursal) {
                                         $tEquipo = $pEquipo * $d['cantidad'];
                                         $tCalib  = $pCalib * $d['cantidad'];
                                     ?>
-
-                                        <!-- <div style="margin-top: 6px;">
-                                            ?php if ($d['cantidad'] > 1): ?>
-                                                <span style="color: #0d6efd; font-weight: bold; font-size: 10px; display: block;">
-                                                    Desglose Total (?php echo $d['cantidad']; ?> pz): Equipo ($?php echo number_format((float)$tEquipo, 2); ?>) + Calibración ($?php echo number_format((float)$tCalib, 2); ?>)
-                                                </span>
-                                                <span style="color: #777; font-size: 9px; display: block; margin-top: 2px;">
-                                                    <i>* Unitario (c/u): Equipo $?php echo number_format((float)$pEquipo, 2); ?> + Calib. $?php echo number_format((float)$pCalib, 2); ?></i>
-                                                </span>
-                                            ?php else: ?>
-                                                <span style="color: #0d6efd; font-weight: bold; font-size: 10px; display: block;">
-                                                    Desglose: Equipo ($?php echo number_format((float)$pEquipo, 2); ?>) + Calibración ($?php echo number_format((float)$pCalib, 2); ?>)
-                                                </span>
-                                            ?php endif; ?>
-                                        </div> -->
                                         <div style="margin-top: 6px;">
                                             <?php if ($d['cantidad'] > 1): ?>
                                                 <span style="color: #0d6efd; font-weight: bold; font-size: 10px; display: block;">
@@ -537,14 +467,22 @@ if ($es_multisucursal) {
                                     <?php endif; ?>
 
                                     <?php
-                                    // Direcciones multisucursal (Solo certificado si es laboratorio)
+                                    // Direcciones detalladas del equipo (Certificado Multisucursal)
                                     if ($es_multisucursal && (!empty($d['calle_numero_cert']) || (!$es_laboratorio && !empty($d['calle_numero_envio'])))):
                                     ?>
                                         <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed #ccc;">
                                             <?php if (!empty($d['calle_numero_cert'])): ?>
                                                 <span style="font-size: 9px; color: #444; display: block; line-height: 1.2;">
                                                     <strong style="color: #000;">📍 Certificado (<?php echo htmlspecialchars($d['nombre_sucursal_destino']); ?>):</strong>
-                                                    <?php echo htmlspecialchars($d['calle_numero_cert'] . ', ' . $d['colonia_cert'] . ', ' . $d['municipio_cert'] . ', ' . $d['estado_cert'] . ' C.P. ' . $d['cp_cert']); ?>
+                                                    <?php 
+                                                        $calleCertDetalle = htmlspecialchars($d['calle_numero_cert']);
+                                                        if (!empty($d['entre_calle_cert']) && !empty($d['y_calle_cert'])) {
+                                                            $calleCertDetalle .= ' Entre ' . htmlspecialchars($d['entre_calle_cert']) . ' y ' . htmlspecialchars($d['y_calle_cert']);
+                                                        } elseif (!empty($d['entre_calle_cert'])) {
+                                                            $calleCertDetalle .= ' Entre ' . htmlspecialchars($d['entre_calle_cert']);
+                                                        }
+                                                        echo $calleCertDetalle . ', Col. ' . htmlspecialchars($d['colonia_cert']) . ', ' . htmlspecialchars($d['municipio_cert']) . ', ' . htmlspecialchars($d['estado_cert']) . ' C.P. ' . htmlspecialchars($d['cp_cert']); 
+                                                    ?>
                                                 </span>
                                             <?php endif; ?>
                                         </div>
@@ -557,9 +495,8 @@ if ($es_multisucursal) {
                                 <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
-                    </tbody>
-                    <tfoot style="-webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                        <tr>
+                        <!-- Fila de totales ahora es la última fila del tbody. -->
+                        <tr style="-webkit-print-color-adjust: exact; print-color-adjust: exact;">
                             <td class="text-center align-middle" style="background-color: #e6f7ff !important; color: #00a3f0 !important; border: 2px solid #00a3f0 !important; font-size: 13px; font-weight: 900;">
                                 <?php echo $sumatoria_equipos; ?>
                             </td>
@@ -567,7 +504,17 @@ if ($es_multisucursal) {
                                 ◄ PIEZA(S) TOTALES EN ESTA COTIZACIÓN
                             </td>
                         </tr>
-                    </tfoot>
+                    </tbody>
+                    <!-- <tfoot style="-webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                        <tr>
+                            <td class="text-center align-middle" style="background-color: #e6f7ff !important; color: #00a3f0 !important; border: 2px solid #00a3f0 !important; font-size: 13px; font-weight: 900;">
+                                ?php echo $sumatoria_equipos; ?>
+                            </td>
+                            <td colspan="?php echo $es_laboratorio ? '2' : '4'; ?>" class="text-start align-middle" style="background-color: #e6f7ff !important; color: #00a3f0 !important; border: 2px solid #00a3f0 !important; font-size: 13px; font-weight: 900;">
+                                ◄ PIEZA(S) TOTALES EN ESTA COTIZACIÓN
+                            </td>
+                        </tr>
+                    </tfoot> -->
                 </table>
             </div>
         </div>

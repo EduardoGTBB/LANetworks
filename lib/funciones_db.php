@@ -1534,18 +1534,15 @@ function obtenerSucursalesPorUsuario(PDO $pdo, int $id_usuario): array
 function obtenerDetallesParaFinalizarVenta(PDO $pdo, int $id_cotizacion)
 {
     $sql = "SELECT dc.id_detalle_cot, dc.cantidad, p.clave_product, p.descripcion_product, dc.sucursal_destino_id,
-                   c.calle_numero_cert as c_calle, c.colonia_cert as c_colonia, c.localidad_cert as c_localidad, c.municipio_cert as c_municipio, c.estado as c_estado, c.cp_cert as c_cp,
-                   e.calle_numero_envio as e_calle, e.colonia_envio as e_colonia, e.localidad_envio as e_localidad, e.municipio_envio as e_municipio, e.estado_envio as e_estado, e.cp_envio as e_cp,
-                   s.id_sae, s.nombre_sucursal as suc_nombre, s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.num_int as suc_num_int, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp,
-                   
+                   c.calle_numero_cert as c_calle, c.entre_calle_cert as c_entre, c.y_calle_cert as c_y, c.colonia_cert as c_colonia, c.localidad_cert as c_localidad, c.municipio_cert as c_municipio, c.estado as c_estado, c.cp_cert as c_cp,
+                   e.calle_numero_envio as e_calle, e.entre_calle_envio as e_entre, e.y_calle_envio as e_y, e.colonia_envio as e_colonia, e.localidad_envio as e_localidad, e.municipio_envio as e_municipio, e.estado_envio as e_estado, e.cp_envio as e_cp,
+                   s.id_sae, s.nombre_sucursal as suc_nombre, s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.num_int as suc_num_int, s.entre_calle as suc_entre_calle, s.y_calle as suc_y_calle, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp,
                    (SELECT GROUP_CONCAT(DISTINCT sp.Plaza_id) 
                     FROM sucursal_plaza sp 
                     WHERE sp.Sucursal_id = s.id_sucursal
                        OR (s.id_sae = 1 AND sp.Plaza_id IN (SELECT up.Plaza_id FROM usuario_plaza up WHERE up.Usuario_id = cot.Usuario_empresa_id))
                    ) as plazas_asociadas,
-                   
                    cot.Plaza_id as plaza_guardada
-                   
             FROM detalle_cotizacion dc
             JOIN cotizacion cot ON dc.Cotizacion_id = cot.id_cotizacion
             JOIN productos p ON dc.Product_id = p.id_product
@@ -1676,43 +1673,75 @@ function formalizarVentaEquipos(PDO $pdo, int $id_cot, array $fiscal, array $equ
     try {
         $pdo->beginTransaction();
 
-        // 1. Limpieza usando los nombres correctos
+        // 1. Limpieza inicial de llaves foráneas y registros anteriores
         $pdo->prepare("UPDATE detalle_cotizacion SET id_dom_cert = NULL, id_dom_envio = NULL WHERE Cotizacion_id = ?")->execute([$id_cot]);
         $pdo->prepare("DELETE FROM domicilio_fiscal WHERE Cotizacion_id = ?")->execute([$id_cot]);
         $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE Cotizacion_id = ?")->execute([$id_cot]);
         $pdo->prepare("DELETE FROM domicilio_envio WHERE Cotizacion_id = ?")->execute([$id_cot]);
 
-        // 2. Guardar Fiscal
+        // 2. Guardar Dirección Fiscal
         if (!empty($fiscal['calle'])) {
             $pdo->prepare("INSERT INTO domicilio_fiscal (Cotizacion_id, calle_numero_fiscal, colonia_fiscal, localidad_fiscal, cp_fiscal, municipio_fiscal, estado_fiscal) VALUES (?, ?, ?, ?, ?, ?, ?)")
-                ->execute([$id_cot, $fiscal['calle'], $fiscal['colonia'] ?? '', $fiscal['localidad'] ?? '', $fiscal['cp'] ?? '', $fiscal['municipio'] ?? '', $fiscal['estado'] ?? '']);
+                ->execute([
+                    $id_cot, 
+                    $fiscal['calle'], 
+                    $fiscal['colonia'] ?? '', 
+                    $fiscal['localidad'] ?? '', 
+                    $fiscal['cp'] ?? '', 
+                    $fiscal['municipio'] ?? '', 
+                    $fiscal['estado'] ?? ''
+                ]);
         }
 
-        $stmtCert = $pdo->prepare("INSERT INTO domicilio_cert_calib (Cotizacion_id, calle_numero_cert, colonia_cert, localidad_cert, cp_cert, municipio_cert, estado) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmtEnvio = $pdo->prepare("INSERT INTO domicilio_envio (Cotizacion_id, calle_numero_envio, colonia_envio, localidad_envio, cp_envio, municipio_envio, estado_envio) VALUES (?, ?, ?, ?, ?, ?, ?)");
-
-        // ✨ AQUÍ ESTABA EL ERROR: Los nombres correctos son id_dom_cert e id_dom_envio
+        // Preparamos las consultas optimizadas con los 9 parámetros
+        $stmtCert = $pdo->prepare("INSERT INTO domicilio_cert_calib (Cotizacion_id, calle_numero_cert, entre_calle_cert, y_calle_cert, colonia_cert, localidad_cert, cp_cert, municipio_cert, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmtEnvio = $pdo->prepare("INSERT INTO domicilio_envio (Cotizacion_id, calle_numero_envio, entre_calle_envio, y_calle_envio, colonia_envio, localidad_envio, cp_envio, municipio_envio, estado_envio) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmtUpdateDetalle = $pdo->prepare("UPDATE detalle_cotizacion SET id_dom_cert = ?, id_dom_envio = ? WHERE id_detalle_cot = ?");
 
+        // 3. Insertar direcciones por cada equipo y vincular los IDs
         foreach ($equipos as $eq) {
             $id_detalle = (int)$eq['id_detalle'];
             if ($id_detalle === 0) continue;
 
             $cert = $eq['cert'] ?? [];
-            $stmtCert->execute([$id_cot, $cert['calle'] ?? '', $cert['colonia'] ?? '', $cert['localidad'] ?? '', $cert['cp'] ?? '', $cert['municipio'] ?? '', $cert['estado'] ?? '']);
+            $stmtCert->execute([
+                $id_cot, 
+                $cert['calle'] ?? '', 
+                $cert['entre_calle'] ?? '', 
+                $cert['y_calle'] ?? '', 
+                $cert['colonia'] ?? '', 
+                $cert['localidad'] ?? '', 
+                $cert['cp'] ?? '', 
+                $cert['municipio'] ?? '', 
+                $cert['estado'] ?? ''
+            ]);
             $id_cert = (int)$pdo->lastInsertId();
 
             $envio = $eq['envio'] ?? [];
-            $stmtEnvio->execute([$id_cot, $envio['calle'] ?? '', $envio['colonia'] ?? '', $envio['localidad'] ?? '', $envio['cp'] ?? '', $envio['municipio'] ?? '', $envio['estado'] ?? '']);
+            $stmtEnvio->execute([
+                $id_cot, 
+                $envio['calle'] ?? '', 
+                $envio['entre_calle'] ?? '', 
+                $envio['y_calle'] ?? '', 
+                $envio['colonia'] ?? '', 
+                $envio['localidad'] ?? '', 
+                $envio['cp'] ?? '', 
+                $envio['municipio'] ?? '', 
+                $envio['estado'] ?? ''
+            ]);
             $id_envio = (int)$pdo->lastInsertId();
 
+            // Enlazamos los IDs recién creados al registro en detalle_cotizacion
             $stmtUpdateDetalle->execute([$id_cert, $id_envio, $id_detalle]);
         }
 
         $pdo->commit();
         return true;
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        error_log("Error al formalizar venta de equipos: " . $e->getMessage());
         throw $e;
     }
 }
@@ -1729,7 +1758,7 @@ function obtenerDireccionesCotizacion(PDO $pdo, int $id_cot)
 function obtenerSucursalGlobalPorCotizacion(PDO $pdo, int $id_cotizacion)
 {
     // ✨ ACTUALIZACIÓN: Agregamos "s.num_int as suc_num_int" al SELECT
-    $sql = "SELECT s.nombre_sucursal as suc_nombre, s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.num_int as suc_num_int, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp
+    $sql = "SELECT s.nombre_sucursal as suc_nombre, s.calle as suc_calle_sola, s.num_ext as suc_num_ext, s.num_int as suc_num_int, s.entre_calle as suc_entre_calle, s.y_calle as suc_y_calle, s.colonia as suc_colonia, s.poblacion as suc_localidad, s.municipio as suc_municipio, s.estado as suc_estado, s.cp as suc_cp
             FROM cotizacion c
             JOIN sucursales s ON c.Sucursal_id = s.id_sucursal
             WHERE c.id_cotizacion = ?";
