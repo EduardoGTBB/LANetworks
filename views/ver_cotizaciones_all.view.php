@@ -350,7 +350,7 @@
                                     </div>
 
                                     <div class="mb-2" id="wrapper_selector_sucursal_edit">
-                                        <label class="form-label text-dark fw-bold"><i class="feather-map-pin me-1 text-success"></i>Sucursal Destino <span class="text-danger">*</span></label>
+                                        <label class="form-label text-dark fw-bold"><i class="feather-map-pin me-1 text-success"></i>Certificado <span class="text-danger">*</span></label>
                                         <select class="form-control border-success" id="edit_select_sucursal" name="Sucursal_id" data-select2-selector="status" required>
                                             <option value="">Esperando al solicitante...</option>
                                         </select>
