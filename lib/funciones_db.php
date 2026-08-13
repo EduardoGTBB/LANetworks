@@ -1576,8 +1576,6 @@ function obtenerDetallesParaFinalizarVenta(PDO $pdo, int $id_cotizacion)
         foreach ($all_domicilios as $dom) {
             $pid = $dom['Plaza_id'];
             $calle_completa = $dom['calle'] ?? '';
-            if (!empty($dom['num_ext'])) $calle_completa .= ' NO. ' . trim($dom['num_ext']);
-            if (!empty($dom['num_int'])) $calle_completa .= ' INT. ' . trim($dom['num_int']);
 
             $dom['calle_formateada'] = trim($calle_completa);
             $domicilios_por_plaza[$pid][] = $dom;
@@ -1586,8 +1584,8 @@ function obtenerDetallesParaFinalizarVenta(PDO $pdo, int $id_cotizacion)
 
     foreach ($resultados as &$row) {
         $calle_suc = trim($row['suc_calle_sola'] ?? '');
-        if (!empty($row['suc_num_ext'])) { $calle_suc .= ' NO. ' . trim($row['suc_num_ext']); }
-        if (!empty($row['suc_num_int'])) { $calle_suc .= ' INT. ' . trim($row['suc_num_int']); }
+        if (!empty($row['suc_num_ext'])) { $calle_suc .= ' ' . trim($row['suc_num_ext']); }
+        if (!empty($row['suc_num_int'])) { $calle_suc .= ' ' . trim($row['suc_num_int']); }
         
         $row['suc_calle'] = $calle_suc;
         
@@ -1767,10 +1765,10 @@ function obtenerSucursalGlobalPorCotizacion(PDO $pdo, int $id_cotizacion)
     $res = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($res) {
-        // ✨ NUEVA LÓGICA: Concatenamos la calle, num ext y num int
+        // Concatenamos la calle, num ext y num int
         $calle_suc = trim($res['suc_calle_sola'] ?? '');
-        if (!empty($res['suc_num_ext'])) { $calle_suc .= ' NO. ' . trim($res['suc_num_ext']); }
-        if (!empty($res['suc_num_int'])) { $calle_suc .= ' INT. ' . trim($res['suc_num_int']); }
+        if (!empty($res['suc_num_ext'])) { $calle_suc .= ' ' . trim($res['suc_num_ext']); }
+        if (!empty($res['suc_num_int'])) { $calle_suc .= ' ' . trim($res['suc_num_int']); }
         
         $res['suc_calle'] = $calle_suc;
     }

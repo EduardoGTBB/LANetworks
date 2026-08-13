@@ -83,8 +83,9 @@ $(document).ready(function () {
 
                     function formatCalle(dom) {
                         let calle_completa = dom.calle || '';
-                        if (dom.num_ext) calle_completa += ' NO. ' + dom.num_ext.trim();
-                        if (dom.num_int) calle_completa += ' INT. ' + dom.num_int.trim();
+                        if (dom.num_ext) calle_completa += ' ' + dom.num_ext.trim();
+                        if (dom.num_int) calle_completa += ' ' + dom.num_int.trim();
+
                         return calle_completa.trim();
                     }
 
