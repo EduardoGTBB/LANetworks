@@ -306,12 +306,14 @@ if ($es_multisucursal) {
 
                 // ✨ Determinamos el nombre de la sucursal para la cabecera
                 $nombre_sucursal_pdf = '';
-                if (!$es_multisucursal && !empty($cot['nombre_sucursal'])) {
-                    $nombre_sucursal_pdf = mb_strtoupper(htmlspecialchars($cot['nombre_sucursal']), 'UTF-8');
-                } elseif ($es_multisucursal) {
+                $suc_global_crudo = trim($cot['nombre_sucursal'] ?? '');
+
+                if ($es_multisucursal) {
                     $nombre_sucursal_pdf = "MÚLTIPLES SUCURSALES";
+                } elseif ($suc_global_crudo === '-' || $suc_global_crudo === '') {
+                    $nombre_sucursal_pdf = "SIN SUCURSAL";
                 } else {
-                    $nombre_sucursal_pdf = "SUCURSAL MATRIZ";
+                    $nombre_sucursal_pdf = mb_strtoupper(htmlspecialchars($suc_global_crudo), 'UTF-8');
                 }
                 ?>
 
@@ -495,7 +497,14 @@ if ($es_multisucursal) {
                                         <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed #ccc;">
                                             <?php if (!empty($d['calle_numero_cert'])): ?>
                                                 <span style="font-size: 9px; color: #444; display: block; line-height: 1.2;">
-                                                    <strong style="color: #000;">📍 Certificado (<?php echo htmlspecialchars($d['nombre_sucursal_destino']); ?>):</strong>
+
+                                                    <?php
+                                                    // ✨ Interceptamos el guion y validamos si está vacío
+                                                    $suc_destino_crudo = trim($d['nombre_sucursal_destino'] ?? '');
+                                                    $nombre_destino_print = ($suc_destino_crudo === '-' || $suc_destino_crudo === '') ? 'SIN SUCURSAL' : htmlspecialchars($suc_destino_crudo);
+                                                    ?>
+                                                    <strong style="color: #000;">📍 Certificado (<?php echo mb_strtoupper($nombre_destino_print, 'UTF-8'); ?>):</strong>
+                                                    <!-- <strong style="color: #000;">📍 Certificado (?php echo htmlspecialchars($d['nombre_sucursal_destino']); ?>):</strong> -->
                                                     <?php
                                                     $calleCertDetalle = htmlspecialchars($d['calle_numero_cert']);
                                                     if (!empty($d['entre_calle_cert']) && !empty($d['y_calle_cert'])) {
@@ -509,7 +518,7 @@ if ($es_multisucursal) {
                                             <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
-                                    
+
                                     <!-- // &NUEVO DISEÑO: SUCURSAL EN ETIQUETA DESTACADA -->
                                     <!-- ?php
                                     // Direcciones detalladas del equipo (Certificado Multisucursal)

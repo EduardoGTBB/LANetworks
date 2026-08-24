@@ -206,7 +206,7 @@ $(document).ready(function () {
                                     $('#selector_contacto_gral').val('FISCAL');
                                 }
                             }
-                        } else if (d.sucursal_global && d.sucursal_global.id_sae != 1) {
+                        } /* else if (d.sucursal_global && d.sucursal_global.id_sae != 1) {
                             $('#envio_gral_calle').val(d.sucursal_global.suc_calle || '');
                             $('#envio_gral_entre').val(d.sucursal_global.suc_entre_calle || '');
                             $('#envio_gral_y').val(d.sucursal_global.suc_y_calle || '');
@@ -224,7 +224,7 @@ $(document).ready(function () {
                             }
                         } else if (globalDomList.length === 1) {
                             $('#selector_contacto_gral').val(0).trigger('change');
-                        }
+                        } */
                         
                         sincronizarCertEquipos();
 
