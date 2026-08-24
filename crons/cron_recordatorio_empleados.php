@@ -9,8 +9,8 @@
         exit;
     }
 
-    // Obtenemos empleados con cotizaciones pendientes
-    $empleados_pendientes = obtenerEmpleadosCotizacionesPendientes($pdo, 2);
+    // El VPS ya ejecuta esto semanalmente, así que pedimos TODO lo pendiente.
+    $empleados_pendientes = obtenerEmpleadosCotizacionesPendientes($pdo);
     
     if(!empty($empleados_pendientes)){
         require __DIR__ . '/../mails/mail_recordatorio_empleados.php';

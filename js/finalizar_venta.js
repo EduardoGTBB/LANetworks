@@ -2,7 +2,6 @@ $(document).ready(function () {
     let id_cot = $('#id_cotizacion').val();
     let isSucursalUnica = false;
 
-    // 1. Limpiar y preparar el contenedor del selector de Plazas en Envío General
     if ($('#div_selector_contacto_gral').length === 0) {
         let htmlContactoGral = `
             <div class="mb-4 border-bottom pb-3 d-none" id="div_selector_contacto_gral">
@@ -14,7 +13,6 @@ $(document).ready(function () {
         $('#select_envio_multi').replaceWith(htmlContactoGral);
     }
 
-    // 2. Cargar datos de la Cotización
     $.ajax({
         url: 'api/api_finalizar_venta.php?action=get&id_cotizacion=' + id_cot,
         method: 'GET', dataType: 'json', cache: false,
@@ -31,7 +29,6 @@ $(document).ready(function () {
                     $('#btn_regresar').html('Dejar para después');
                 }
 
-                // Llenar Fiscal
                 if (d.empresa_default) {
                     $('input[name="f_calle"]').val(d.empresa_default.calle_numero || d.empresa_default.calle || '');
                     $('input[name="f_colonia"]').val(d.empresa_default.colonia || '');
@@ -59,6 +56,8 @@ $(document).ready(function () {
                         
                         if (tieneCertGuardado) {
                             $('#cert_gral_calle').val(equipo_base.c_calle);
+                            $('#cert_gral_entre').val(equipo_base.c_entre || '');
+                            $('#cert_gral_y').val(equipo_base.c_y || '');
                             $('#cert_gral_colonia').val(equipo_base.c_colonia);
                             $('#cert_gral_localidad').val(equipo_base.c_localidad);
                             $('#cert_gral_municipio').val(equipo_base.c_municipio);
@@ -66,6 +65,8 @@ $(document).ready(function () {
                             $('#cert_gral_cp').val(equipo_base.c_cp);
                         } else if (suc) {
                             $('#cert_gral_calle').val(suc.suc_calle || '');
+                            $('#cert_gral_entre').val(suc.suc_entre_calle || '');
+                            $('#cert_gral_y').val(suc.suc_y_calle || '');
                             $('#cert_gral_colonia').val(suc.suc_colonia || '');
                             $('#cert_gral_localidad').val(suc.suc_localidad || '');
                             $('#cert_gral_municipio').val(suc.suc_municipio || '');
@@ -80,20 +81,16 @@ $(document).ready(function () {
                         $('#seccion_desglose_equipos').show();
                     }
 
-                    // ==========================================
-                    // ✨ LÓGICA INTELIGENTE: CREAR SELECTOR EN ORDEN POR PLAZAS
-                    // ==========================================
-
                     function formatCalle(dom) {
                         let calle_completa = dom.calle || '';
-                        if (dom.num_ext) calle_completa += ' NO. ' + dom.num_ext.trim();
-                        if (dom.num_int) calle_completa += ' INT. ' + dom.num_int.trim();
+                        if (dom.num_ext) calle_completa += ' ' + dom.num_ext.trim();
+                        if (dom.num_int) calle_completa += ' ' + dom.num_int.trim();
+
                         return calle_completa.trim();
                     }
 
                     let globalDomList = [];
                     
-                    // 1. Cargamos EXCLUSIVAMENTE las plazas del solicitante al array global
                     if (d.domicilios_solicitante) {
                         d.domicilios_solicitante.forEach(dom => {
                             dom.calle_formateada = formatCalle(dom);
@@ -107,7 +104,6 @@ $(document).ready(function () {
                     let options = '<option value="">Escribir manualmente...</option>';
                     let agregados = new Set(); 
 
-                    // ✨ Creador dinámico de Optgroups (Solo Plazas del usuario)
                     function generarOptgroups(domicilios) {
                         if (!domicilios || domicilios.length === 0) return '';
                         let agrupados = {};
@@ -138,10 +134,8 @@ $(document).ready(function () {
                         return html;
                     }
 
-                    // BLOQUE A: Plazas del Solicitante
                     options += generarOptgroups(d.domicilios_solicitante);
 
-                    // BLOQUE B: Otras Opciones (Fiscal y/o Certificado)
                     options += '<optgroup label="📄 OTRAS OPCIONES">';
                     options += '<option value="FISCAL" class="fw-bold text-dark">🚚 Ocupar Sin Sucursal</option>';
                     if (isSucursalUnica) {
@@ -156,6 +150,8 @@ $(document).ready(function () {
 
                         if (val === 'CERTIFICADO') {
                             $('#envio_gral_calle').val($('#cert_gral_calle').val());
+                            $('#envio_gral_entre').val($('#cert_gral_entre').val());
+                            $('#envio_gral_y').val($('#cert_gral_y').val());
                             $('#envio_gral_colonia').val($('#cert_gral_colonia').val());
                             $('#envio_gral_localidad').val($('#cert_gral_localidad').val());
                             $('#envio_gral_municipio').val($('#cert_gral_municipio').val());
@@ -163,6 +159,8 @@ $(document).ready(function () {
                             $('#envio_gral_cp').val($('#cert_gral_cp').val());
                         } else if (val === 'FISCAL') {
                             $('#envio_gral_calle').val($('input[name="f_calle"]').val());
+                            $('#envio_gral_entre').val('');
+                            $('#envio_gral_y').val('');
                             $('#envio_gral_colonia').val($('input[name="f_colonia"]').val());
                             $('#envio_gral_localidad').val($('input[name="f_localidad"]').val());
                             $('#envio_gral_municipio').val($('input[name="f_municipio"]').val());
@@ -171,25 +169,26 @@ $(document).ready(function () {
                         } else if (val !== '') {
                             let dt = globalDomList[val];
                             $('#envio_gral_calle').val(dt.calle_formateada);
+                            $('#envio_gral_entre').val(dt.entre_calle || '');
+                            $('#envio_gral_y').val(dt.y_calle || '');
                             $('#envio_gral_colonia').val(dt.colonia);
                             $('#envio_gral_localidad').val(dt.localidad || dt.municipio);
                             $('#envio_gral_municipio').val(dt.municipio);
                             $('#envio_gral_estado').val(dt.estado);
                             $('#envio_gral_cp').val(dt.cp);
                         } else {
-                            $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').val('');
+                            $('#envio_gral_calle, #envio_gral_entre, #envio_gral_y, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').val('');
                         }
                         sincronizarEnvioEquipos();
                     });
 
-                    // ==========================================
-                    // MAGIA DE AUTOLLENADO INICIAL 
-                    // ==========================================
                     if (isSucursalUnica) {
                         let tieneEnvioGuardado = (equipo_base && equipo_base.e_calle && equipo_base.e_calle.trim() !== '');
                         
                         if (tieneEnvioGuardado) {
                             $('#envio_gral_calle').val(equipo_base.e_calle);
+                            $('#envio_gral_entre').val(equipo_base.e_entre || '');
+                            $('#envio_gral_y').val(equipo_base.e_y || '');
                             $('#envio_gral_colonia').val(equipo_base.e_colonia);
                             $('#envio_gral_localidad').val(equipo_base.e_localidad);
                             $('#envio_gral_municipio').val(equipo_base.e_municipio);
@@ -207,9 +206,10 @@ $(document).ready(function () {
                                     $('#selector_contacto_gral').val('FISCAL');
                                 }
                             }
-                        } else if (d.sucursal_global && d.sucursal_global.id_sae != 1) {
-                            // ✨ ¡ES SUCURSAL FÍSICA! Ya rellenamos su domicilio arriba, forzamos Envio también
+                        } /* else if (d.sucursal_global && d.sucursal_global.id_sae != 1) {
                             $('#envio_gral_calle').val(d.sucursal_global.suc_calle || '');
+                            $('#envio_gral_entre').val(d.sucursal_global.suc_entre_calle || '');
+                            $('#envio_gral_y').val(d.sucursal_global.suc_y_calle || '');
                             $('#envio_gral_colonia').val(d.sucursal_global.suc_colonia || '');
                             $('#envio_gral_localidad').val(d.sucursal_global.suc_localidad || '');
                             $('#envio_gral_municipio').val(d.sucursal_global.suc_municipio || '');
@@ -224,12 +224,11 @@ $(document).ready(function () {
                             }
                         } else if (globalDomList.length === 1) {
                             $('#selector_contacto_gral').val(0).trigger('change');
-                        }
+                        } */
                         
                         sincronizarCertEquipos();
 
                     } else {
-                        // Es Multi-sucursal
                         let primerValido = d.detalles.find(item => item.e_calle && item.e_calle.trim() !== '');
 
                         if (primerValido) {
@@ -246,6 +245,8 @@ $(document).ready(function () {
 
                             if (todasIguales) {
                                 $('#envio_gral_calle').val(primerValido.e_calle);
+                                $('#envio_gral_entre').val(primerValido.e_entre || '');
+                                $('#envio_gral_y').val(primerValido.e_y || '');
                                 $('#envio_gral_colonia').val(primerValido.e_colonia);
                                 $('#envio_gral_localidad').val(primerValido.e_localidad);
                                 $('#envio_gral_municipio').val(primerValido.e_municipio);
@@ -265,9 +266,6 @@ $(document).ready(function () {
                         }
                     }
 
-                    // ==========================================
-                    // 🚀 RADAR: ALERTA DE EQUIPOS NUEVOS
-                    // ==========================================
                     let equiposSinDir = d.detalles.filter(item => !item.e_calle || item.e_calle.trim() === '');
                     let numSinDir = equiposSinDir.length;
 
@@ -311,6 +309,8 @@ $(document).ready(function () {
             let id = item.id_detalle_cot;
 
             let env_calle = (item.e_calle && item.e_calle.trim() !== '') ? item.e_calle : '';
+            let env_entre = (item.e_entre && item.e_entre.trim() !== '') ? item.e_entre : '';
+            let env_y = (item.e_y && item.e_y.trim() !== '') ? item.e_y : '';
             let env_colonia = (item.e_colonia && item.e_colonia.trim() !== '') ? item.e_colonia : '';
             let env_localidad = (item.e_localidad && item.e_localidad.trim() !== '') ? item.e_localidad : '';
             let env_municipio = (item.e_municipio && item.e_municipio.trim() !== '') ? item.e_municipio : '';
@@ -318,6 +318,8 @@ $(document).ready(function () {
             let env_cp = (item.e_cp && item.e_cp.trim() !== '') ? item.e_cp : '';
 
             let cert_calle = (item.c_calle && item.c_calle.trim() !== '') ? item.c_calle : (item.suc_calle || '');
+            let cert_entre = (item.c_entre && item.c_entre.trim() !== '') ? item.c_entre : (item.suc_entre_calle || '');
+            let cert_y = (item.c_y && item.c_y.trim() !== '') ? item.c_y : (item.suc_y_calle || '');
             let cert_colonia = (item.c_colonia && item.c_colonia.trim() !== '') ? item.c_colonia : (item.suc_colonia || '');
             let cert_localidad = (item.c_localidad && item.c_localidad.trim() !== '') ? item.c_localidad : (item.suc_localidad || '');
             let cert_municipio = (item.c_municipio && item.c_municipio.trim() !== '') ? item.c_municipio : (item.suc_municipio || '');
@@ -347,6 +349,8 @@ $(document).ready(function () {
                                 <small class="text-muted">(${nombreSucursal})</small>
                             </div>
                             <input type="text" class="form-control mb-2 c_calle" value="${cert_calle}" placeholder="Calle y número">
+                            <input type="text" class="form-control mb-2 c_entre" value="${cert_entre}" placeholder="Entre calle">
+                            <input type="text" class="form-control mb-2 c_y" value="${cert_y}" placeholder="Y calle">
                             <input type="text" class="form-control mb-2 c_colonia" value="${cert_colonia}" placeholder="Colonia">
                             <input type="text" class="form-control mb-2 c_localidad" value="${cert_localidad}" placeholder="Localidad">
                             <input type="text" class="form-control mb-2 c_municipio" value="${cert_municipio}" placeholder="Municipio">
@@ -362,6 +366,8 @@ $(document).ready(function () {
                                 </div>
                             </div>
                             <input type="text" class="form-control mb-2 e_calle" value="${env_calle}" placeholder="Calle y número">
+                            <input type="text" class="form-control mb-2 e_entre" value="${env_entre}" placeholder="Entre calle">
+                            <input type="text" class="form-control mb-2 e_y" value="${env_y}" placeholder="Y calle">
                             <input type="text" class="form-control mb-2 e_colonia" value="${env_colonia}" placeholder="Colonia">
                             <input type="text" class="form-control mb-2 e_localidad" value="${env_localidad}" placeholder="Localidad">
                             <input type="text" class="form-control mb-2 e_municipio" value="${env_municipio}" placeholder="Municipio">
@@ -379,20 +385,24 @@ $(document).ready(function () {
         let $fila = $(this).closest('.accordion-body');
         if ($(this).is(':checked')) {
             $fila.find('.e_calle').val($fila.find('.c_calle').val());
+            $fila.find('.e_entre').val($fila.find('.c_entre').val());
+            $fila.find('.e_y').val($fila.find('.c_y').val());
             $fila.find('.e_colonia').val($fila.find('.c_colonia').val());
             $fila.find('.e_localidad').val($fila.find('.c_localidad').val());
             $fila.find('.e_municipio').val($fila.find('.c_municipio').val());
             $fila.find('.e_estado').val($fila.find('.c_estado').val());
             $fila.find('.e_cp').val($fila.find('.c_cp').val());
         } else {
-            $fila.find('.e_calle, .e_colonia, .e_localidad, .e_municipio, .e_estado, .e_cp').val('');
+            $fila.find('.e_calle, .e_entre, .e_y, .e_colonia, .e_localidad, .e_municipio, .e_estado, .e_cp').val('');
         }
     });
 
-    $(document).on('input', '.c_calle, .c_colonia, .c_localidad, .c_municipio, .c_estado, .c_cp', function () {
+    $(document).on('input', '.c_calle, .c_entre, .c_y, .c_colonia, .c_localidad, .c_municipio, .c_estado, .c_cp', function () {
         let $fila = $(this).closest('.accordion-body');
         if ($fila.find('.switch-copiar-cert').is(':checked')) {
             $fila.find('.e_calle').val($fila.find('.c_calle').val());
+            $fila.find('.e_entre').val($fila.find('.c_entre').val());
+            $fila.find('.e_y').val($fila.find('.c_y').val());
             $fila.find('.e_colonia').val($fila.find('.c_colonia').val());
             $fila.find('.e_localidad').val($fila.find('.c_localidad').val());
             $fila.find('.e_municipio').val($fila.find('.c_municipio').val());
@@ -401,7 +411,7 @@ $(document).ready(function () {
         }
     });
 
-    $(document).on('input', '.e_calle, .e_colonia, .e_localidad, .e_municipio, .e_estado, .e_cp', function () {
+    $(document).on('input', '.e_calle, .e_entre, .e_y, .e_colonia, .e_localidad, .e_municipio, .e_estado, .e_cp', function () {
         let $fila = $(this).closest('.accordion-body');
         if ($fila.find('.switch-copiar-cert').is(':checked')) {
             $fila.find('.switch-copiar-cert').prop('checked', false);
@@ -411,6 +421,8 @@ $(document).ready(function () {
     $('#check_cert_igual_fiscal').change(function () {
         if ($(this).is(':checked')) {
             $('#cert_gral_calle').val($('input[name="f_calle"]').val());
+            $('#cert_gral_entre').val('');
+            $('#cert_gral_y').val('');
             $('#cert_gral_colonia').val($('input[name="f_colonia"]').val());
             $('#cert_gral_localidad').val($('input[name="f_localidad"]').val());
             $('#cert_gral_municipio').val($('input[name="f_municipio"]').val());
@@ -421,7 +433,7 @@ $(document).ready(function () {
                 $('#check_envio_igual_cert').trigger('change');
             }
         } else {
-            $('#cert_gral_calle, #cert_gral_colonia, #cert_gral_localidad, #cert_gral_municipio, #cert_gral_estado, #cert_gral_cp').val('');
+            $('#cert_gral_calle, #cert_gral_entre, #cert_gral_y, #cert_gral_colonia, #cert_gral_localidad, #cert_gral_municipio, #cert_gral_estado, #cert_gral_cp').val('');
             if (isSucursalUnica && $('#check_envio_igual_cert').is(':checked')) {
                 $('#check_envio_igual_cert').trigger('change');
             }
@@ -432,23 +444,27 @@ $(document).ready(function () {
     $('#check_envio_igual_cert').change(function () {
         if ($(this).is(':checked')) {
             $('#envio_gral_calle').val($('#cert_gral_calle').val());
+            $('#envio_gral_entre').val($('#cert_gral_entre').val());
+            $('#envio_gral_y').val($('#cert_gral_y').val());
             $('#envio_gral_colonia').val($('#cert_gral_colonia').val());
             $('#envio_gral_localidad').val($('#cert_gral_localidad').val());
             $('#envio_gral_municipio').val($('#cert_gral_municipio').val());
             $('#envio_gral_estado').val($('#cert_gral_estado').val());
             $('#envio_gral_cp').val($('#cert_gral_cp').val());
         } else {
-            $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').val('');
+            $('#envio_gral_calle, #envio_gral_entre, #envio_gral_y, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').val('');
         }
         sincronizarEnvioEquipos();
     });
 
-    $('#cert_gral_calle, #cert_gral_colonia, #cert_gral_localidad, #cert_gral_municipio, #cert_gral_estado, #cert_gral_cp').on('input', function () {
+    $('#cert_gral_calle, #cert_gral_entre, #cert_gral_y, #cert_gral_colonia, #cert_gral_localidad, #cert_gral_municipio, #cert_gral_estado, #cert_gral_cp').on('input', function () {
         sincronizarCertEquipos();
         if ($('#check_cert_igual_fiscal').is(':checked')) $('#check_cert_igual_fiscal').prop('checked', false);
 
         if ($('#check_envio_igual_cert').is(':checked')) {
             $('#envio_gral_calle').val($('#cert_gral_calle').val());
+            $('#envio_gral_entre').val($('#cert_gral_entre').val());
+            $('#envio_gral_y').val($('#cert_gral_y').val());
             $('#envio_gral_colonia').val($('#cert_gral_colonia').val());
             $('#envio_gral_localidad').val($('#cert_gral_localidad').val());
             $('#envio_gral_municipio').val($('#cert_gral_municipio').val());
@@ -458,7 +474,7 @@ $(document).ready(function () {
         }
     });
 
-    $('#envio_gral_calle, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').on('input', function () {
+    $('#envio_gral_calle, #envio_gral_entre, #envio_gral_y, #envio_gral_colonia, #envio_gral_localidad, #envio_gral_municipio, #envio_gral_estado, #envio_gral_cp').on('input', function () {
         sincronizarEnvioEquipos();
         if (isSucursalUnica && $('#check_envio_igual_cert').is(':checked')) $('#check_envio_igual_cert').prop('checked', false);
         if (!isSucursalUnica && $('#selector_contacto_gral').val() !== "") $('#selector_contacto_gral').val('');
@@ -466,6 +482,8 @@ $(document).ready(function () {
 
     function sincronizarEnvioEquipos() {
         $('.e_calle').val($('#envio_gral_calle').val());
+        $('.e_entre').val($('#envio_gral_entre').val());
+        $('.e_y').val($('#envio_gral_y').val());
         $('.e_colonia').val($('#envio_gral_colonia').val());
         $('.e_localidad').val($('#envio_gral_localidad').val());
         $('.e_municipio').val($('#envio_gral_municipio').val());
@@ -476,6 +494,8 @@ $(document).ready(function () {
     function sincronizarCertEquipos() {
         if (isSucursalUnica) {
             $('.c_calle').val($('#cert_gral_calle').val());
+            $('.c_entre').val($('#cert_gral_entre').val());
+            $('.c_y').val($('#cert_gral_y').val());
             $('.c_colonia').val($('#cert_gral_colonia').val());
             $('.c_localidad').val($('#cert_gral_localidad').val());
             $('.c_municipio').val($('#cert_gral_municipio').val());
@@ -484,7 +504,6 @@ $(document).ready(function () {
         }
     }
 
-    // 5. Guardar JSON
     $('#formFormalizar').on('submit', function (e) {
         e.preventDefault();
 
@@ -500,14 +519,24 @@ $(document).ready(function () {
                 payloadEquipos.push({
                     id_detalle: parseInt(idDetalle),
                     cert: {
-                        calle: $(this).find('.c_calle').val(), colonia: $(this).find('.c_colonia').val(),
-                        localidad: $(this).find('.c_localidad').val(), municipio: $(this).find('.c_municipio').val(),
-                        estado: $(this).find('.c_estado').val(), cp: $(this).find('.c_cp').val()
+                        calle: $(this).find('.c_calle').val(),
+                        entre_calle: $(this).find('.c_entre').val(),
+                        y_calle: $(this).find('.c_y').val(), 
+                        colonia: $(this).find('.c_colonia').val(),
+                        localidad: $(this).find('.c_localidad').val(), 
+                        municipio: $(this).find('.c_municipio').val(),
+                        estado: $(this).find('.c_estado').val(),
+                        cp: $(this).find('.c_cp').val()
                     },
                     envio: {
-                        calle: $(this).find('.e_calle').val(), colonia: $(this).find('.e_colonia').val(),
-                        localidad: $(this).find('.e_localidad').val(), municipio: $(this).find('.e_municipio').val(),
-                        estado: $(this).find('.e_estado').val(), cp: $(this).find('.e_cp').val()
+                        calle: $(this).find('.e_calle').val(),
+                        entre_calle: $(this).find('.e_entre').val(),
+                        y_calle: $(this).find('.e_y').val(), 
+                        colonia: $(this).find('.e_colonia').val(),
+                        localidad: $(this).find('.e_localidad').val(), 
+                        municipio: $(this).find('.e_municipio').val(),
+                        estado: $(this).find('.e_estado').val(),
+                        cp: $(this).find('.e_cp').val()
                     }
                 });
             }

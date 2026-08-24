@@ -1,4 +1,17 @@
 $(document).ready(function () {
+    $('#edit_estatus, #tipo_precio, #edit_filtro_tipo_producto').each(function() {
+        // Destruimos la inicialización automática del template
+        if ($(this).hasClass('select2-hidden-accessible')) {
+            $(this).select2('destroy');
+        }
+        // Reconstruimos forzando que se rendericen dentro del modal
+        $(this).select2({
+            theme: 'bootstrap-5',
+            dropdownParent: $('#modalEditarCotizacion'),
+            width: '100%'
+        });
+    });
+
     const formatoMoneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
     const formatoInput = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     $(document).on('blur', '.precio-mask', function() {
@@ -377,8 +390,14 @@ $(document).ready(function () {
                     }
 
                     if ($selectSuc.hasClass('select2-hidden-accessible')) {
-                        $selectSuc.trigger('change.select2');
+                        $selectSuc.select2('destroy');
                     }
+                    $selectSuc.select2({ 
+                        theme: 'bootstrap-5', 
+                        dropdownParent: $('#modalEditarCotizacion'), 
+                        width: '100%',
+                        placeholder: "Selecciona certificado..." 
+                    });
 
                     // ✨ FORZAR ESTILOS SELECT2 A LAS FILAS EXISTENTES DEL MODAL
                     $('.select-sucursal-fila-edit').each(function() {
@@ -395,25 +414,10 @@ $(document).ready(function () {
                                 theme: 'bootstrap-5',
                                 dropdownParent: $('#modalEditarCotizacion'), // Clave para que no se congele en el modal
                                 width: '100%',
-                                placeholder: "Selecciona destino..."
+                                placeholder: "Selecciona certificado..."
                             });
                         }
                     });
-
-                    // --- LLENAR PLAZAS (Independientes de la sucursal) ---
-                    /* let plazasUnicas = new Map();
-                    data.forEach(suc => {
-                        if (suc.id_sae == 1) return; // Matriz no aporta plazas aquí
-                        if (suc.ids_plazas && suc.nombres_plazas) {
-                            let ids = suc.ids_plazas.toString().split('||');
-                            let nombres = suc.nombres_plazas.split('||');
-                            for(let i = 0; i < ids.length; i++) {
-                                let idPlaza = ids[i].trim();
-                                let nomPlaza = nombres[i].trim();
-                                if(idPlaza && nomPlaza) plazasUnicas.set(idPlaza, nomPlaza);
-                            }
-                        }
-                    }); */
                     
                     let plazasUnicas = new Map();
                     data.forEach(suc => {
@@ -679,7 +683,7 @@ $(document).ready(function () {
             theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%'
         });
         $(`#edit_addr${rowCount} .select-sucursal-fila-edit`).select2({ 
-            theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%', placeholder: "Selecciona destino..." 
+            theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%', placeholder: "Selecciona certificado..." 
         });
         rowCount++;
         recalcularNumerosFila();

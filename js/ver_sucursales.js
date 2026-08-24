@@ -104,6 +104,7 @@ $(document).ready(function () {
         $('#sucursal_id').val('');
         $('#bloque_estatus_suc').hide();
         $('#Plaza_id').val([]).trigger('change.select2'); 
+        $('#Empresa_id').val('').trigger('change');
         $('#modalSucursalLabel').text('Nueva Sucursal');
         $('#modalSucursal').modal('show');
     });

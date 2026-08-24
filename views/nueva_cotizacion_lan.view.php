@@ -155,7 +155,7 @@
                                                         </select>
                                                     </div>
                                                     <div class="mb-2">
-                                                        <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-primary"></i>Tipo de Distribución</label>
+                                                        <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-primary"></i>Determinar tipo de sucursal</label>
                                                         <div class="d-flex gap-4 mt-2">
                                                             <div class="form-check">
                                                                 <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo" id="rad_unica" value="unica" checked>
@@ -170,58 +170,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <!-- <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label fw-bold">Tipo de Distribución</label>
-                                                <div class="d-flex gap-4 mt-2">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="tipo_sucursal_flujo" id="rad_unica" value="unica" checked>
-                                                        <label class="form-check-label fw-semibold" for="rad_unica">
-                                                            🏢 Sucursal Única
-                                                        </label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="tipo_sucursal_flujo" id="rad_multi" value="multisucursal">
-                                                        <label class="form-check-label fw-semibold" for="rad_multi">
-                                                            📦 Multi-sucursal (Masivo)
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label fw-bold" style="color: #198754 !important;"><i class="feather-filter me-1"></i>¿Qué tipo de producto se cotizará?</label>
-                                                !-- <select class="form-control max-select" name="filtro_estado_producto" id="filtro_estado_producto">
-                                                <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
-                                                <option value="NUEVO">✨ Solo Equipos Nuevos</option>
-                                                <option value="USADO">🔧 Solo Equipos Usados</option>
-                                                <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
-                                            </select> --
-                                                <select name="categoria" id="filtro_estado_producto" class="form-control max-select">
-                                                    <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
-                                                    <option value="NUEVO">✨ Solo Equipos Nuevos</option>
-                                                    <option value="USADO">🔧 Solo Equipos Usados</option>
-                                                    <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="col-md-6 mb-3" id="wrapper_selector_sucursal">
-                                                <label for="select_sucursal" class="form-label fw-bold" style="color: #0d6efd !important;"><i class="feather-map-pin me-1"></i>Sucursal Destino</label>
-                                                <select class="form-control border-primary" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" requerid>
-                                                    <option value="">Selecciona una sucursal...</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="col-md-6 mb-4">
-                                                <label class="form-label fw-bold" style="color: #198754 !important;"><i class="feather-tag me-1"></i>Selecciona el precio que se utilizara</span></label>
-                                                <select class="form-control" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
-                                                    <option value="">Selecciona el tipo de precio...</option>
-                                                    <option value="Farmacia">Farmacia</option>
-                                                    <option value="Público">Público</option>
-                                                </select>
-                                            </div>
-                                        </div> -->
-
+                                        
                                         <div class="col-lg-6">
                                             <div class="card border-success h-100 shadow-sm">
                                                 <div class="card-header bg-success text-white py-3">
@@ -246,7 +195,7 @@
                                                         </select>
                                                     </div>
                                                     <div class="mb-2" id="wrapper_selector_sucursal">
-                                                        <label for="select_sucursal" class="form-label text-dark fw-bold"><i class="feather-map-pin me-1 text-success"></i>Sucursal Destino</label>
+                                                        <label for="select_sucursal" class="form-label text-dark fw-bold"><i class="feather-map-pin me-1 text-success"></i>Sucursal para certificado</label>
                                                         <select class="form-control border-success" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" requerid>
                                                             <option value="">Selecciona una sucursal...</option>
                                                         </select>

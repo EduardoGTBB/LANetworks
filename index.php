@@ -2,6 +2,108 @@
 declare(strict_types=1);
 session_start();
 
+// Si ya tiene sesión, aplicamos la lógica de redirección inteligente o lo mandamos al inicio
+if (isset($_SESSION['id_user_admin']) || isset($_SESSION['id_usuario_cliente'])) {
+    // 🛡️ LÓGICA DE REDIRECCIÓN INTELIGENTE (Si ya estaba logueado y dio clic en el correo)
+    $url_destino = 'inicio.php'; // Destino por defecto
+    if (isset($_SESSION['redirect_url']) && !empty($_SESSION['redirect_url'])) {
+        $url_guardada = $_SESSION['redirect_url'];
+        unset($_SESSION['redirect_url']); // Limpiamos la memoria
+        
+        // Prevención de Open Redirect: Solo aceptamos rutas internas relativas
+        if (strpos($url_guardada, '/') === 0 && strpos($url_guardada, 'http') === false) {
+            $url_destino = $url_guardada;
+        }
+    }
+    
+    header('Location: ' . $url_destino);
+    exit;
+}
+
+$error_msg = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 1. Requerimos la configuración y el MODELO
+    require_once 'api/config.php';
+    require_once 'lib/funciones_db.php';
+
+    $usuario = trim($_POST['usuario'] ?? '');
+    $password_ingresada = trim($_POST['password'] ?? '');
+
+    if (!empty($usuario) && !empty($password_ingresada)) {
+        try {
+            $login_exitoso = false;
+
+            // 2. Primero buscamos si es un ADMINISTRADOR
+            $user_admin = obtenerUsuarioPorLan($pdo, $usuario);
+
+            if ($user_admin && password_verify($password_ingresada, $user_admin['password'])) {
+                
+                // ¡Éxito Admin! Guardamos datos en la sesión
+                $_SESSION['id_user_admin'] = $user_admin['id_user_admin'];
+                $_SESSION['nombre_completo'] = $user_admin['admin_nombre'] . ' ' . $user_admin['admin_apell_pat'];
+                $_SESSION['perfil'] = $user_admin['perfil'];
+                $_SESSION['usuario_lan'] = $user_admin['usuario_lan'];
+                $_SESSION['foto_perfil'] = !empty($user_admin['foto_perfil']) ? $user_admin['foto_perfil'] : 'user.png';
+
+                $login_exitoso = true;
+                
+            } else {
+                // 3. Si no es admin, buscamos si es un CLIENTE del Portal B2B
+                $user_cliente = obtenerUsuarioEmpresaporCorreo($pdo, $usuario);
+
+                if ($user_cliente && password_verify($password_ingresada, $user_cliente['usuario_password'])) {
+                    
+                    // ¡Éxito Cliente! Guardamos sus datos específicos en la sesión
+                    $_SESSION['id_usuario_cliente'] = $user_cliente['id_usuario'];
+                    $_SESSION['Empresa_id'] = $user_cliente['Empresa_id'];
+                    $_SESSION['nombre_completo'] = $user_cliente['nombre'] . ' ' . $user_cliente['apellido_pat'];
+                    $_SESSION['correo'] = $user_cliente['correo'];
+                    $_SESSION['foto_perfil'] = !empty($user_cliente['foto_perfil']) ? $user_cliente['foto_perfil'] : 'user.png';
+
+                    $login_exitoso = true;
+                } else {
+                    // Si no está en ninguna de las dos tablas, lo rechazamos
+                    $error_msg = "Usuario o contraseña incorrectos, o cuenta inactiva.";
+                }
+            }
+
+            // 4. Procesar la redirección si el login fue exitoso
+            if ($login_exitoso) {
+                $url_destino = 'inicio.php'; // Dashboard por defecto
+
+                // Revisamos si venía de un link profundo (correo)
+                if (isset($_SESSION['redirect_url']) && !empty($_SESSION['redirect_url'])) {
+                    $url_guardada = $_SESSION['redirect_url'];
+                    unset($_SESSION['redirect_url']); // Limpiamos inmediatamente
+                    
+                    // Validamos la URL (Prevención Open Redirect)
+                    if (strpos($url_guardada, '/') === 0 && strpos($url_guardada, 'http') === false) {
+                        $url_destino = $url_guardada;
+                    }
+                }
+                
+                header('Location: ' . $url_destino);
+                exit;
+            }
+            
+        } catch (Exception $e) {
+            error_log("Error en el login: " . $e->getMessage());
+            $error_msg = "Ocurrió un error en el sistema. Intenta más tarde.";
+        }
+    } else {
+        $error_msg = "Por favor, completa todos los campos.";
+    }
+}
+
+// 5. Cargar la Vista
+require "views/login.view.php";
+?>
+
+<!-- ?php
+declare(strict_types=1);
+session_start();
+
 // Si ya tiene sesión, lo mandamos directo al inicio
 if (isset($_SESSION['id_user_admin']) || isset($_SESSION['id_usuario_cliente'])) {
     header('Location: inicio.php');
@@ -67,4 +169,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // 5. Cargar la Vista
 require "views/login.view.php";
-?>
+?> -->
