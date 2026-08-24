@@ -120,13 +120,13 @@ if ($es_multisucursal) {
         if (!empty($d['calle_numero_envio'])) {
             $key_envio = trim($d['calle_numero_envio']) . '|' . trim($d['cp_envio']);
             if (!isset($envios_multisucursal[$key_envio])) {
-                
+
                 // Formateamos la dirección dinámica con "entre calle"
                 $calleMulti = htmlspecialchars($d['calle_numero_envio']);
                 if (!empty($d['entre_calle_envio']) && !empty($d['y_calle_envio'])) {
-                    $calleMulti .= ' Entre ' . htmlspecialchars($d['entre_calle_envio']) . ' y ' . htmlspecialchars($d['y_calle_envio']);
+                    $calleMulti .= ' ' . htmlspecialchars($d['entre_calle_envio']) . ' y ' . htmlspecialchars($d['y_calle_envio']);
                 } elseif (!empty($d['entre_calle_envio'])) {
-                    $calleMulti .= ' Entre ' . htmlspecialchars($d['entre_calle_envio']);
+                    $calleMulti .= ' ' . htmlspecialchars($d['entre_calle_envio']);
                 }
 
                 $envios_multisucursal[$key_envio] = [
@@ -303,9 +303,31 @@ if ($es_multisucursal) {
                 <?php
                 // ✨ OBTENEMOS ESTRICTAMENTE EL NOMBRE DE LA PLAZA GUARDADA EN LA BD
                 $plaza_completa = !empty($cot['plaza_guardada']) ? mb_strtoupper(htmlspecialchars($cot['plaza_guardada']), 'UTF-8') : 'SIN ESPECIFICAR';
+
+                // ✨ Determinamos el nombre de la sucursal para la cabecera
+                $nombre_sucursal_pdf = '';
+                if (!$es_multisucursal && !empty($cot['nombre_sucursal'])) {
+                    $nombre_sucursal_pdf = mb_strtoupper(htmlspecialchars($cot['nombre_sucursal']), 'UTF-8');
+                } elseif ($es_multisucursal) {
+                    $nombre_sucursal_pdf = "MÚLTIPLES SUCURSALES";
+                } else {
+                    $nombre_sucursal_pdf = "SUCURSAL MATRIZ";
+                }
                 ?>
-                <p class="m-0"><strong>Atención a:</strong> <?php echo $cot['cliente']; ?></p>
+
+
+                <!-- ✨ Solo mostramos Atención a: si NO es Laboratorio -->
+                <?php if (!$es_laboratorio): ?>
+                    <p class="m-0"><strong>Atención a:</strong> <?php echo $cot['cliente']; ?></p>
+                <?php endif; ?>
+
+                <!-- <p class="m-0"><strong>Atención a:</strong> ?php echo $cot['cliente']; ?></p> -->
                 <p class="m-0"><strong>PLAZA:</strong><?php echo $plaza_completa; ?></p>
+
+                <!-- ✨ Mostramos la SUCURSAL SOLO si es Laboratorio Y NO es multisucursal -->
+                <?php if ($es_laboratorio && !$es_multisucursal): ?>
+                    <p class="m-0"><strong>SUCURSAL:</strong> <?php echo $nombre_sucursal_pdf; ?></p>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -334,14 +356,14 @@ if ($es_multisucursal) {
                         <div style="background-color: #f4f6f9; border-left: 4px solid #00a3f0; padding: 6px 10px; border-radius: 3px; font-size: 9px; line-height: 1.3;">
                             <p class="m-0" style="color: #00a3f0; font-size: 10px;"><strong>■ DIRECCIÓN DE CERTIFICADO</strong></p>
                             <p class="m-0 mt-1">
-                                <?php 
-                                    $calleCert = htmlspecialchars($dir_cert['calle_numero_cert']);
-                                    if(!empty($dir_cert['entre_calle_cert']) && !empty($dir_cert['y_calle_cert'])) {
-                                        $calleCert .= ' Entre ' . htmlspecialchars($dir_cert['entre_calle_cert']) . ' y ' . htmlspecialchars($dir_cert['y_calle_cert']);
-                                    } elseif(!empty($dir_cert['entre_calle_cert'])) {
-                                        $calleCert .= ' Entre ' . htmlspecialchars($dir_cert['entre_calle_cert']);
-                                    }
-                                    echo $calleCert . ', Col. ' . htmlspecialchars($dir_cert['colonia_cert']); 
+                                <?php
+                                $calleCert = htmlspecialchars($dir_cert['calle_numero_cert']);
+                                if (!empty($dir_cert['entre_calle_cert']) && !empty($dir_cert['y_calle_cert'])) {
+                                    $calleCert .= ' ' . htmlspecialchars($dir_cert['entre_calle_cert']) . ' y ' . htmlspecialchars($dir_cert['y_calle_cert']);
+                                } elseif (!empty($dir_cert['entre_calle_cert'])) {
+                                    $calleCert .= ' ' . htmlspecialchars($dir_cert['entre_calle_cert']);
+                                }
+                                echo $calleCert . ', Col. ' . htmlspecialchars($dir_cert['colonia_cert']);
                                 ?><br>
                                 <strong>CP:</strong> <?php echo htmlspecialchars($dir_cert['cp_cert'] . ', ' . $dir_cert['municipio_cert'] . ', ' . $dir_cert['estado_cert']); ?>
                             </p>
@@ -358,9 +380,9 @@ if ($es_multisucursal) {
                                 <?php
                                 $calleEnvio = htmlspecialchars($dir_envio['calle_numero_envio']);
                                 if (!empty($dir_envio['entre_calle_envio']) && !empty($dir_envio['y_calle_envio'])) {
-                                    $calleEnvio .= ' Entre ' . htmlspecialchars($dir_envio['entre_calle_envio']) . ' y ' . htmlspecialchars($dir_envio['y_calle_envio']);
+                                    $calleEnvio .= ' ' . htmlspecialchars($dir_envio['entre_calle_envio']) . ' y ' . htmlspecialchars($dir_envio['y_calle_envio']);
                                 } elseif (!empty($dir_envio['entre_calle_envio'])) {
-                                    $calleEnvio .= ' Entre ' . htmlspecialchars($dir_envio['entre_calle_envio']);
+                                    $calleEnvio .= ' ' . htmlspecialchars($dir_envio['entre_calle_envio']);
                                 }
                                 echo $calleEnvio . ', Col. ' . htmlspecialchars($dir_envio['colonia_envio']);
                                 ?><br>
@@ -474,19 +496,49 @@ if ($es_multisucursal) {
                                             <?php if (!empty($d['calle_numero_cert'])): ?>
                                                 <span style="font-size: 9px; color: #444; display: block; line-height: 1.2;">
                                                     <strong style="color: #000;">📍 Certificado (<?php echo htmlspecialchars($d['nombre_sucursal_destino']); ?>):</strong>
-                                                    <?php 
-                                                        $calleCertDetalle = htmlspecialchars($d['calle_numero_cert']);
-                                                        if (!empty($d['entre_calle_cert']) && !empty($d['y_calle_cert'])) {
-                                                            $calleCertDetalle .= ' Entre ' . htmlspecialchars($d['entre_calle_cert']) . ' y ' . htmlspecialchars($d['y_calle_cert']);
-                                                        } elseif (!empty($d['entre_calle_cert'])) {
-                                                            $calleCertDetalle .= ' Entre ' . htmlspecialchars($d['entre_calle_cert']);
-                                                        }
-                                                        echo $calleCertDetalle . ', Col. ' . htmlspecialchars($d['colonia_cert']) . ', ' . htmlspecialchars($d['municipio_cert']) . ', ' . htmlspecialchars($d['estado_cert']) . ' C.P. ' . htmlspecialchars($d['cp_cert']); 
+                                                    <?php
+                                                    $calleCertDetalle = htmlspecialchars($d['calle_numero_cert']);
+                                                    if (!empty($d['entre_calle_cert']) && !empty($d['y_calle_cert'])) {
+                                                        $calleCertDetalle .= ' ' . htmlspecialchars($d['entre_calle_cert']) . ' y ' . htmlspecialchars($d['y_calle_cert']);
+                                                    } elseif (!empty($d['entre_calle_cert'])) {
+                                                        $calleCertDetalle .= ' ' . htmlspecialchars($d['entre_calle_cert']);
+                                                    }
+                                                    echo $calleCertDetalle . ', Col. ' . htmlspecialchars($d['colonia_cert']) . ', ' . htmlspecialchars($d['municipio_cert']) . ', ' . htmlspecialchars($d['estado_cert']) . ' C.P. ' . htmlspecialchars($d['cp_cert']);
                                                     ?>
                                                 </span>
                                             <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
+                                    
+                                    <!-- // &NUEVO DISEÑO: SUCURSAL EN ETIQUETA DESTACADA -->
+                                    <!-- ?php
+                                    // Direcciones detalladas del equipo (Certificado Multisucursal)
+                                    if ($es_multisucursal && (!empty($d['calle_numero_cert']) || (!$es_laboratorio && !empty($d['calle_numero_envio'])))):
+                                    ?>
+                                        <div style="margin-top: 6px; padding-top: 5px; border-top: 1px dashed #ccc;">
+
+                                            <div style="margin-bottom: 4px;">
+                                                <span style="display: inline-block; background-color: #f4f6f9 !important; border: 1px solid #c6cdd3 !important; color: #333 !important; padding: 2px 6px; border-radius: 3px; font-size: 9px; font-weight: bold; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                                    🏢 SUCURSAL DESTINO: ?php echo htmlspecialchars($d['nombre_sucursal_destino']); ?>
+                                                </span>
+                                            </div>
+
+                                            ?php if (!empty($d['calle_numero_cert'])): ?>
+                                                <span style="font-size: 9px; color: #444; display: block; line-height: 1.3;">
+                                                    <strong style="color: #000;">📍 Dirección de Certificado:</strong>
+                                                    ?php
+                                                    $calleCertDetalle = htmlspecialchars($d['calle_numero_cert']);
+                                                    if (!empty($d['entre_calle_cert']) && !empty($d['y_calle_cert'])) {
+                                                        $calleCertDetalle .= ' ' . htmlspecialchars($d['entre_calle_cert']) . ' y ' . htmlspecialchars($d['y_calle_cert']);
+                                                    } elseif (!empty($d['entre_calle_cert'])) {
+                                                        $calleCertDetalle .= ' ' . htmlspecialchars($d['entre_calle_cert']);
+                                                    }
+                                                    echo $calleCertDetalle . ', Col. ' . htmlspecialchars($d['colonia_cert']) . ', ' . htmlspecialchars($d['municipio_cert']) . ', ' . htmlspecialchars($d['estado_cert']) . ' C.P. ' . htmlspecialchars($d['cp_cert']);
+                                                    ?>
+                                                </span>
+                                            ?php endif; ?>
+                                        </div>
+                                    ?php endif; ?> -->
                                 </td>
 
                                 <?php if (!$es_laboratorio): ?>
@@ -505,16 +557,6 @@ if ($es_multisucursal) {
                             </td>
                         </tr>
                     </tbody>
-                    <!-- <tfoot style="-webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                        <tr>
-                            <td class="text-center align-middle" style="background-color: #e6f7ff !important; color: #00a3f0 !important; border: 2px solid #00a3f0 !important; font-size: 13px; font-weight: 900;">
-                                ?php echo $sumatoria_equipos; ?>
-                            </td>
-                            <td colspan="?php echo $es_laboratorio ? '2' : '4'; ?>" class="text-start align-middle" style="background-color: #e6f7ff !important; color: #00a3f0 !important; border: 2px solid #00a3f0 !important; font-size: 13px; font-weight: 900;">
-                                ◄ PIEZA(S) TOTALES EN ESTA COTIZACIÓN
-                            </td>
-                        </tr>
-                    </tfoot> -->
                 </table>
             </div>
         </div>

@@ -1,4 +1,18 @@
 $(document).ready(function () {
+
+    $('#edit_estatus, #tipo_precio, #edit_filtro_tipo_producto').each(function() {
+        // Destruimos la inicialización automática del template
+        if ($(this).hasClass('select2-hidden-accessible')) {
+            $(this).select2('destroy');
+        }
+        // Reconstruimos forzando que se rendericen dentro del modal
+        $(this).select2({
+            theme: 'bootstrap-5',
+            dropdownParent: $('#modalEditarCotizacion'),
+            width: '100%'
+        });
+    });
+    
     const formatoMoneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
     const formatoInput = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -26,7 +40,7 @@ $(document).ready(function () {
     let preciosProductos = {};
     let rowCount = 0;
 
-    window.windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
+    window.windowSucursalesOpcionesEdit = '<option value="">Selecciona certificado...</option>';
     let isEditMultiSucursal = false;
     let sucursalesCacheEdit = []; 
 
@@ -666,7 +680,7 @@ $(document).ready(function () {
             theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%'
         });
         $(`#edit_addr${rowCount} .select-sucursal-fila-edit`).select2({ 
-            theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%', placeholder: "Selecciona destino..." 
+            theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%', placeholder: "Selecciona certificado..." 
         });
         rowCount++;
         recalcularNumerosFila();

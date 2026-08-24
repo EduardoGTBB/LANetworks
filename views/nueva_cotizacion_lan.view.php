@@ -155,7 +155,7 @@
                                                         </select>
                                                     </div>
                                                     <div class="mb-2">
-                                                        <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-primary"></i>Tipo de Distribución</label>
+                                                        <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-primary"></i>Determinar tipo de sucursal</label>
                                                         <div class="d-flex gap-4 mt-2">
                                                             <div class="form-check">
                                                                 <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo" id="rad_unica" value="unica" checked>
@@ -195,7 +195,7 @@
                                                         </select>
                                                     </div>
                                                     <div class="mb-2" id="wrapper_selector_sucursal">
-                                                        <label for="select_sucursal" class="form-label text-dark fw-bold"><i class="feather-map-pin me-1 text-success"></i>Certificado </label>
+                                                        <label for="select_sucursal" class="form-label text-dark fw-bold"><i class="feather-map-pin me-1 text-success"></i>Sucursal para certificado</label>
                                                         <select class="form-control border-success" id="select_sucursal" name="Sucursal_id" data-select2-selector="status" requerid>
                                                             <option value="">Selecciona una sucursal...</option>
                                                         </select>

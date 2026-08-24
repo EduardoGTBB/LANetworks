@@ -17,7 +17,7 @@ $(document).ready(function () {
         dropdownParent: $('#modalPlaza .modal-content')
     });
 
-    $('#formPlaza').on('input', '.mayusculas, #nombre_plaza', function() {
+    $('#formPlaza').on('input', '.mayusculas, #nombre_plaza', function () {
         $(this).val($(this).val().toUpperCase());
     });
 
@@ -81,7 +81,7 @@ $(document).ready(function () {
     }
 
     function actualizarSelectsDinamicos() {
-        $('.select-contacto-dinamico').each(function() {
+        $('.select-contacto-dinamico').each(function () {
             let val = $(this).attr('data-selected') || $(this).val();
             if ($(this).hasClass('select2-hidden-accessible')) {
                 $(this).select2('destroy');
@@ -94,8 +94,8 @@ $(document).ready(function () {
         });
     }
 
-    $('#Empresa_id').on('change', function() {
-        if($(this).val()) {
+    $('#Empresa_id').on('change', function () {
+        if ($(this).val()) {
             cargarContactosPorEmpresa($(this).val());
             cargarUsuariosEmpresa($(this).val()); // Cargar usuarios de la empresa
         }
@@ -106,7 +106,7 @@ $(document).ready(function () {
         let isFirst = (domCount === 1);
         let showClass = isFirst ? 'show' : '';
         let bgClass = (domCount % 2 === 0) ? 'bg-light' : 'bg-white';
-        
+
         let topBar = '';
         if (!isFirst) {
             topBar = `
@@ -159,9 +159,9 @@ $(document).ready(function () {
                 </div>
             </div>
         </div>`;
-        
+
         $('#contenedor_domicilios').append(html);
-        
+
         let $nuevoSelect = $('.select-contacto-dinamico').last();
         if (d && d.atencion_a) {
             if ($nuevoSelect.find(`option[value="${d.atencion_a}"]`).length === 0) {
@@ -180,15 +180,15 @@ $(document).ready(function () {
     $(document).on('click', '.btn-eliminar-domicilio', function () {
         $(this).closest('.bloque-domicilio').remove();
         domCount = 0;
-        
-        $('.bloque-domicilio').each(function() {
+
+        $('.bloque-domicilio').each(function () {
             domCount++;
             $(this).find('.texto-titulo-domicilio').html(`<i class="feather-map-pin me-2"></i> Dirección #${domCount}`);
-            
+
             let isEven = (domCount % 2 === 0);
             let $btn = $(this).find('.accordion-button');
             let $body = $(this).find('.accordion-body');
-            
+
             if (isEven) {
                 $btn.removeClass('bg-white').addClass('bg-light');
                 $body.removeClass('bg-white').addClass('bg-light');
@@ -250,10 +250,21 @@ $(document).ready(function () {
                     `);
                 });
 
-                $tabla.DataTable({ 
+                /* $tabla.DataTable({ 
                     language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }, 
+                    searching: true,
                     pageLength: 10,
                     dom: '<"table-responsive"t><"row align-items-center p-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                    order: [[0, 'asc']]
+                }); */
+                $tabla.DataTable({ 
+                    language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }, 
+                    lengthChange: false,
+                    searching: true,
+                    pageLength: 10,
+                    dom: "<'row mb-3'<'col-sm-12 col-md-6 d-flex justify-content-start'f><'col-sm-12 col-md-6'>>" +
+                            "<'table-responsive'tr>" +
+                            "<'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
                     order: [[0, 'asc']]
                 });
             }
@@ -295,32 +306,32 @@ $(document).ready(function () {
     $(document).on('click', '.btn-editar', function (e) {
         e.preventDefault();
         let id = $(this).data('id');
-        
+
         $.ajax({
             url: 'api/api_ver_plazas.php?action=get_plaza&id=' + id,
             method: 'GET',
             success: function (res) {
                 if (res.status === 'success') {
-                    $('#formPlaza')[0].reset(); 
-                    $('#contenedor_domicilios').empty(); 
+                    $('#formPlaza')[0].reset();
+                    $('#contenedor_domicilios').empty();
                     domCount = 0;
-                    
+
                     let p = res.data;
                     $('#action').val('guardar');
-                    $('#id_plaza').val(p.id_plaza); 
+                    $('#id_plaza').val(p.id_plaza);
                     $('#nombre_plaza').val(p.nombre_plaza);
                     $('#estatus').prop('checked', p.estatus === 'Y');
-                    
-                    $('#Empresa_id').val(p.Empresa_id ? p.Empresa_id : '').trigger('change.select2'); 
-                    
-                    cargarContactosPorEmpresa(p.Empresa_id, function() {
+
+                    $('#Empresa_id').val(p.Empresa_id ? p.Empresa_id : '').trigger('change.select2');
+
+                    cargarContactosPorEmpresa(p.Empresa_id, function () {
                         if (p.domicilios && p.domicilios.length > 0) {
                             p.domicilios.forEach(d => {
                                 construirBloqueDomicilio(d);
                             });
-                            evaluarSwitchesIniciales(); 
+                            evaluarSwitchesIniciales();
                         } else {
-                            construirBloqueDomicilio(); 
+                            construirBloqueDomicilio();
                         }
                     });
 
@@ -339,16 +350,16 @@ $(document).ready(function () {
         e.preventDefault();
         $('#formPlaza')[0].reset();
         $('#action').val('guardar');
-        $('#id_plaza').val(''); 
-        
+        $('#id_plaza').val('');
+
         $('#Empresa_id').val('').trigger('change.select2');
         $('#usuarios_multi').val(null).trigger('change');
-        
-        cargarContactosPorEmpresa('', function() {
+
+        cargarContactosPorEmpresa('', function () {
             $('#contenedor_domicilios').empty();
             domCount = 0;
-            construirBloqueDomicilio(); 
-        }); 
+            construirBloqueDomicilio();
+        });
 
         $('#estatus').prop('checked', true);
         $('.modal-title').text('Nueva Plaza Logística');
@@ -405,10 +416,10 @@ $(document).ready(function () {
         }
     }
 
-    $(document).on('change', '.switch-copiar-contacto', function() {
+    $(document).on('change', '.switch-copiar-contacto', function () {
         let $currentBlock = $(this).closest('.bloque-domicilio');
         let $prevBlock = $currentBlock.prev('.bloque-domicilio');
-        
+
         if ($(this).is(':checked') && $prevBlock.length) {
             camposContacto.forEach(name => {
                 let val = $prevBlock.find(`[name="${name}"]`).val();
@@ -425,10 +436,10 @@ $(document).ready(function () {
         }
     });
 
-    $(document).on('change', '.switch-copiar-direccion', function() {
+    $(document).on('change', '.switch-copiar-direccion', function () {
         let $currentBlock = $(this).closest('.bloque-domicilio');
         let $prevBlock = $currentBlock.prev('.bloque-domicilio');
-        
+
         if ($(this).is(':checked') && $prevBlock.length) {
             camposDireccion.forEach(name => {
                 let val = $prevBlock.find(`[name="${name}"]`).val();
@@ -441,7 +452,7 @@ $(document).ready(function () {
         }
     });
 
-    $(document).on('input change', '.bloque-domicilio input[type="text"], .bloque-domicilio select', function(e) {
+    $(document).on('input change', '.bloque-domicilio input[type="text"], .bloque-domicilio select', function (e) {
         let $currentBlock = $(this).closest('.bloque-domicilio');
         let name = $(this).attr('name');
         let val = $(this).val();
@@ -454,7 +465,7 @@ $(document).ready(function () {
             }
         }
 
-        let cascadeUpdate = function($block, inputName, inputVal) {
+        let cascadeUpdate = function ($block, inputName, inputVal) {
             let $next = $block.next('.bloque-domicilio');
             if ($next.length) {
                 let isContacto = camposContacto.includes(inputName);

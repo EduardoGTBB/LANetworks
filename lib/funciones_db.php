@@ -294,6 +294,18 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->beginTransaction();
 
+        // ✨ 1. OBTENEMOS LA SUCURSAL ANTERIOR PARA SABER SI HUBO CAMBIO
+        $stmtOldCot = $pdo->prepare("SELECT Sucursal_id FROM cotizacion WHERE id_cotizacion = ?");
+        $stmtOldCot->execute([$id_cotizacion]);
+        $oldCotSuc = $stmtOldCot->fetchColumn();
+
+        if ($oldCotSuc != $datosCotizacion['sucursal_id']) {
+            // Limpiamos los domicilios viejos para que finalizar_venta extraiga los de la nueva sucursal
+            $pdo->prepare("UPDATE detalle_cotizacion SET id_dom_cert = NULL, id_dom_envio = NULL WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
+            $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
+            $pdo->prepare("DELETE FROM domicilio_envio WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
+        }
+ 
         // 1. Actualizamos el padre (La cotización)
         $sqlCot = "UPDATE cotizacion 
                    SET Empresa_id = :empresa_id, 
@@ -330,10 +342,26 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
 
         $stmtInsertDetalle = $pdo->prepare("INSERT INTO detalle_cotizacion (Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar, Sucursal_destino_id, equipo_id) VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar, :suc_dest, :eq_id)");
 
+        // DETECCIÓN: Verificamos si cambió el Certificado en cada partida (Multisucursal)
+        $stmtOldDet = $pdo->prepare("SELECT Sucursal_destino_id, id_dom_cert, id_dom_envio FROM detalle_cotizacion WHERE id_detalle_cot = ?");
+
         $ids_que_quedan = [];
 
         foreach ($detalles as $item) {
             if (!empty($item['id_detalle']) && $item['id_detalle'] > 0) {
+
+                // Consultamos el registro viejo
+                $stmtOldDet->execute([$item['id_detalle']]);
+                $oldDet = $stmtOldDet->fetch(PDO::FETCH_ASSOC);
+
+                // Si la sucursal de destino (Certificado) es diferente a la que estaba guardada
+                if ($oldDet && $oldDet['Sucursal_destino_id'] != $item['sucursal_destino_id']) {
+                    // Desvinculamos y limpiamos para forzar la recarga de "entre_calle" y "y_calle" en finalizar_venta
+                    $pdo->prepare("UPDATE detalle_cotizacion SET id_dom_cert = NULL, id_dom_envio = NULL WHERE id_detalle_cot = ?")->execute([$item['id_detalle']]);
+                    if ($oldDet['id_dom_cert']) $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE id_domicilio_cert = ?")->execute([$oldDet['id_dom_cert']]);
+                    if ($oldDet['id_dom_envio']) $pdo->prepare("DELETE FROM domicilio_envio WHERE id_domicilio_envio = ?")->execute([$oldDet['id_dom_envio']]);
+                }
+
                 // Si la fila ya existía, ACTUALIZAMOS EXACTAMENTE ESA (Conserva sus direcciones intactas)
                 $stmtUpdateDetalle->execute([
                     ':prod_id'    => $item['producto_id'],

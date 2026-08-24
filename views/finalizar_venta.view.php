@@ -16,7 +16,6 @@
                             <li class="breadcrumb-item">Cotizaciones</li>
                             <li class="breadcrumb-item">Direcciones Cotización <strong id="breadcrumb_folio">#Cargando...</strong></li>
                         </ul>
-                        <!-- <h5 class="m-b-10">Formalizar Venta #?php echo str_pad($id_cotizacion, 4, '0', STR_PAD_LEFT); ?></h5> -->
                     </div>
                 </div>
             </div>
@@ -25,7 +24,7 @@
                     <input type="hidden" name="id_cotizacion" id="id_cotizacion" value="<?php echo $id_cotizacion; ?>">
                     <input type="hidden" id="url_origen" value="<?php echo $url_origen; ?>">
 
-                    <div class="row">
+                    <div class="row d-none">
                         <div class="col-lg-12">
                             <div class="card">
                                 <div class="card-header bg-primary text-white">
