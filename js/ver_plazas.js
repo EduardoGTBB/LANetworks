@@ -482,4 +482,29 @@ $(document).ready(function () {
         };
         cascadeUpdate($currentBlock, name, val);
     });
+
+    // ✨ AUTO-ASIGNAR USUARIO PERMITIDO AL SELECCIONARLO COMO CONTACTO
+    $(document).on('change', '.select-contacto-dinamico', function () {
+        let nombreContacto = $(this).val();
+        
+        if (nombreContacto) {
+            let $selectPermisos = $('#usuarios_multi');
+            let seleccionadosActuales = $selectPermisos.val() || [];
+            let idUsuarioEncontrado = null;
+
+            // Buscamos dentro de las opciones de "Usuarios Permitidos" cuál coincide con el texto
+            $selectPermisos.find('option').each(function () {
+                if ($(this).text().trim() === nombreContacto.trim()) {
+                    idUsuarioEncontrado = $(this).val();
+                    return false; // Rompemos el ciclo each al encontrarlo
+                }
+            });
+
+            // Si lo encontramos y no está seleccionado ya, lo agregamos
+            if (idUsuarioEncontrado && !seleccionadosActuales.includes(idUsuarioEncontrado)) {
+                seleccionadosActuales.push(idUsuarioEncontrado);
+                $selectPermisos.val(seleccionadosActuales).trigger('change');
+            }
+        }
+    });
 });

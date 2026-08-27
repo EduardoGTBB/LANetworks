@@ -9,7 +9,7 @@
     <!--! ================================================================ !-->
     <main class="nxl-container">
         <div class="nxl-content">
-            <!-- [ page-header ] start -->
+            <!-- [ page-header ] start --
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
@@ -29,7 +29,7 @@
                                 <span>Back</span>
                             </a>
                         </div>
-                        <!--<div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                        !--<div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
                             <a href="javascript:void(0);" class="btn btn-icon btn-light-brand" data-bs-toggle="collapse" data-bs-target="#collapseOne">
                                 <i class="feather-bar-chart"></i>
                             </a>
@@ -117,7 +117,7 @@
                                 <i class="feather-plus me-2"></i>
                                 <span>New Proposal</span>
                             </a>
-                        </div>-->
+                        </div>--
                     </div>
                     <div class="d-md-none d-flex align-items-center">
                         <a href="javascript:void(0)" class="page-header-right-open-toggle">
@@ -184,7 +184,17 @@
                     </div>
                 </div>
             </div>
-            <!-- [ page-header ] end -->
+            !-- [ page-header ] end -->
+
+            <?php 
+                $page_title = "Usuarios de Clientes";
+                $breadcrumb_items = [
+                    "Clientes",
+                    "Usuarios"
+                ];
+                // $hide_new_quote_btn = true; // Descomenta esta línea en las páginas donde NO quieras el botón
+                include('views/include/page_header.php'); 
+            ?>
             <!-- [ Main Content ] start -->
             <div class="main-content">
                 <div class="row">

@@ -99,6 +99,7 @@ $(document).ready(function () {
 
     $('#btnNuevaSucursal').click(function (e) {
         e.preventDefault();
+
         $('#formSucursal')[0].reset();
         $('#Sucursal_action').val('crear');
         $('#sucursal_id').val('');
@@ -107,6 +108,23 @@ $(document).ready(function () {
         $('#Empresa_id').val('').trigger('change');
         $('#modalSucursalLabel').text('Nueva Sucursal');
         $('#modalSucursal').modal('show');
+
+        // ✨ 2. UX INTELIGENTE: Solicitamos el siguiente ID SAE al servidor
+        $.ajax({
+            url: 'api/api_ver_sucursales.php?action=get_next_sae',
+            method: 'GET',
+            dataType: 'json',
+            success: function(res) {
+                if (res.status === 'success') {
+                    // Inyectamos el número sugerido en el input, pero lo dejamos editable
+                    $('#id_sae').val(res.next_sae);
+                }
+            },
+            complete: function() {
+                // 3. Mostramos el modal independientemente de si la consulta fue exitosa o no
+                $('#modalSucursal').modal('show');
+            }
+        });
     });
 
     $(document).on('click', '.btn-editar', function (e) {

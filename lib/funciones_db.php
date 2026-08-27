@@ -195,15 +195,17 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
 // >>> ============================================== 
 // |------Ver_cotizaciones_por_Usuario/Cliente------
 // [fn] Obtener las cotizaciones por Usuario Logeado
-function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
+/* function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
 {
     $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
-                   e.razon_social, u.nombre, u.apellido_pat, c.estatus,
+                   e.razon_social, u.nombre, u.apellido_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio, 
+                   pz.nombre_plaza,
                    (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
             FROM cotizacion c
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
+            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
             WHERE c.Usuario_admin_id = :admin_id
             ORDER BY c.id_cotizacion DESC";
 
@@ -216,12 +218,54 @@ function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
 function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
 {
     $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
-                   e.razon_social, u.nombre, u.apellido_pat, c.estatus,
+                   e.razon_social, u.nombre, u.apellido_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio,
+                   pz.nombre_plaza,
                    (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
             FROM cotizacion c
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
+            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
+            WHERE c.Usuario_empresa_id = :cliente_id
+            ORDER BY c.id_cotizacion DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':cliente_id' => $id_usuario_cliente]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+ */
+
+// [fn] Obtener las cotizaciones por Usuario Logeado
+function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
+{
+    $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
+                   e.razon_social, u.nombre, u.apellido_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio,
+                   pz.nombre_plaza,
+                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
+                   (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
+            FROM cotizacion c
+            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
+            LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
+            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
+            WHERE c.Usuario_admin_id = :admin_id
+            ORDER BY c.id_cotizacion DESC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':admin_id' => $id_user_admin]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// [fn] Obtener las cotizaciones por cliente
+function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
+{
+    $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
+                   e.razon_social, u.nombre, u.apellido_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio,
+                   pz.nombre_plaza,
+                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
+                   (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
+            FROM cotizacion c
+            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
+            LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
+            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
             WHERE c.Usuario_empresa_id = :cliente_id
             ORDER BY c.id_cotizacion DESC";
     $stmt = $pdo->prepare($sql);
@@ -229,6 +273,26 @@ function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+// [fn] Obtener All cotizaciones Admin
+function obtenerTodasLasCotizaciones(PDO $pdo): array
+{
+    $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
+                   e.razon_social, u.nombre, u.apellido_pat, u.apellido_mat,
+                   ua.admin_nombre, ua.admin_apell_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio, 
+                   pz.nombre_plaza,
+                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
+                   (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
+            FROM cotizacion c
+            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
+            LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
+            LEFT JOIN usuarios_admin ua ON c.Usuario_admin_id = ua.id_user_admin
+            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
+            ORDER BY c.id_cotizacion DESC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 // [fn] Borrar cotizacion
 function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
 {
@@ -415,23 +479,25 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
 
 // |------Inicio_Ver_todas_las_Cotizaciones_Users_Admin------
 // [fn] Obtener All cotizaciones Admin
-function obtenerTodasLasCotizaciones(PDO $pdo): array
+/* function obtenerTodasLasCotizaciones(PDO $pdo): array
 {
     $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
                    e.razon_social, u.nombre, u.apellido_pat, u.apellido_mat,
-                   ua.admin_nombre, ua.admin_apell_pat, c.estatus,
+                   ua.admin_nombre, ua.admin_apell_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio, 
+                   pz.nombre_plaza,
                    (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
             FROM cotizacion c
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
             LEFT JOIN usuarios_admin ua ON c.Usuario_admin_id = ua.id_user_admin
+            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
             ORDER BY c.id_cotizacion DESC";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+} */
 // |------Fin_Ver_todas_las_Cotizaciones_Users_Admin------
 
 
@@ -441,7 +507,7 @@ function cancelarCotizacionesAntiguas(PDO $conexion, int $dias_limite): int {
         // Corrección de tabla (cotizacion), columna (fecha_cot) y estatus ENUM
         $sql = "UPDATE cotizacion 
                 SET estatus = 'No autorizada' 
-                WHERE estatus IN ('Guardado', 'Por aprobar') 
+                WHERE estatus IN ('Guardado para aprobación') 
                 AND fecha_cot <= DATE_SUB(NOW(), INTERVAL :dias DAY)";
                 
         $stmt = $conexion->prepare($sql);
@@ -465,7 +531,7 @@ function obtenerEmpleadosCotizacionesPendientes(PDO $pdo): array {
                     COUNT(c.id_cotizacion) as total_pendientes
                 FROM usuarios_admin u
                 JOIN cotizacion c ON u.id_user_admin = c.Usuario_admin_id
-                WHERE c.estatus IN ('Guardado', 'Por aprobar')
+                WHERE c.estatus IN ('Guardado para aprobación')
                 GROUP BY u.id_user_admin, u.usuario_lan, u.admin_nombre";
                 
         $stmt = $pdo->prepare($sql);
@@ -492,7 +558,7 @@ function obtenerClientesCotizacionesPendientes(PDO $pdo): array {
                 FROM usuarios u
                 INNER JOIN cotizacion c ON u.id_usuario = c.Usuario_empresa_id
                 INNER JOIN empresa e ON u.Empresa_id = e.id_empresa
-                WHERE c.estatus IN ('Guardado', 'Por aprobar') 
+                WHERE c.estatus IN ('Guardado para aprobación') 
                 GROUP BY u.id_usuario, u.correo, e.razon_social";
                 
         $stmt = $pdo->prepare($sql);
@@ -504,6 +570,23 @@ function obtenerClientesCotizacionesPendientes(PDO $pdo): array {
         // 🛡️ Ciberseguridad: Log seguro del error
         error_log("Error BD obtenerClientesCotizacionesPendientes: " . $e->getMessage());
         return [];
+    }
+}
+
+// [fn] Guardar datos logísticos (Guía y Paquetería)
+function guardarLogisticaCotizacion(PDO $pdo, int $id_cotizacion, string $paqueteria, string $numero_guia, ?string $fecha_envio): bool {
+    try {
+        $sql = "UPDATE cotizacion SET paqueteria = :paq, numero_guia = :guia, fecha_envio = :fecha WHERE id_cotizacion = :id";
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute([
+            ':paq' => $paqueteria,
+            ':guia' => $numero_guia,
+            ':fecha' => $fecha_envio,
+            ':id' => $id_cotizacion
+        ]);
+    } catch (Exception $e) {
+        error_log("Error al guardar logística: " . $e->getMessage());
+        throw new Exception("Error al guardar los datos de envío.");
     }
 }
 // >>> ==============================================
@@ -1832,12 +1915,12 @@ function obtenerEstadisticasDashboard(PDO $pdo, int $id_cliente, int $id_admin, 
 
     $sql = "SELECT 
                 COUNT(id_cotizacion) as total_cotizaciones,
-                COALESCE(SUM(CASE WHEN estatus IN ('Guardado', 'Por aprobar') THEN 1 ELSE 0 END), 0) as pendientes,
+                COALESCE(SUM(CASE WHEN estatus IN ('Guardado para aprobación') THEN 1 ELSE 0 END), 0) as pendientes,
                 COALESCE(SUM(CASE WHEN estatus LIKE 'Autorizada%' THEN 1 ELSE 0 END), 0) as ganadas,
                 COALESCE(SUM(CASE WHEN estatus = 'No autorizada' THEN 1 ELSE 0 END), 0) as perdidas,
                 
                 COALESCE(SUM(CASE WHEN estatus LIKE 'Autorizada%' THEN precio_iva ELSE 0 END), 0) as monto_total,
-                COALESCE(SUM(CASE WHEN estatus IN ('Guardado', 'Por aprobar') THEN precio_iva ELSE 0 END), 0) as monto_pendientes,
+                COALESCE(SUM(CASE WHEN estatus IN ('Guardado para aprobación') THEN precio_iva ELSE 0 END), 0) as monto_pendientes,
                 COALESCE(SUM(CASE WHEN estatus = 'No autorizada' THEN precio_iva ELSE 0 END), 0) as monto_perdidas,
                 COALESCE(SUM(precio_iva), 0) as monto_total_general,
                 

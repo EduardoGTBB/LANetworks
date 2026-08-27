@@ -4,10 +4,358 @@
     <?php include('views/include/sidebar.php'); ?>
     <?php include('views/include/header.php'); ?>
     <!--! [Start] Main Content !-->
-    <!--! ================================================================ !-->
     <main class="nxl-container">
         <div class="nxl-content">
             <!-- [ page-header ] start -->
+            <?php
+            $page_title = "Mis cotizaciones";
+            $breadcrumb_items = [
+                "Cotizaciones",
+                "Mis cotizaciones"
+            ];
+            include('views/include/page_header.php');
+            ?>
+            <!-- [ page-header ] end -->
+
+            <!-- [ Main Content ] start -->
+            <div class="main-content">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card stretch stretch-full">
+                            
+                            <!-- <div class="card-header">
+                                <h5 class="card-title d-flex align-items-center gap-3 mb-0">
+                                    Lista de cotizaciones
+                                    <span id="badge-total-filtro" class="badge bg-soft-success text-success fs-13 px-3 py-2 d-none shadow-sm" style="border: 1px solid rgba(40, 167, 69, 0.3);">
+                                        Total visible: $0.00
+                                    </span>
+                                </h5>
+                                <div class="card-header-action">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="input-group input-group-sm shadow-sm" style="width: 250px;">
+                                            <span class="input-group-text bg-white border-primary text-primary px-2">
+                                                <i class="feather-search"></i>
+                                            </span>
+                                            <input type="text" id="buscador_custom" class="form-control border-primary" placeholder="Buscar folio, cliente...">
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="feather-filter text-primary"></i>
+                                            <select id="filtro_estatus_tabla" class="form-select form-select-sm border-primary" style="width: 230px; cursor: pointer;">
+                                                <option value="">Mostrar todos los estatus</option>
+                                                <option value="Guardado para aprobación">Guardado para aprobación</option>
+                                                <option value="Autorizada">Autorizadas (Aprobadas)</option>
+                                                <option value="No autorizada">No autorizadas (Rechazadas)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> -->
+                            <div class="card-header">
+                                <!-- ⬅️ ARRIBA IZQUIERDA: Título -->
+                                <div class="d-flex align-items-center gap-3">
+                                    <h5 class="card-title mb-0">Lista de cotizaciones</h5>
+                                </div>
+
+                                <div class="card-header-action pe-md-3">
+                                    <div class="d-flex align-items-center justify-content-end gap-2" style="min-width: 260px;">
+                                        <i class="feather-filter text-primary" style="font-size: 1.1rem;"></i>
+                                        <select id="filtro_estatus_tabla" class="form-select form-select-sm border-primary fw-bold text-dark w-100" style="cursor: pointer;">
+                                            <option value="">Mostrar todos los estatus</option>
+                                            <option value="Guardado para aprobación">Guardado para aprobación</option>
+                                            <option value="Autorizada">Autorizadas (Aprobadas)</option>
+                                            <option value="No autorizada">No autorizadas (Rechazadas)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body custom-card-action p-0">
+                                <!-- ✨ UX: Tabla con 5 columnas y layout fluido -->
+                                <table class="table table-hover mb-0 w-100" id="tableMisCotizaciones" style="table-layout: auto;">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center" width="15%">Cotización</th>
+                                            <th class="text-center" width="40%">Cliente / Detalles</th>
+                                            <th class="text-center" width="15%">Importe</th>
+                                            <th class="text-center" width="15%">Estatus</th>
+                                            <th class="text-center" width="15%" class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-cotizaciones">
+                                        <tr>
+                                            <td colspan="5">
+                                                <div class="hstack gap-3 justify-content-center">
+                                                    <div class="spinner-border text-primary mt-3" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <p class="mt-2">Cargando cotizaciones...</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+
+        <?php include('views/include/footer.php'); ?>
+    </main>
+
+    <!-- Modal Editar Cotización -->
+    <div class="modal fade-scale" id="modalEditarCotizacion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+            <div class="modal-content bg-white">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-primary">Editar cotización <span id="modal_folio_badge" class="badge bg-soft-primary text-primary ms-2"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form id="formEditarCotizacion" class="modal-body custom-card-action">
+                    <input type="hidden" name="action" value="editar">
+                    <input type="hidden" name="id_cotizacion" id="edit_id_cotizacion" value="">
+                    <input type="hidden" name="is_multisucursal" id="edit_is_multisucursal" value="0">
+                    <!-- ✨ UX: Mantenemos el estatus oculto para proteger la edición -->
+                    <input type="hidden" name="estatus" id="edit_estatus" value="">
+
+                    <div class="row mb-4">
+                        <div class="col-lg-6 mb-4 mb-lg-0">
+                            <div class="card border-primary h-100 shadow-sm">
+                                <div class="card-header bg-primary text-white py-3">
+                                    <h6 class="mb-0 text-white fw-bold"><i class="feather-user me-2"></i>Datos Comerciales</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-briefcase me-1 text-primary"></i>División de LAN</label>
+                                        <select class="form-control border-primary bg-light" id="division_visual" disabled>
+                                            <option value="LA NETWORKS & TECHNOLOGIES" selected>LA NETWORKS & SMART TECHNOLOGIES SA DE CV</option>
+                                        </select>
+                                        <input type="hidden" name="division" id="division" value="LA NETWORKS & TECHNOLOGIES">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-users me-1 text-primary"></i>Cliente <span class="text-danger">*</span></label>
+                                        <select class="form-control border-primary" id="edit_select_empresa" name="Empresa_id" data-select2-selector="status" required>
+                                            <option value="">Cargando clientes...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-user-check me-1 text-primary"></i>Solicitante <span class="text-danger">*</span></label>
+                                        <select class="form-control border-primary" id="edit_select_solicitante" name="Usuario_id" data-select2-selector="status" required>
+                                            <option value="">Selecciona un cliente primero...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2" id="wrapper_info_plaza_edit" style="display: none;">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-map me-1 text-primary"></i>Plaza Asignada</label>
+                                        <select class="form-control border-primary bg-light shadow-sm" id="edit_info_plaza" name="Plaza_id" disabled>
+                                            <option value="">Esperando sucursal...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card border-success h-100 shadow-sm">
+                                <div class="card-header bg-success text-white py-3">
+                                    <h6 class="mb-0 text-white fw-bold"><i class="feather-settings me-2"></i>Parámetros de Cotización</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
+                                        <select class="form-control border-success max-select" name="categoria" id="edit_filtro_tipo_producto">
+                                            <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
+                                            <option value="NUEVO">✨ Solo Equipos Nuevos</option>
+                                            <option value="USADO">🔧 Solo Equipos Usados</option>
+                                            <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-tag me-1 text-success"></i>Selecciona el precio que se utilizará</label>
+                                        <select class="form-control border-success" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
+                                            <option value="">Selecciona el tipo de precio...</option>
+                                            <option value="Farmacia">Farmacia</option>
+                                            <option value="Público">Público</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-2" id="wrapper_selector_sucursal_edit">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-map-pin me-1 text-success"></i>Sucursal para certificado<span class="text-danger">*</span></label>
+                                        <select class="form-control border-success" id="edit_select_sucursal" name="Sucursal_id" data-select2-selector="status" required>
+                                            <option value="">Esperando Sucursal...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="mt-0 mb-3">
+
+                    <div class="row mb-4">
+                        <div class="col-lg-12">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-0">Productos cotizados:</h5>
+                                    <span class="fs-12 text-muted">Edita cantidades, precios o agrega nuevos</span>
+                                </div>
+                                <div class="gap-2">
+                                    <button type="button" id="edit_add_row" class="btn btn-sm btn-primary">Agregar producto</button>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered overflow-hidden" id="tab_logic_edit">
+                                    <thead class="bg-success">
+                                        <tr class="single-item">
+                                            <th class="text-center text-white wd-80">Ítem</th>
+                                            <th class="text-center text-white wd-150">Cantidad</th>
+                                            <th class="text-center text-white wd-400">Producto</th>
+                                            <th class="text-center text-white wd-250 col-edit-multisucursal" style="display:none">Sucursal Destino</th>
+                                            <th class="text-center text-white wd-250">Desglose de Calibración</th>
+                                            <th class="text-center text-white wd-150">Precio U.</th>
+                                            <th class="text-center text-white wd-200">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="edit_tbody_productos">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button type="button" id="edit_btn_add_row_bottom" class="btn btn-light text-primary w-100 fw-bold mt-3 mb-4 shadow-sm" style="display: none; border: 2px dashed #0d6efd !important; border-radius: 8px;">
+                                <i class="feather-plus-circle me-2 fs-14"></i>AÑADIR NUEVO PRODUCTO AQUÍ
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-lg-8 mt-2 text-start">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Notas / Observaciones adicionales:</label>
+                                <textarea name="comentarios" id="edit_comentarios" class="form-control" rows="4"></textarea>
+                                <small class="text-muted">Estas notas aparecerán en el PDF de la cotización.</small>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 mt-2">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr class="single-item">
+                                        <th class="fs-10 text-dark text-uppercase">Sub Total</th>
+                                        <td class="w-50">
+                                            <input type="text" class="form-control border-0 bg-transparent p-0 text-end" id="edit_sub_total_visual" readonly placeholder="$0.00">
+                                            <input type="hidden" name="sub_total" id="edit_sub_total">
+                                        </td>
+                                    </tr>
+                                    <tr class="single-item">
+                                        <th class="fs-10 text-dark text-uppercase">IVA</th>
+                                        <td class="w-50">
+                                            <div class="input-group mb-2 mb-sm-0">
+                                                <input type="number" name="porcentaje_iva" id="edit_tax" class="form-control border-0 bg-transparent p-0" value="16">
+                                                <div class="input-group-addon">%</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="single-item">
+                                        <th class="fs-10 text-dark text-uppercase bg-gray-100">Total</th>
+                                        <td class="bg-gray-100 w-50">
+                                            <input type="text" id="edit_total_amount_visual" class="form-control border-0 bg-transparent p-0 fw-700 text-dark text-end fs-14" readonly placeholder="$0.00">
+                                            <input type="hidden" name="total_amount" id="edit_total_amount">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-lg-12 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Actualizar Cambios</button>
+                        </div>
+                    </div>
+                </form>
+                <button type="button" id="btnBackToTopModal" class="btn btn-primary" title="Volver al inicio">
+                    <i class="feather-arrow-up" style="font-size: 1.2rem; font-weight: bold;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Logística y Rastreo -->
+    <div class="modal fade" id="modalLogistica" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold text-white"><i class="feather-truck me-2"></i>Datos de Envío</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formLogistica" class="modal-body p-4">
+                    <input type="hidden" name="action" value="guardar_logistica">
+                    <input type="hidden" name="id_cotizacion_logistica" id="logistica_id_cotizacion" value="">
+
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-bold">Empresa de Paquetería <span class="text-danger">*</span></label>
+                        <select class="form-select bg-light text-dark fw-bold border-primary" name="paqueteria" id="logistica_paqueteria" required>
+                            <option value="">Selecciona paquetería...</option>
+                            <option value="DHL">DHL</option>
+                            <option value="FedEx">FedEx</option>
+                            <option value="Estafeta">Estafeta</option>
+                            <option value="UPS">UPS</option>
+                            <option value="Redpack">Redpack</option>
+                            <option value="Paquetexpress">Paquetexpress</option>
+                            <option value="Entrega Local LAN">Entrega Local (Vehículo LAN)</option>
+                            <option value="Otra">Otra...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-bold">Fecha de Envío <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control border-primary fw-bold" name="fecha_envio" id="logistica_fecha" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-dark fw-bold">Número de Guía / Rastreo <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control border-primary text-uppercase fw-bold" name="numero_guia" id="logistica_guia" placeholder="Ej. 773456789012" required>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary fw-bold text-uppercase">Guardar y Notificar</button>
+                        <button type="button" class="btn btn-light text-muted fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/vendors/js/vendors.min.js"></script>
+    <script src="assets/vendors/js/apexcharts.min.js"></script>
+    <script src="assets/vendors/js/dataTables.min.js"></script>
+    <script src="assets/vendors/js/dataTables.bs5.min.js"></script>
+    <script src="assets/vendors/js/select2.min.js"></script>
+    <script src="assets/vendors/js/select2-active.min.js"></script>
+    <script src="assets/vendors/js/jquery.time-to.min.js "></script>
+    <script src="assets/js/common-init.min.js"></script>
+    <script src="assets/js/widgets-tables-init.min.js"></script>
+
+    <script>
+        const ES_CLIENTE_PORTAL = <?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
+        const USER_PERFIL = "<?php echo $_SESSION['perfil'] ?? 'cliente'; ?>";
+    </script>
+    <script src="js/ver_cotizaciones.js"></script>
+</body>
+</html>
+<!-- ?php include('views/include/head.php'); ?>
+
+<body>
+    ?php include('views/include/sidebar.php'); ?>
+    ?php include('views/include/header.php'); ?>
+    !--! [Start] Main Content !--
+    !--! ================================================================ !--
+    <main class="nxl-container">
+        <div class="nxl-content">
+            !-- [ page-header ] start --
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
@@ -27,7 +375,7 @@
                                 <span>Back</span>
                             </a>
                         </div>
-                        <!--<div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                        !--<div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
                             <div class="dropdown filter-dropdown">
                                 <a class="btn btn-md btn-light-brand" data-bs-toggle="dropdown" data-bs-offset="0, 10" data-bs-auto-close="outside">
                                     <i class="feather-filter me-2"></i>
@@ -79,7 +427,7 @@
                                 <i class="feather-plus me-2"></i>
                                 <span>Add widget</span>
                             </a>
-                        </div>-->
+                        </div>--
                     </div>
                     <div class="d-md-none d-flex align-items-center">
                         <a href="javascript:void(0)" class="page-header-right-open-toggle">
@@ -88,27 +436,43 @@
                     </div>
                 </div>
             </div>
-            <!-- [ page-header ] end -->
-            <!-- [ Main Content ] start -->
+            !-- [ page-header ] end --
+
+            !-- [ page-header ] start --
+            ?php
+            $page_title = "Mis cotizaciones";
+            $breadcrumb_items = [
+                "Cotizaciones",
+                "Mis cotizaciones"
+            ];
+            // $hide_new_quote_btn = true; // Descomenta esta línea en las páginas donde NO quieras el botón
+            include('views/include/page_header.php');
+            ?>
+            !-- [ page-header ] end --
+            !-- [ Main Content ] start --
             <div class="main-content">
                 <div class="row">
 
                     <div class="col-lg-12">
                         <div class="card stretch stretch-full">
                             <div class="card-header">
-                                <h5 class="card-title">Lista de cotizaciones</h5>
+                                <h5 class="card-title">
+                                    Lista de cotizaciones
+                                    <span id="badge-total-filtro" class="badge bg-soft-success text-success fs-13 px-3 py-2 d-none shadow-sm ms-4" style="border: 1px solid rgba(40, 167, 69, 0.3);">
+                                        Total visible: $0.00
+                                    </span>
+                                </h5>
                                 <div class="card-header-action">
                                     <div class="d-flex align-items-center gap-2">
                                         <i class="feather-filter text-primary"></i>
                                         <select id="filtro_estatus_tabla" class="form-select form-select-sm border-primary" style="width: 250px; cursor: pointer;">
                                             <option value="">Mostrar todos los estatus</option>
-                                            <option value="Guardado">Guardado (En proceso)</option>
-                                            <option value="Por aprobar">Por aprobar (Revisión)</option>
+                                            <option value="Guardado para aprobación">Guardado para aprobación</option>
                                             <option value="Autorizada">Autorizadas (Aprobadas)</option>
                                             <option value="No autorizada">No autorizadas (Rechazadas)</option>
                                         </select>
                                     </div>
-                                    <!-- <div class="card-header-btn">
+                                    !-- <div class="card-header-btn">
                                         <div data-bs-toggle="tooltip" title="Delete">
                                             <a href="javascript:void(0);" class="avatar-text avatar-xs bg-danger" data-bs-toggle="remove"> </a>
                                         </div>
@@ -134,12 +498,12 @@
                                             <a href="javascript:void(0);" class="dropdown-item"><i class="feather-settings"></i>Settings</a>
                                             <a href="javascript:void(0);" class="dropdown-item"><i class="feather-life-buoy"></i>Tips & Tricks</a>
                                         </div>
-                                    </div> -->
+                                    </div> --
                                 </div>
                             </div>
                             <div class="card-body custom-card-action p-0">
 
-                                <table class="table table-hover mb-0 w-100" id="tableMisCotizaciones">
+                                !-- <table class="table table-hover mb-0 w-100" id="tableMisCotizaciones">
                                     <thead>
                                         <tr>
                                             <th>Folio #</th>
@@ -160,44 +524,43 @@
                                                     <p class="mt-2">Cargando cotizaciones...</p>
                                                 </div>
                                             </td>
-                                            <!--<td>
-                                                    03/02/2026
-                                                </td>
-                                                <td>
-                                                    COMERCIALIZADORA FARMACEUTICA DE CHIAPAS
-                                                </td>
-                                                <td class="text-dark fw-bold">$6,085.82</td>
-                                                <td>
-                                                    <span class="badge bg-soft-success text-success">Aprobado</span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <div class="hstack gap-2 justify-content-center">
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Imprimir cotización" style="text-decoration:none;"><i class="feather-printer"></i></abbr>
-                                                        </a>
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Editar cotización" style="text-decoration:none;"><i class="feather-edit"></i></abbr>
-                                                        </a>
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr>
-                                                        </a>
+                                        </tr>
+                                    </tbody>
+                                </table> --
+                                <table class="table table-hover mb-0 w-100" id="tableMisCotizaciones" style="table-layout: auto;">
+                                    <thead>
+                                        <tr>
+                                            <th width="15%">Cotización</th>
+                                            <th width="40%">Cliente</th>
+                                            <th width="15%">Importe</th>
+                                            <th width="15%">Estatus</th>
+                                            <th width="15%" class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-cotizaciones">
+                                        <tr>
+                                            <td colspan="5">
+                                                <div class="hstack gap-3 justify-content-center">
+                                                    <div class="spinner-border text-primary mt-3" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
                                                     </div>
-                                                </td> -->
+                                                    <p class="mt-2">Cargando cotizaciones...</p>
+                                                </div>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
-
                             </div>
                         </div>
                     </div>
-                    <!-- [Recent Orders] end -->
-                    <!-- [] start -->
+                    !-- [Recent Orders] end --
+                    !-- [] start --
                 </div>
             </div>
-            <!-- [ Main Content ] end -->
+            !-- [ Main Content ] end --
         </div>
 
-        <?php include('views/include/footer.php'); ?>
+        ?php include('views/include/footer.php'); ?>
     </main>
 
     <div class="modal fade-scale" id="modalEditarCotizacion" tabindex="-1" aria-hidden="true">
@@ -214,7 +577,7 @@
                     <input type="hidden" name="is_multisucursal" id="edit_is_multisucursal" value="0">
 
                     <div class="row mb-4">
-                        <!-- ✨ TARJETA 1: DATOS COMERCIALES (AZUL) -->
+                        !-- ✨ TARJETA 1: DATOS COMERCIALES (AZUL) --
                         <div class="col-lg-6 mb-4 mb-lg-0">
                             <div class="card border-primary h-100 shadow-sm">
                                 <div class="card-header bg-primary text-white py-3">
@@ -250,22 +613,24 @@
                             </div>
                         </div>
 
-                        <!-- ✨ TARJETA 2: PARÁMETROS DE COTIZACIÓN (VERDE) -->
+                        !-- ✨ TARJETA 2: PARÁMETROS DE COTIZACIÓN (VERDE) --
                         <div class="col-lg-6">
                             <div class="card border-success h-100 shadow-sm">
                                 <div class="card-header bg-success text-white py-3">
                                     <h6 class="mb-0 text-white fw-bold"><i class="feather-settings me-2"></i>Parámetros de Cotización</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="mb-4" id="fila_estatus_lan">
+                                    !-- <div class="mb-4" id="fila_estatus_lan">
                                         <label class="form-label text-dark fw-bold"><i class="feather-activity me-1 text-success"></i>Estatus de la cotización <span class="text-danger">*</span></label>
                                         <select class="form-control border-success" id="edit_estatus" name="estatus" data-select2-selector="status" required>
-                                            <option value="Guardado">Guardado (En proceso)</option>
-                                            <option value="Por aprobar">Por aprobar (Revisión)</option>
+                                            <option value="Guardado para aprobación">Guardado para aprobación</option>
                                             <option value="Autorizada (información completa)">Autorizada (Aprobada)</option>
                                             <option value="No autorizada">No autorizada (Rechazada)</option>
                                         </select>
-                                    </div>
+                                    </div> --
+
+                                    !-- Mantenemos el estatus oculto para que la API PHP lo siga leyendo sin romper la edición --
+                                    <input type="hidden" name="estatus" id="edit_estatus" value="">
 
                                     <div class="mb-4">
                                         <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
@@ -296,7 +661,7 @@
                             </div>
                         </div>
                     </div>
-                    <!-- <div class="row">
+                    !-- <div class="row">
                         !-- <div class="col-md-4 mb-4">
                             <label class="form-label">División de LAN</label>
                             <select class="form-control" id="division" name="division"
@@ -324,9 +689,9 @@
                                 <option value="No autorizada">No autorizada (Rechazada)</option>
                             </select>
                         </div> --
-                    </div> -->
+                    </div> --
 
-                    <!-- <div class="row">
+                    !-- <div class="row">
                         !-- <div class="col-md-4 mb-4">
                             <label class="form-label">Solicitante<span class="text-danger">*</span></label>
                             <select class="form-control" id="edit_select_solicitante" name="Usuario_id" data-select2-selector="status" required>
@@ -359,7 +724,7 @@
                                 <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
                             </select>
                         </div> --
-                    </div> -->
+                    </div> --
 
                     <hr class="mt-0 mb-3">
 
@@ -371,14 +736,14 @@
                                     <span class="fs-12 text-muted">Edita cantidades, precios o agrega nuevos</span>
                                 </div>
                                 <div class="gap-2">
-                                    <!-- <button type="button" id="edit_delete_row" class="btn btn-sm bg-soft-danger text-danger">Eliminar último</button> -->
+                                    !-- <button type="button" id="edit_delete_row" class="btn btn-sm bg-soft-danger text-danger">Eliminar último</button> --
                                     <button type="button" id="edit_add_row" class="btn btn-sm btn-primary">Agregar producto</button>
                                 </div>
                             </div>
 
                             <div class="table-responsive">
                                 <table class="table table-bordered overflow-hidden" id="tab_logic_edit">
-                                    <thead class="bg-success">
+                                    !-- <thead class="bg-success">
                                         <tr class="single-item">
                                             <th class="text-center text-white wd-80">Ítem</th>
                                             <th class="text-center text-white wd-150">Cantidad</th>
@@ -389,6 +754,15 @@
                                             <th class="text-center text-white wd-250">Desglose de Calibración</th>
                                             <th class="text-center text-white wd-150">Precio U.</th>
                                             <th class="text-center text-white wd-200">Total</th>
+                                        </tr>
+                                    </thead> --
+                                    <thead>
+                                        <tr>
+                                            <th width="15%">Cotización</th>
+                                            <th width="40%">Cliente</th>
+                                            <th width="15%">Importe</th>
+                                            <th width="15%">Estatus</th>
+                                            <th width="15%" class="text-center">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody id="edit_tbody_productos">
@@ -401,7 +775,7 @@
                         </div>
                     </div>
 
-                    <div class="row mb-4"> <!-- d-flex justify-content-end -->
+                    <div class="row mb-4"> !-- d-flex justify-content-end --
                         <div class="col-lg-8 mt-2 text-start">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Notas / Observaciones adicionales:</label>
@@ -417,7 +791,7 @@
                                         <td class="w-50">
                                             <input type="text" class="form-control border-0 bg-transparent p-0 text-end" id="edit_sub_total_visual" readonly placeholder="$0.00">
                                             <input type="hidden" name="sub_total" id="edit_sub_total">
-                                            <!-- <input type="number" name="sub_total" class="form-control border-0 bg-transparent p-0" id="edit_sub_total" readonly> -->
+                                            !-- <input type="number" name="sub_total" class="form-control border-0 bg-transparent p-0" id="edit_sub_total" readonly> --
                                         </td>
                                     </tr>
                                     <tr class="single-item">
@@ -434,7 +808,7 @@
                                         <td class="bg-gray-100 w-50">
                                             <input type="text" id="edit_total_amount_visual" class="form-control border-0 bg-transparent p-0 fw-700 text-dark text-end fs-14" readonly placeholder="$0.00">
                                             <input type="hidden" name="total_amount" id="edit_total_amount">
-                                            <!-- <input type="number" name="total_amount" id="edit_total_amount" class="form-control border-0 bg-transparent p-0 fw-700 text-dark" readonly> -->
+                                            !-- <input type="number" name="total_amount" id="edit_total_amount" class="form-control border-0 bg-transparent p-0 fw-700 text-dark" readonly> --
                                         </td>
                                     </tr>
                                 </tbody>
@@ -455,12 +829,57 @@
             </div>
         </div>
     </div>
-    <!--! ================================================================ !-->
-    <!--! [End] Main Content !-->
-    <!--! ================================================================ !-->
-    <!--! ================================================================ !-->
-    <!--! [Start] Search Modal !-->
-    <!--! ================================================================ !-->
+
+    !-- Modal Dedicado: Logística y Rastreo --
+    <div class="modal fade" id="modalLogistica" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold text-white"><i class="feather-truck me-2"></i>Datos de Envío</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formLogistica" class="modal-body p-4">
+                    <input type="hidden" name="action" value="guardar_logistica">
+                    <input type="hidden" name="id_cotizacion_logistica" id="logistica_id_cotizacion" value="">
+
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-bold">Empresa de Paquetería <span class="text-danger">*</span></label>
+                        <select class="form-select bg-light text-dark fw-bold border-primary" name="paqueteria" id="logistica_paqueteria" required>
+                            <option value="">Selecciona paquetería...</option>
+                            <option value="DHL">DHL</option>
+                            <option value="FedEx">FedEx</option>
+                            <option value="Estafeta">Estafeta</option>
+                            <option value="UPS">UPS</option>
+                            <option value="Redpack">Redpack</option>
+                            <option value="Paquetexpress">Paquetexpress</option>
+                            <option value="Entrega Local LAN">Entrega Local (Vehículo LAN)</option>
+                            <option value="Otra">Otra...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-bold">Fecha de Envío <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control border-primary fw-bold" name="fecha_envio" id="logistica_fecha" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-dark fw-bold">Número de Guía / Rastreo <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control border-primary text-uppercase fw-bold" name="numero_guia" id="logistica_guia" placeholder="Ej. 773456789012" required>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary fw-bold text-uppercase">Guardar y Notificar</button>
+                        <button type="button" class="btn btn-light text-muted fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    !--! ================================================================ !--
+    !--! [End] Main Content !--
+    !--! ================================================================ !--
+    !--! ================================================================ !--
+    !--! [Start] Search Modal !--
+    !--! ================================================================ !--
     <div class="modal fade-scale" id="searchModal" aria-hidden="true" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-top modal-dialog-scrollable">
             <div class="modal-content">
@@ -607,12 +1026,12 @@
             </div>
         </div>
     </div>
-    <!--! ================================================================ !-->
-    <!--! [End] Search Modal !-->
-    <!--! ================================================================ !-->
-    <!--! ================================================================ !-->
-    <!--! [Start] Language Select !-->
-    <!--! ================================================================ !-->
+    !--! ================================================================ !--
+    !--! [End] Search Modal !--
+    !--! ================================================================ !--
+    !--! ================================================================ !--
+    !--! [Start] Language Select !--
+    !--! ================================================================ !--
     <div class="modal fade-scale" id="languageSelectModal" aria-hidden="true" aria-labelledby="languageSelectModalLabel" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -776,7 +1195,7 @@
     <!--! ================================================================ !-->
     <!--! ================================================================ !-->
     <!--! BEGIN: Downloading Toast !-->
-    <!--! ================================================================ !-->
+    <!--! ================================================================ !--
     <div class="position-fixed" style="right: 5px; bottom: 5px; z-index: 999999">
         <div id="toast" class="toast bg-black hide" data-bs-delay="3000" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header px-3 bg-transparent d-flex align-items-center justify-content-between border-bottom border-light border-opacity-10">
@@ -796,7 +1215,7 @@
             </div>
         </div>
     </div>
-    <!--! ================================================================ !-->
+    !--! ================================================================ !-->
     <!--! END: Downloading Toast !-->
     <!--! ================================================================ !-->
     <!--! ================================================================ !-->
@@ -974,30 +1393,30 @@
     <!--! ================================================================ !-->
     <!--! Footer Script !-->
     <!--! ================================================================ !-->
-    <!--! BEGIN: Vendors JS !-->
+    <!--! BEGIN: Vendors JS !--
     <script src="assets/vendors/js/vendors.min.js"></script>
-    <!-- vendors.min.js {always must need to be top} -->
+    !-- vendors.min.js {always must need to be top} --
     <script src="assets/vendors/js/apexcharts.min.js"></script>
     <script src="assets/vendors/js/dataTables.min.js"></script>
     <script src="assets/vendors/js/dataTables.bs5.min.js"></script>
     <script src="assets/vendors/js/select2.min.js"></script>
     <script src="assets/vendors/js/select2-active.min.js"></script>
     <script src="assets/vendors/js/jquery.time-to.min.js "></script>
-    <!--! END: Vendors JS !-->
-    <!--! BEGIN: Apps Init  !-->
+    !--! END: Vendors JS !-->
+    <!--! BEGIN: Apps Init  !--
     <script src="assets/js/common-init.min.js"></script>
     <script src="assets/js/widgets-tables-init.min.js"></script>
-    <!--! END: Apps Init !-->
+    !--! END: Apps Init !-->
     <!--! BEGIN: Theme Customizer  !-->
     <!-- <script src="assets/js/theme-customizer-init.min.js"></script> -->
-    <!--! END: Theme Customizer !-->
+    <!--! END: Theme Customizer !--
 
     <script>
-        const ES_CLIENTE_PORTAL = <?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
-        const USER_PERFIL = "<?php echo $_SESSION['perfil'] ?? 'cliente'; ?>";
+        const ES_CLIENTE_PORTAL = ?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
+        const USER_PERFIL = "?php echo $_SESSION['perfil'] ?? 'cliente'; ?>";
     </script>
-    <!-- <script src="js/utils_sucursales.js"></script> -->
+    !-- <script src="js/utils_sucursales.js"></script> --
     <script src="js/ver_cotizaciones.js"></script>
 </body>
 
-</html>
+</html> -->
