@@ -16,7 +16,6 @@ header('Content-Type: application/json; charset=utf-8');
 
 try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
     $es_cliente = isset($_SESSION['id_usuario_cliente']);
 
     // ==========================================
@@ -50,7 +49,7 @@ try {
     }
 
     // ==========================================
-    // POST: Editar o Eliminar
+    // POST: Editar, Eliminar, Logística o Cambiar Estatus
     // ==========================================
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'] ?? '';
@@ -60,7 +59,7 @@ try {
             $empresa_id    = (int)($_POST['Empresa_id'] ?? 0);
             $usuario_id    = (int)($_POST['Usuario_id'] ?? 0);
             $sucursal_id   = (int)($_POST['Sucursal_id'] ?? 0);
-            $plaza_id = !empty($_POST['Plaza_id']) ? (int)$_POST['Plaza_id'] : null;
+            $plaza_id      = !empty($_POST['Plaza_id']) ? (int)$_POST['Plaza_id'] : null;
 
             $is_multi      = ($_POST['is_multisucursal'] ?? '0') === '1';
 
@@ -74,9 +73,7 @@ try {
                 exit;
             }
 
-            if ($is_multi) {
-                $sucursal_id = null;
-            }
+            if ($is_multi) $sucursal_id = null;
 
             $cotizacion_actual = editarCotizacionporID($pdo, $id_cotizacion);
             if ($cotizacion_actual && in_array($cotizacion_actual['estatus'], ['Autorizada (información completa)', 'No autorizada'])) {
@@ -87,7 +84,6 @@ try {
                 exit;
             }
 
-            // ✨ AQUÍ CAPTURAMOS EL RASTREADOR OCULTO
             $ids_detalles  = $_POST['id_detalle'] ?? [];
             $productos_ids = $_POST['productos'] ?? [];
             $cantidades    = $_POST['cantidad_cot'] ?? [];
@@ -98,18 +94,15 @@ try {
             $equipos_ids   = $_POST['equipo_id'] ?? [];
 
             $detalles = [];
-
             for ($i = 0; $i < count($productos_ids); $i++) {
                 if (!empty($productos_ids[$i]) && (int)$cantidades[$i] > 0) {
-
                     $sucursal_destino = ($is_multi && !empty($sucursales_fila[$i])) ? (int)$sucursales_fila[$i] : null;
                     if ($is_multi && empty($sucursal_destino)) {
                         echo json_encode(['status' => 'error', 'message' => 'Falta seleccionar la Sucursal Destino para uno o más productos en la tabla.']);
                         exit;
                     }
-
                     $detalles[] = [
-                        'id_detalle'       => (int)($ids_detalles[$i] ?? 0), // ✨ LO INYECTAMOS AL ARRAY
+                        'id_detalle'       => (int)($ids_detalles[$i] ?? 0),
                         'producto_id'      => (int)$productos_ids[$i],
                         'cantidad'         => (int)$cantidades[$i],
                         'precio_unitario'  => (float)str_replace(',', '', $unitarios[$i] ?? '0'),
@@ -121,16 +114,22 @@ try {
                 }
             }
 
-            $estatus_nuevo = trim($_POST['estatus'] ?? 'Guardado');
+            $estatus_nuevo = trim($_POST['estatus'] ?? 'Guardado para aprobación');
 
-            // --- CANDADO DE DIRECCIONES ---
-            if ($estatus_nuevo === 'Autorizada (información completa)') {
+            // 🔒 CANDADO CIBERSEGURIDAD ESTRICTO EN EDICIÓN
+            if (strpos($estatus_nuevo, 'Autorizada') !== false) {
                 $stmtCheckDir = $pdo->prepare("SELECT COUNT(*) FROM domicilio_fiscal WHERE Cotizacion_id = ?");
                 $stmtCheckDir->execute([$id_cotizacion]);
-                if ($stmtCheckDir->fetchColumn() == 0) {
+                $tieneFiscal = $stmtCheckDir->fetchColumn();
+
+                $stmtCheckEquipos = $pdo->prepare("SELECT COUNT(*) FROM detalle_cotizacion WHERE Cotizacion_id = ? AND (id_dom_cert IS NULL OR id_dom_envio IS NULL)");
+                $stmtCheckEquipos->execute([$id_cotizacion]);
+                $equiposIncompletos = $stmtCheckEquipos->fetchColumn();
+
+                if ($tieneFiscal == 0 || $equiposIncompletos > 0) {
                     echo json_encode([
                         'status' => 'error',
-                        'message' => 'No puedes autorizar una cotización que aún no tiene direcciones de certificado y envío.'
+                        'message' => 'ACCESO DENEGADO: No se puede autorizar. Falta la dirección fiscal o hay equipos sin direcciones de envío/certificado.'
                     ]);
                     exit;
                 }
@@ -152,18 +151,17 @@ try {
 
             updateCotizacion($pdo, $id_cotizacion, $datosCotizacion, $detalles);
             echo json_encode(['status' => 'success', 'message' => 'Cotización actualizada.']);
+
         } elseif ($action === 'eliminar') {
             $id = (int)($_POST['id_cotizacion'] ?? 0);
-
             $cotizacion_actual = editarCotizacionporID($pdo, $id);
 
             if ($cotizacion_actual) {
                 $estatus_actual = $cotizacion_actual['estatus'];
-
                 if (strpos($estatus_actual, 'Autorizada') !== false || $estatus_actual === 'No autorizada') {
                     echo json_encode([
                         'status' => 'error',
-                        'message' => 'Operación denegada. No puedes eliminar una cotización que ya se encuentra Autorizada.'
+                        'message' => 'Operación denegada. No puedes eliminar una cotización que ya está Autorizada o Rechazada.'
                     ]);
                     exit;
                 }
@@ -171,7 +169,55 @@ try {
 
             borrarCotizacion($pdo, $id);
             echo json_encode(['status' => 'success', 'message' => 'Cotización eliminada permanentemente.']);
+
+        } elseif ($action === 'guardar_logistica') {
+            $id_cotizacion = (int)($_POST['id_cotizacion_logistica'] ?? 0);
+            $paqueteria = trim($_POST['paqueteria'] ?? '');
+            $numero_guia = trim($_POST['numero_guia'] ?? '');
+            $fecha_envio = !empty($_POST['fecha_envio']) ? $_POST['fecha_envio'] : null;
+
+            if ($id_cotizacion === 0 || empty($paqueteria) || empty($numero_guia) || empty($fecha_envio)) {
+                echo json_encode(['status' => 'error', 'message' => 'Faltan datos de envío.']);
+                exit;
+            }
+
+            guardarLogisticaCotizacion($pdo, $id_cotizacion, $paqueteria, $numero_guia, $fecha_envio);
+            echo json_encode(['status' => 'success', 'message' => 'Datos de logística guardados exitosamente.']);
+
+        } elseif ($action === 'cambiar_estatus') {
+            $id_cotizacion = (int)($_POST['id_cotizacion'] ?? 0);
+            $nuevo_estatus = trim($_POST['estatus'] ?? '');
+            
+            if ($id_cotizacion === 0 || empty($nuevo_estatus)) {
+                echo json_encode(['status' => 'error', 'message' => 'Datos inválidos.']);
+                exit;
+            }
+
+            // 🔒 CANDADO CIBERSEGURIDAD ESTRICTO EN EL ONE-CLICK
+            if (strpos($nuevo_estatus, 'Autorizada') !== false) {
+                $stmtCheckDir = $pdo->prepare("SELECT COUNT(*) FROM domicilio_fiscal WHERE Cotizacion_id = ?");
+                $stmtCheckDir->execute([$id_cotizacion]);
+                $tieneFiscal = $stmtCheckDir->fetchColumn();
+
+                $stmtCheckEquipos = $pdo->prepare("SELECT COUNT(*) FROM detalle_cotizacion WHERE Cotizacion_id = ? AND (id_dom_cert IS NULL OR id_dom_envio IS NULL)");
+                $stmtCheckEquipos->execute([$id_cotizacion]);
+                $equiposIncompletos = $stmtCheckEquipos->fetchColumn();
+
+                if ($tieneFiscal == 0 || $equiposIncompletos > 0) {
+                    echo json_encode([
+                        'status' => 'error', 
+                        'message' => 'ACCESO DENEGADO SERVIDOR: La cotización tiene equipos sin dirección o le falta la dirección fiscal. Usa el botón del mapa para completarla.'
+                    ]);
+                    exit;
+                }
+            }
+
+            $stmtUpdate = $pdo->prepare("UPDATE cotizacion SET estatus = ? WHERE id_cotizacion = ?");
+            $stmtUpdate->execute([$nuevo_estatus, $id_cotizacion]);
+
+            echo json_encode(['status' => 'success', 'message' => 'El estatus se ha actualizado correctamente.']);
         }
+        
         exit;
     }
 } catch (Exception $e) {

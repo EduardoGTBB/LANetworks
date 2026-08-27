@@ -5,7 +5,7 @@
     <?php include('views/include/header.php'); ?>
     <main class="nxl-container">
         <div class="nxl-content">
-            <div class="page-header">
+            <!-- <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
                         <div class="page-header-title">
@@ -18,7 +18,42 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+            </div> -->
+            <!-- ?php 
+                $page_title = "Cotizaciones";
+                $breadcrumb_items = [
+                    "Cotizaciones",
+                    "Direcciones Cotización <strong id='breadcrumb_folio'>#Cargando...</strong>"
+                ];
+                // Si no queremos el boton de acceso en una parte solo descomenten el codigo de abajo
+                //$hide_new_quote_btn = true; 
+                
+                include('views/include/page_header.php'); 
+            ?> -->
+
+            <!-- [ page-header ] start -->
+            <?php 
+                $page_title = "Gestión de Direcciones";
+                
+                // ✨ UX INTELIGENTE: Insertamos el enlace HTML directamente en el arreglo 
+                // usando la variable $url_origen que el backend ya nos proporcionó.
+                // Esto evita modificar el archivo page_header.php
+                $enlace_origen = "<a href='" . htmlspecialchars($url_origen, ENT_QUOTES, 'UTF-8') . "'>Cotizaciones</a>";
+
+                $breadcrumb_items = [
+                    $enlace_origen,
+                    "Direcciones Cotización <strong id='breadcrumb_folio'>#Cargando...</strong>"
+                ];
+                
+                // ✨ CIBERSEGURIDAD Y UX: Construimos una URL de retorno segura usando GET
+                $conector = (strpos($url_origen, '?') !== false) ? '&' : '?';
+                $back_url = $url_origen . $conector . 'reopen_edit=' . $id_cotizacion;
+                
+                include('views/include/page_header.php'); 
+            ?>
+            <!-- [ page-header ] end -->
+            <!-- [ page-header ] end -->
+
             <div class="main-content">
                 <form id="formFormalizar">
                     <input type="hidden" name="id_cotizacion" id="id_cotizacion" value="<?php echo $id_cotizacion; ?>">
@@ -173,11 +208,30 @@
                         </div>
                     </div>
 
-                    <div class="row">
+                    <!-- <div class="row">
                         <div class="d-flex justify-content-center align-items-center gap-4 mt-4 mb-5 w-100">
-                            <!-- <a href="ver_cotizaciones.php" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a> -->
-                            <a href="<?php echo $url_origen; ?>" id="btn_regresar" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a>
+                            <a href="?php echo $url_origen; ?>" id="btn_regresar" class="btn btn-lg btn-secondary px-4 text-uppercase fw-bold">Dejar para después</a>
                             <button type="submit" class="btn btn-lg btn-primary px-5 text-uppercase fw-bold">Guardar</button>
+                            
+                        </div>
+                    </div> -->
+                    <div class="row border-top pt-4 mt-4">
+                        <!-- ✨ Botones de Navegación del Flujo -->
+                        <div class="d-flex justify-content-center align-items-center gap-4 mt-2 mb-5 w-100">
+                            <!-- 1. Vía de escape: Regresa a la tabla silenciosamente -->
+                            <a href="<?php echo htmlspecialchars($url_origen, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-lg btn-white shadow-sm border border-gray-300 px-4 text-uppercase fw-bold text-muted">
+                                Dejar para después
+                            </a>
+
+                            <!-- 2. Corrección: Regresa y auto-abre el modal de edición de productos -->
+                            <a href="<?php echo htmlspecialchars($back_url, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-lg btn-light shadow-sm border border-secondary px-4 text-uppercase fw-bold text-dark">
+                                <i class="feather-edit me-2"></i> Editar Cotización
+                            </a>
+
+                            <!-- 3. Acción Principal: Guarda y regresa a la tabla para autorizar -->
+                            <button type="submit" class="btn btn-lg btn-primary shadow-sm px-5 text-uppercase fw-bold">
+                                Guardar y Finalizar <i class="feather-check-circle ms-2"></i>
+                            </button>
                         </div>
                     </div>
                 </form>

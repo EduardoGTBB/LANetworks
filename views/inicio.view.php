@@ -9,7 +9,7 @@
     <!--! ================================================================ !-->
     <main class="nxl-container">
         <div class="nxl-content">
-            <!-- [ page-header ] start -->
+            <!-- [ page-header ] start --
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
@@ -22,17 +22,17 @@
                 </div>
                 <div class="page-header-right ms-auto">
                     <div class="page-header-right-items">
-                        <div class="d-flex d-md-none">
+                        !-- <div class="d-flex d-md-none">
                             <a href="javascript:void(0)" class="page-header-right-close-toggle">
                                 <i class="feather-arrow-left me-2"></i>
                                 <span>Back</span>
                             </a>
-                        </div>
+                        </div> --
                         <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
                             <div id="reportrange" class="reportrange-picker d-flex align-items-center">
                                 <span class="reportrange-picker-field"></span>
                             </div>
-                            <!--<div class="dropdown filter-dropdown">
+                            !--<div class="dropdown filter-dropdown">
                                 <a class="btn btn-md btn-light-brand" data-bs-toggle="dropdown" data-bs-offset="0, 10" data-bs-auto-close="outside">
                                     <i class="feather-filter me-2"></i>
                                     <span>Filter</span>
@@ -78,22 +78,41 @@
                                         <span>Manage Filter</span>
                                     </a>
                                 </div>
-                            </div>-->
+                            </div>--
                         </div>
                     </div>
-                    <div class="d-md-none d-flex align-items-center">
+                    !-- <div class="d-md-none d-flex align-items-center">
                         <a href="javascript:void(0)" class="page-header-right-open-toggle">
                             <i class="feather-align-right fs-20"></i>
                         </a>
-                    </div>
+                    </div> --
                 </div>
             </div>
-            <!-- [ page-header ] end -->
+            !-- [ page-header ] end -->
+
+
+            <?php 
+                $page_title = "Inicio";
+                $breadcrumb_items = [
+                    "Inicio"
+                ];
+                
+                // ✨ Inyectamos el HTML exacto de tu fechador como una variable
+                // Asegúrate de usar las clases o IDs correctos que tu JavaScript ya está leyendo
+                $custom_header_center = '
+                    <div class="input-group input-group-sm bg-white border rounded shadow-sm" style="max-width: 260px;">
+                        <span class="input-group-text bg-transparent border-0 text-muted pe-1"><i class="feather-calendar"></i></span>
+                        <input type="text" class="form-control border-0 bg-transparent fw-bold text-dark text-center" id="rango_fechas_dashboard" value="JUL 27, 26 - AUG 25, 26" readonly style="cursor: pointer;">
+                    </div>
+                ';
+                
+                include('views/include/page_header.php'); 
+            ?>
             <!-- [ Main Content ] start -->
             <div class="main-content">
                 <div class="row">
                     <!-- [Invoices Awaiting Payment] start -->
-                    <div class="col-xxl-3 col-md-6">
+                    <div class="col-xxl-6 col-md-6 col-lg-6">
                         <div class="card stretch stretch-full">
                             <div class="card-body">
                                 <div class="d-flex align-items-start justify-content-between mb-4">
@@ -113,6 +132,18 @@
                                 </div>
                                 <div class="pt-4">
                                     <div class="d-flex align-items-center justify-content-between">
+                                        <span class="fs-12 fw-medium text-muted text-truncate">Total cotizaciones</span>
+                                        <div class="text-end text-nowrap ms-3">
+                                            <span class="fs-12 fw-bold text-dark" id="dash_total_sub">0</span>
+                                            <span class="fs-11 text-muted" id="dash_total_per">(100%)</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress mt-2 ht-3">
+                                        <div class="progress-bar bg-primary" id="dash_total_bar" role="progressbar" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                                <!-- <div class="pt-4">
+                                    <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Total cotizaciones </a>
                                         <div class="w-100 text-end">
                                             <span class="fs-12 text-dark" id="dash_total_sub">0</span>
@@ -122,13 +153,13 @@
                                     <div class="progress mt-2 ht-3">
                                         <div class="progress-bar bg-primary" id="dash_total_bar" role="progressbar" style="width: 100%"></div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
                     <!-- [Invoices Awaiting Payment] end -->
-                    <!-- [Converted Leads] start -->
-                    <div class="col-xxl-3 col-md-6">
+                    <!-- //& Pendientes start -->
+                    <!-- <div class="col-xxl-4 col-md-6 col-lg-4">
                         <div class="card stretch stretch-full">
                             <div class="card-body">
                                 <div class="d-flex align-items-start justify-content-between mb-4">
@@ -144,7 +175,7 @@
                                     <a href="javascript:void(0);" class="">
                                         <i class="feather-more-vertical"></i>
                                     </a>
-                                </div>
+                                </div> 
                                 <div class="pt-4">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Cotizaciones</a>
@@ -159,10 +190,11 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- [Converted Leads] end -->
-                    <!-- [Projects In Progress] start -->
-                    <div class="col-xxl-3 col-md-6">
+                    </div> -->
+                    <!-- //& Pendientes end -->
+
+                    <!-- //& Autorizadas start -->
+                    <div class="col-xxl-6 col-md-6 col-lg-6">
                         <div class="card stretch stretch-full">
                             <div class="card-body">
                                 <div class="d-flex align-items-start justify-content-between mb-4">
@@ -172,7 +204,7 @@
                                         </div>
                                         <div>
                                             <div class="fs-4 fw-bold text-dark"><span id="dash_ganadas">0</span></div>
-                                            <h3 class="fs-13 fw-semibold text-truncate-1-line">Ganadas</h3>
+                                            <h3 class="fs-13 fw-semibold text-truncate-1-line">AUTORIZADAS</h3>
                                         </div>
                                     </div>
                                     <a href="javascript:void(0);" class="">
@@ -180,6 +212,18 @@
                                     </a>
                                 </div>
                                 <div class="pt-4">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span class="fs-12 fw-medium text-muted text-truncate">Cotizaciones</span>
+                                        <div class="text-end text-nowrap ms-3">
+                                            <span class="fs-12 fw-bold text-dark" id="dash_ganadas_sub">0</span>
+                                            <span class="fs-11 text-muted" id="dash_ganadas_per">(0%)</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress mt-2 ht-3">
+                                        <div class="progress-bar bg-success" id="dash_ganadas_bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <!-- <div class="pt-4">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Cotizaciones</a>
                                         <div class="w-100 text-end">
@@ -190,13 +234,14 @@
                                     <div class="progress mt-2 ht-3">
                                         <div class="progress-bar bg-success" id="dash_ganadas_bar" role="progressbar" style="width: 0%"></div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
-                    <!-- [Projects In Progress] end -->
+                    <!-- //& Autorizadas end -->
+                    
                     <!-- [Conversion Rate] start -->
-                    <div class="col-xxl-3 col-md-6">
+                    <div class="col-xxl-12 col-md-12 col-lg-12">
                         <div class="card stretch stretch-full">
                             <div class="card-body">
                                 <div class="d-flex align-items-start justify-content-between mb-4">
@@ -214,6 +259,18 @@
                                     </a>
                                 </div>
                                 <div class="pt-4">
+                                    <div class="d-flex flex-wrap align-items-end justify-content-between mb-1">
+                                        <span class="fs-12 fw-medium text-muted me-2 mb-1">Cotizaciones del mes</span>
+                                        <div class="text-end text-nowrap mb-1">
+                                            <span class="fs-12 fw-bold text-dark" id="dash_monto_sub">$0.00</span>
+                                            <span class="fs-11 text-muted" id="dash_monto_per">(100%)</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress ht-3">
+                                        <div class="progress-bar bg-danger" id="dash_monto_bar" role="progressbar" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                                <!-- <div class="pt-4">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line"> Cotizaciones del mes </a>
                                         <div class="w-50 text-end">
@@ -224,11 +281,12 @@
                                     <div class="progress mt-2 ht-3">
                                         <div class="progress-bar bg-danger" id="dash_monto_bar" role="progressbar" style="width: 100%"></div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
                     <!-- [Conversion Rate] end -->
+                    
                     <!-- [Payment Records] start -->
                     <div class="col-xxl-8">
                         <div class="card stretch stretch-full">
@@ -269,7 +327,7 @@
                             </div>
                             <div class="card-footer">
                                 <div class="row g-4">
-                                    <div class="col-lg-3">
+                                    <!-- <div class="col-lg-3">
                                         <div class="p-3 border border-dashed rounded">
                                             <div class="fs-12 text-muted mb-1">Pendientes</div>
                                             <h6 class="fw-bold text-dark" id="dash_chart_pendientes">$0.00</h6>
@@ -277,17 +335,17 @@
                                                 <div class="progress-bar bg-primary" id="dash_chart_pendientes_bar" role="progressbar" style="width: 0%"></div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-lg-3">
+                                    </div> -->
+                                    <div class="col-lg-4">
                                         <div class="p-3 border border-dashed rounded">
-                                            <div class="fs-12 text-muted mb-1">Ganadas</div>
+                                            <div class="fs-12 text-muted mb-1">Autorizadas</div>
                                             <h6 class="fw-bold text-dark" id="dash_chart_ganadas">$0.00</h6>
                                             <div class="progress mt-2 ht-3">
                                                 <div class="progress-bar bg-success" id="dash_chart_ganadas_bar"role="progressbar" style="width: 0%"></div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3">
+                                    <div class="col-lg-4">
                                         <div class="p-3 border border-dashed rounded">
                                             <div class="fs-12 text-muted mb-1">Perdidas</div>
                                             <h6 class="fw-bold text-dark" id="dash_chart_perdidas">$0.00</h6>
@@ -297,7 +355,7 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="col-lg-3">
+                                    <div class="col-lg-4">
                                         <div class="p-3 border border-dashed rounded">
                                             <div class="fs-12 text-muted mb-1">Totales</div>
                                             <h6 class="fw-bold text-dark" id="dash_chart_total">$0.00</h6>

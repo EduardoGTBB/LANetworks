@@ -26,7 +26,7 @@ $(document).ready(function () {
         this.value = this.value.replace(/[^0-9.,]/g, ''); // Bloquea letras
     });
 
-    window.windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
+    window.windowSucursalesOpciones = '<option value="">Selecciona Sucursal...</option>';
     if ($.fn.select2) {
         $('#filtro_estado_producto').select2({
             theme: 'bootstrap-5',
@@ -203,7 +203,7 @@ $(document).ready(function () {
                         $selectSuc.select2('destroy'); // 🧹 Limpiamos el plugin atorado
                     }
                     $selectSuc.empty();
-                    window.windowSucursalesOpciones = '<option value="">Selecciona destino...</option>';
+                    window.windowSucursalesOpciones = '<option value="">Selecciona Sucursal...</option>';
 
                     if (data.length === 0) {
                         $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
@@ -236,7 +236,7 @@ $(document).ready(function () {
                             $(this).select2({
                                 theme: 'bootstrap-5',
                                 width: '100%',
-                                placeholder: "Selecciona destino..."
+                                placeholder: "Selecciona Sucursal..."
                             });
                         });
                     }
@@ -317,7 +317,7 @@ $(document).ready(function () {
         } else {
             sucursalesCache = [];
             $selectSuc.empty().append('<option value="">Esperando al solicitante...</option>');
-            $('.select-sucursal-fila').html('<option value="">Selecciona destino...</option>');
+            $('.select-sucursal-fila').html('<option value="">Selecciona Sucursal...</option>');
             $wrapperPlaza.slideUp('fast');
         }
     });
@@ -380,7 +380,7 @@ $(document).ready(function () {
             nuevaFila.find('.select-sucursal-fila').select2({
                 theme: 'bootstrap-5',
                 width: '100%',
-                placeholder: "Selecciona destino..."
+                placeholder: "Selecciona Sucursal..."
             });
         }
 
@@ -457,10 +457,13 @@ $(document).ready(function () {
             row.find('.chk-desglosar').prop('disabled', false);
 
             if (estadoBD === 'USADO') {
-                // Equipos USADOS: Siempre visible y obligatorio
+                // Equipos USADOS: Siempre visible y obligatorio para empleados y portal B2B
                 $inputID.show().prop('readonly', false).removeClass('bg-light').prop('required', true).attr('placeholder', 'ID del equipo (Obligatorio)');
             } else {
-                // Equipos NUEVOS: Opcional por defecto
+                // ✨ Equipos NUEVOS: Totalmente ocultos y sin valor (Petición del cliente)
+                $inputID.hide().prop('required', false).val('');
+                
+                /*  // Equipos NUEVOS: Opcional por defecto
                 $inputID.prop('required', false).attr('placeholder', 'ID del equipo (Opcional)');
                 
                 // ✨ LÓGICA DE VISIBILIDAD PARA EL CLIENTE (PORTAL B2B)
@@ -475,7 +478,7 @@ $(document).ready(function () {
                 } else {
                     // Es un empleado LAN, siempre puede ver y editar
                     $inputID.show().prop('readonly', false).removeClass('bg-light');
-                }
+                } */
             }
         }
 

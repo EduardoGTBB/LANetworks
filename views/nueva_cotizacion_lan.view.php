@@ -8,7 +8,7 @@
     <!--! ================================================================ !-->
     <main class="nxl-container">
         <div class="nxl-content">
-            <!-- [ page-header ] start -->
+            <!-- [ page-header ] start --
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
@@ -28,7 +28,7 @@
                                 <span>Back</span>
                             </a>
                         </div>
-                        <!--<div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                        !--<div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
                             <div class="dropdown filter-dropdown">
                                 <a class="btn btn-md btn-light-brand" data-bs-toggle="dropdown" data-bs-offset="0, 10" data-bs-auto-close="outside">
                                     <i class="feather-filter me-2"></i>
@@ -80,7 +80,7 @@
                                 <i class="feather-plus me-2"></i>
                                 <span>Add widget</span>
                             </a>
-                        </div>-->
+                        </div>--
                     </div>
                     <div class="d-md-none d-flex align-items-center">
                         <a href="javascript:void(0)" class="page-header-right-open-toggle">
@@ -89,8 +89,22 @@
                     </div>
                 </div>
             </div>
-            <!-- [ page-header ] end -->
+            !-- [ page-header ] end -->
             <!-- [ Main Content ] start -->
+
+            <?php 
+                $page_title = "Nueva cotización";
+                $breadcrumb_items = [
+                    "Cotizaciones",
+                    "Nueva cotización",
+
+                ];
+                // Si no queremos el boton de acceso en una parte solo descomenten el codigo de abajo
+                //$hide_new_quote_btn = true; 
+                
+                include('views/include/page_header.php'); 
+            ?>
+
             <div class="main-content">
                 <div class="row">
                     <div class="col-lg-12">
@@ -252,7 +266,7 @@
                                                                 </td>
                                                                 <td class="col-multisucursal" style="display: none;">
                                                                     <select class="form-select form-select-sm select-sucursal-fila" name="sucursal_fila[]">
-                                                                        <option value="">Selecciona destino...</option>
+                                                                        <option value="">Selecciona Sucursal...</option>
                                                                     </select>
                                                                 </td>
                                                                 <!--//>>> INICIO -->

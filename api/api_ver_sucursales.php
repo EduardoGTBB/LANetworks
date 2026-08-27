@@ -35,6 +35,15 @@ try {
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Sucursal no encontrada']);
             }
+        }elseif ($action === 'get_next_sae') { // ✨ NUEVO: Endpoint para obtener el siguiente ID SAE automáticamente
+            // CAST convierte valores de texto a número (ej. "828") de forma segura para buscar el más alto
+            $stmt = $pdo->query("SELECT MAX(CAST(id_sae AS UNSIGNED)) FROM sucursales");
+            $max_sae = (int)$stmt->fetchColumn();
+            
+            // Si hay registros sumamos 1, si la tabla está vacía empezamos en 1
+            $next_sae = $max_sae > 0 ? $max_sae + 1 : 1;
+            
+            echo json_encode(['status' => 'success', 'next_sae' => $next_sae]);
         }
         exit;
     }

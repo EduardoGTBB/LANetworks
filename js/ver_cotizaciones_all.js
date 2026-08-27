@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-    $('#edit_estatus, #tipo_precio, #edit_filtro_tipo_producto').each(function() {
+    $('#edit_estatus, #tipo_precio, #edit_filtro_tipo_producto').each(function () {
         // Destruimos la inicialización automática del template
         if ($(this).hasClass('select2-hidden-accessible')) {
             $(this).select2('destroy');
@@ -12,26 +12,26 @@ $(document).ready(function () {
             width: '100%'
         });
     });
-    
+
     const formatoMoneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
     const formatoInput = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     // ✨ MÁSCARAS DE UX PARA EL PRECIO UNITARIO
-    $(document).on('blur', '.precio-mask', function() {
+    $(document).on('blur', '.precio-mask', function () {
         let valor = String($(this).val()).replace(/,/g, '');
-        if(valor !== '' && !isNaN(valor)) {
+        if (valor !== '' && !isNaN(valor)) {
             $(this).val(formatoInput.format(valor));
         } else {
             $(this).val('');
         }
     });
 
-    $(document).on('focus', '.precio-mask', function() {
+    $(document).on('focus', '.precio-mask', function () {
         let valor = String($(this).val()).replace(/,/g, '');
         $(this).val(valor);
     });
-    
-    $(document).on('input', '.precio-mask', function() {
+
+    $(document).on('input', '.precio-mask', function () {
         this.value = this.value.replace(/[^0-9.,]/g, '');
     });
 
@@ -40,40 +40,40 @@ $(document).ready(function () {
     let preciosProductos = {};
     let rowCount = 0;
 
-    window.windowSucursalesOpcionesEdit = '<option value="">Selecciona certificado...</option>';
+    window.windowSucursalesOpcionesEdit = '<option value="">Selecciona Sucursal...</option>';
     let isEditMultiSucursal = false;
-    let sucursalesCacheEdit = []; 
+    let sucursalesCacheEdit = [];
 
     //>>>==========================================
     //>>> 1. CARGA INICIAL DE DATOS MAESTROS
     //>>>==========================================
     $.ajax({ url: 'api/api_cotizador.php?action=get_empresas', type: 'GET', success: function (data) { windowEmpresas = data; } });
-    
+
     $.ajax({
         url: 'api/api_cotizador.php?action=get_productos', type: 'GET',
         success: function (data) {
             windowProductos = data;
-            data.forEach(p => { 
-                preciosProductos[p.id_product] = p; 
+            data.forEach(p => {
+                preciosProductos[p.id_product] = p;
             });
         }
     });
 
-    $('#edit_estatus').on('change', function() {
+    $('#edit_estatus').on('change', function () {
         let val = $(this).val();
         let tieneDir = $(this).data('tiene-dir');
-        
+
         if (val === 'Autorizada (información completa)' && tieneDir === 0) {
             alert("No puedes marcar la cotización como 'Autorizada' sin antes registrar las direcciones de Certificado y Envío.");
-            $(this).val('Por aprobar').trigger('change.select2'); 
+            $(this).val('Guardado para aprobación').trigger('change.select2');
         }
     });
-    
-    $(document).on('change', '.chk-desglosar', function() {
-        $(this).siblings('.hidden-desglose').val( $(this).is(':checked') ? 'Y' : 'N' );
+
+    $(document).on('change', '.chk-desglosar', function () {
+        $(this).siblings('.hidden-desglose').val($(this).is(':checked') ? 'Y' : 'N');
     });
 
-    $(document).on('change', '.select-sucursal-fila-edit', function() {
+    $(document).on('change', '.select-sucursal-fila-edit', function () {
         $(this).attr('data-selected-suc', $(this).val());
     });
 
@@ -81,6 +81,272 @@ $(document).ready(function () {
     //>>> 2. CARGAR TABLA PRINCIPAL CON DATATABLES
     //>>> ==============================================
     function cargarTablaPrincipal() {
+        $.ajax({
+            url: 'api/api_ver_cotizaciones.php?action=leer_todas',
+            method: 'GET', cache: false, dataType: 'json',
+            success: function (data) {
+                let tbody = $('#tabla-cotizaciones');
+                let $tabla = $('#tableAllCotizaciones');
+
+                if ($.fn.DataTable && $.fn.DataTable.isDataTable($tabla)) { $tabla.DataTable().destroy(); }
+                tbody.empty();
+
+                if (data.length === 0) {
+                    tbody.append('<tr><td colspan="5" class="text-center text-muted py-4">No hay cotizaciones registradas.</td></tr>');
+                    return;
+                }
+
+                data.forEach(function (cot) {
+                    let folioVisual = cot.folio_especial ? cot.folio_especial : cot.id_cotizacion.toString().padStart(5, '0');
+                    let razonSoc = cot.razon_social ? cot.razon_social : 'Sin Empresa';
+
+                    let nombreSol = cot.nombre ? cot.nombre : 'Sin registro';
+                    let apellidoSol = cot.apellido_pat ? cot.apellido_pat : '';
+                    let solicitante = `${nombreSol} ${apellidoSol}`.trim();
+
+                    // ✨ MANTENEMOS EL DATO DEL CREADOR (Exclusivo de "Todas las cotizaciones")
+                    let creador = cot.admin_nombre ? `${cot.admin_nombre} ${cot.admin_apell_pat}` : 'Portal B2B (Cliente)';
+                    let colorCreador = cot.admin_nombre ? 'text-primary' : 'text-danger';
+
+                    let nombrePlaza = cot.nombre_plaza ? cot.nombre_plaza.toUpperCase() : 'SIN ESPECIFICAR';
+
+                    let badgeColor = 'bg-soft-primary text-primary';
+                    let estatusTexto = cot.estatus ? cot.estatus : 'Guardado para aprobación';
+
+                    if (estatusTexto === 'Autorizada (sin dirección)') badgeColor = 'bg-soft-warning text-warning';
+                    if (estatusTexto === 'Autorizada (información completa)') badgeColor = 'bg-soft-success text-success';
+                    if (estatusTexto === 'No autorizada') badgeColor = 'bg-soft-danger text-danger';
+
+                    // ✨ 1. MAPA (DIRECCIONES) CON COLOR INTELIGENTE Y PARAMETRO from=all
+                    let btnCompletarVenta = '';
+                    let yaTieneDirecciones = parseInt(cot.tiene_dir) || 0;
+                    let equiposSinDir = parseInt(cot.equipos_sin_dir) || 0;
+
+                    if (estatusTexto !== 'Autorizada (información completa)' && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
+                        let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || (estatusTexto === 'Guardado para aprobación' && yaTieneDirecciones === 0));
+                        let alertaEdicionIncompleta = (yaTieneDirecciones > 0 && equiposSinDir > 0);
+
+                        let colorIcon = 'text-dark';
+                        let latido = '';
+                        let claseFondo = 'bg-soft-secondary';
+                        let textoTooltip = 'Gestionar Direcciones';
+
+                        if (alertaEdicionIncompleta) {
+                            colorIcon = 'text-danger'; latido = 'style="animation: pulse 1.5s infinite;"'; claseFondo = 'bg-soft-danger border border-danger'; textoTooltip = '¡Alerta! Equipos sin dirección.';
+                        } else if (urgeDireccion) {
+                            colorIcon = 'text-warning'; latido = 'style="animation: pulse 2s infinite;"'; claseFondo = 'bg-soft-warning border border-warning'; textoTooltip = '¡Faltan Direcciones! Haz clic aquí.';
+                        } else if (yaTieneDirecciones > 0) {
+                            colorIcon = 'text-primary'; claseFondo = 'bg-soft-primary'; textoTooltip = 'Ver/Editar Direcciones (Registro Completo)';
+                        }
+
+                        // Nota el from=all agregado
+                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}&from=all" class="avatar-text avatar-md ${claseFondo} ${colorIcon}" ${latido}><abbr title="${textoTooltip}" style="text-decoration:none;"><i class="feather-map-pin"></i></abbr></a>`;
+                    }
+
+                    // ✨ 2. LOGÍSTICA INTELIGENTE
+                    let btnLogisticaRapida = '';
+                    if (estatusTexto === 'Autorizada (información completa)') {
+                        if (!cot.numero_guia || cot.numero_guia.trim() === '') {
+                            btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-danger text-danger border border-danger btn-logistica-modal" style="animation: pulse 1.5s infinite;" data-id="${cot.id_cotizacion}" data-paqueteria="" data-guia="" data-fecha=""><abbr title="¡URGENTE! Añadir Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
+                        } else {
+                            btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-success text-success border border-success border-opacity-25 btn-logistica-modal" data-id="${cot.id_cotizacion}" data-paqueteria="${cot.paqueteria}" data-guia="${cot.numero_guia}" data-fecha="${cot.fecha_envio}"><abbr title="Ver/Actualizar Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
+                        }
+                    }
+
+                    // ✨ 3. EDITAR, ELIMINAR Y PDFs
+                    let btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar información" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`;
+
+                    let btnEliminar = '';
+                    if (!estatusTexto.includes('Autorizada') && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
+                        btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-danger text-danger btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr></a>`;
+                    }
+
+                    let btnPdfLab = `<a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}&tipo=lab" target="_blank" class="avatar-text avatar-md bg-soft-info text-info"><abbr title="PDF Laboratorio" style="text-decoration:none;"><i class="feather-thermometer"></i></abbr></a>`;
+                    let btnPdfComercial = `<a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md bg-soft-dark text-dark"><abbr title="PDF Comercial" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>`;
+
+                    // ✨ 4. LÓGICA INTELIGENTE (FILAS EXPLÍCITAS A PRUEBA DE BALAS)
+                    let botonesActivos = [];
+                    if (btnCompletarVenta) botonesActivos.push(btnCompletarVenta);
+                    if (btnPdfComercial) botonesActivos.push(btnPdfComercial);
+                    if (btnPdfLab) botonesActivos.push(btnPdfLab);
+                    if (btnLogisticaRapida) botonesActivos.push(btnLogisticaRapida);
+                    if (btnEditar) botonesActivos.push(btnEditar);
+                    if (btnEliminar) botonesActivos.push(btnEliminar);
+
+                    let cantidadBotones = botonesActivos.length;
+                    let filasHTML = '';
+
+                    if (cantidadBotones === 4) {
+                        filasHTML += `<div class="d-flex justify-content-center gap-1 mb-1">${botonesActivos[0]}${botonesActivos[1]}</div>`;
+                        filasHTML += `<div class="d-flex justify-content-center gap-1">${botonesActivos[2]}${botonesActivos[3]}</div>`;
+                    } else if (cantidadBotones === 5) {
+                        filasHTML += `<div class="d-flex justify-content-center gap-1 mb-1">${botonesActivos[0]}${botonesActivos[1]}${botonesActivos[2]}</div>`;
+                        filasHTML += `<div class="d-flex justify-content-center gap-1">${botonesActivos[3]}${botonesActivos[4]}</div>`;
+                    } else if (cantidadBotones === 6) {
+                        filasHTML += `<div class="d-flex justify-content-center gap-1 mb-1">${botonesActivos[0]}${botonesActivos[1]}${botonesActivos[2]}</div>`;
+                        filasHTML += `<div class="d-flex justify-content-center gap-1">${botonesActivos[3]}${botonesActivos[4]}${botonesActivos[5]}</div>`;
+                    } else {
+                        filasHTML += `<div class="d-flex justify-content-center gap-1">${botonesActivos.join('')}</div>`;
+                    }
+
+                    let contenedorAcciones = `
+                        <div class="d-flex flex-column align-items-center justify-content-center mx-auto">
+                            ${filasHTML}
+                        </div>
+                    `;
+
+                    // ✨ 5. COLUMNA DE ESTATUS (Interactivo Compacto)
+                    let colEstatusHTML = `<span class="badge ${badgeColor}">${estatusTexto}</span>`;
+
+                    let esClienteSeguro = (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL);
+
+                    if (estatusTexto === 'Guardado para aprobación' && !esClienteSeguro) {
+                        colEstatusHTML = `
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <span class="badge ${badgeColor}">${estatusTexto}</span>
+                                <div class="dropdown">
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-primary d-flex align-items-center justify-content-center shadow-sm" data-bs-toggle="dropdown" aria-expanded="false" title="Evaluar Cotización" style="width: 30px; height: 30px; padding: 0; border-radius: 6px;">
+                                        <i class="feather-check-circle" style="font-size: 15px;"></i>
+                                    </a>
+                                    <ul class="dropdown-menu shadow-lg border-0 mt-2">
+                                        <li><h6 class="dropdown-header text-muted text-uppercase fw-bold" style="font-size: 10px;">Tomar decisión</h6></li>
+                                        <li><a class="dropdown-item btn-cambiar-estatus fw-bold text-success py-2" href="#" data-id="${cot.id_cotizacion}" data-estatus="Autorizada (información completa)" data-tienedir="${yaTieneDirecciones}" data-folio="${folioVisual}"><i class="feather-check-circle me-2"></i> Autorizar</a></li>
+                                        <li><a class="dropdown-item btn-cambiar-estatus fw-bold text-danger py-2" href="#" data-id="${cot.id_cotizacion}" data-estatus="No autorizada" data-tienedir="1" data-folio="${folioVisual}"><i class="feather-x-circle me-2"></i> Rechazar</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // ✨ 6. CONSTRUCCIÓN DE LA FILA FINAL
+                    let tr = `
+                        <tr>
+                            <td class="align-middle">
+                                <div class="d-flex flex-column align-items-center justify-content-center text-center">
+                                    <div class="avatar-image avatar-sm rounded bg-soft-light d-flex align-items-center justify-content-center mb-1">
+                                        <img class="img-fluid" src="assets/images/gallery/icono_cot.jpg" style="max-height: 24px;">
+                                    </div>
+                                    <a class="d-block fw-bold mb-0 text-dark fs-14">${folioVisual}</a>
+                                    <span class="fs-11 text-muted d-block mt-1">
+                                        <i class="feather-calendar me-1"></i>${cot.fecha_cot}
+                                    </span>
+                                </div>
+                            </td>
+                            
+                            <td class="align-middle" style="max-width: 270px; white-space: normal; overflow-wrap: break-word;">
+                                <div class="fw-bolder text-uppercase text-dark mb-1" style="font-size: 13px; line-height: 1.2;">
+                                    ${razonSoc}
+                                </div>
+                                <div class="d-flex flex-column gap-1 mt-2">
+                                    <span class="text-muted fw-semibold" style="font-size: 11px;">
+                                        <span class="text-dark">Solicitante:</span> ${solicitante}
+                                    </span>
+                                    <span class="text-primary fw-bold" style="font-size: 11px;">
+                                        Plaza: ${nombrePlaza}
+                                    </span>
+                                    <span class="fw-bold mt-1 ${colorCreador}" style="font-size: 11px;">
+                                        Creado por: ${creador}
+                                    </span>
+                                </div>
+                            </td>
+                            
+                            <td class="align-middle text-center"><span class="text-dark fw-bold">${formatoMoneda.format(cot.gran_total)}</span></td>
+
+                            <!-- ✨ SOLUCIÓN 1: El span oculto obliga a DataTables a leer el estatus limpio primero -->
+                            <td class="align-middle text-center">
+                                <span class="d-none">${estatusTexto}</span>
+                                ${colEstatusHTML}
+                            </td>
+                            
+                            <td class="text-center align-middle" style="min-width: 155px;">
+                                ${contenedorAcciones}
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(tr);
+                });
+
+                if ($.fn.DataTable) {
+                    $tabla.DataTable({
+                        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
+                        destroy: true,
+                        pageLength: 8,
+                        lengthChange: false,
+                        ordering: false,
+                        searching: true,
+                        info: true,
+                        dom: "<'row mb-3 px-4 pt-4'<'col-sm-12 col-md-6 d-flex justify-content-start align-items-center'f><'col-sm-12 col-md-6 d-flex justify-content-end align-items-center'<'#contenedor-badge-total'>>>" +
+                             "<'table-responsive'tr>" +
+                             "<'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
+
+                        drawCallback: function () {
+                            $('.dataTables_paginate > .pagination').addClass('pagination-sm mb-0');
+
+                            let api = this.api();
+                            let parseValor = function (i) {
+                                let text = typeof i === 'string' ? i.replace(/<[^>]*>?/gm, '') : i;
+                                return typeof text === 'string' ? text.replace(/[\$,]/g, '') * 1 : typeof text === 'number' ? text : 0;
+                            };
+
+                            let total = api.column(2, { search: 'applied' }).data().reduce(function (a, b) {
+                                return a + parseValor(b);
+                            }, 0);
+
+                            // 🎯 Ubicamos el contenedor inyectado por DataTables
+                            let $badgeContainer = $('#contenedor-badge-total');
+
+                            if (total > 0) {
+                                let filtroActivo = $('#filtro_estatus_tabla').val();
+                                let colorFondoTexto = 'bg-soft-dark text-dark';
+                                let colorBorde = 'rgba(33, 37, 41, 0.3)';
+
+                                if (filtroActivo === 'Guardado para aprobación') {
+                                    colorFondoTexto = 'bg-soft-primary text-primary';
+                                    colorBorde = 'rgba(13, 110, 253, 0.3)';
+                                } else if (filtroActivo === 'Autorizada') {
+                                    colorFondoTexto = 'bg-soft-success text-success';
+                                    colorBorde = 'rgba(40, 167, 69, 0.3)';
+                                } else if (filtroActivo === 'No autorizada') {
+                                    colorFondoTexto = 'bg-soft-danger text-danger';
+                                    colorBorde = 'rgba(220, 53, 69, 0.3)';
+                                }
+
+                                // ✨ Renderizamos el badge directamente en la misma línea del buscador
+                                let badgeHTML = `
+                                    <div style="min-width: 260px;" class="d-flex justify-content-end">
+                                        <span class="badge ${colorFondoTexto} fs-13 py-2 px-3 shadow-sm w-100 d-flex justify-content-center align-items-center" style="border: 1px solid ${colorBorde};">
+                                            Total acumulado: <strong class="ms-1">${formatoMoneda.format(total)}</strong>
+                                        </span>
+                                    </div>`;
+                                $badgeContainer.html(badgeHTML);
+                            } else {
+                                $badgeContainer.empty(); // Limpiamos si no hay total
+                            }
+                        }
+                    });
+                    $('#filtro_estatus_tabla').trigger('change');
+                }
+            },
+            error: function () { $('#tabla-cotizaciones').html('<tr><td colspan="5" class="text-center text-danger py-4">Error al cargar.</td></tr>'); }
+        });
+    }
+
+    // ✨ EVENTO PARA FILTRAR POR ESTATUS (ÍNDICE ACTUALIZADO AL 3)
+    $(document).on('change', '#filtro_estatus_tabla', function () {
+        let valor = $(this).val();
+        let $tablaDT = $('#tableAllCotizaciones').DataTable();
+
+        if (valor) {
+            let regex = '^\\s*' + valor;
+            $tablaDT.column(3).search(regex, true, false).draw();
+        } else {
+            // Limpiamos el filtro si escogen "Mostrar todos"
+            $tablaDT.column(3).search('', true, false).draw();
+        }
+    });
+
+    cargarTablaPrincipal();
+    /* function cargarTablaPrincipal() {
         $.ajax({
             url: 'api/api_ver_cotizaciones.php?action=leer_todas',
             method: 'GET', cache: false, dataType: 'json',
@@ -108,7 +374,7 @@ $(document).ready(function () {
                     let colorCreador = cot.admin_nombre ? 'text-primary' : 'text-danger';
 
                     let badgeColor = 'bg-soft-primary text-primary';
-                    let estatusTexto = cot.estatus ? cot.estatus : 'Guardado';
+                    let estatusTexto = cot.estatus ? cot.estatus : 'Guardado para aprobación';
 
                     if (estatusTexto === 'Autorizada (sin dirección)') badgeColor = 'bg-soft-warning text-warning';
                     if (estatusTexto === 'Autorizada (información completa)') badgeColor = 'bg-soft-success text-success';
@@ -119,7 +385,7 @@ $(document).ready(function () {
                     let equiposSinDir = parseInt(cot.equipos_sin_dir) || 0;
 
                     if (estatusTexto !== 'Autorizada (información completa)' && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
-                        let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || ((estatusTexto === 'Por aprobar' || estatusTexto === 'Guardado') && yaTieneDirecciones === 0));
+                        let urgeDireccion = (estatusTexto === 'Autorizada (sin dirección)' || (estatusTexto === 'Guardado para aprobación' && yaTieneDirecciones === 0));
                         let alertaEdicionIncompleta = (yaTieneDirecciones > 0 && equiposSinDir > 0);
 
                         let colorIcon = 'text-primary';
@@ -221,18 +487,8 @@ $(document).ready(function () {
             },
             error: function () { $('#tabla-cotizaciones').html('<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar.</td></tr>'); }
         });
-    }
+    } */
 
-    // ✨ EVENTO PARA FILTRAR POR ESTATUS (TODAS LAS COTIZACIONES)
-    $(document).on('change', '#filtro_estatus_tabla', function() {
-        let valor = $(this).val();
-        let $tablaDT = $('#tableAllCotizaciones').DataTable();
-
-        let regex = valor ? '^' + valor : '';
-        $tablaDT.column(4).search(regex, true, false).draw();
-    });
-
-    cargarTablaPrincipal();
 
     //>>>============================================== 
     //>>>           3. MODAL DE EDICIÓN
@@ -265,8 +521,8 @@ $(document).ready(function () {
                 method: 'GET',
                 dataType: 'json',
                 success: function (data) {
-                    sucursalesCacheEdit = data; 
-                    
+                    sucursalesCacheEdit = data;
+
                     // --- LLENAR SUCURSALES ---
                     $selectSuc.empty();
                     window.windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
@@ -276,7 +532,7 @@ $(document).ready(function () {
                         window.windowSucursalesOpcionesEdit = '<option value="" disabled>Sin sucursales asignadas</option>';
                     } else {
                         $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
-                        
+
                         let sucursalesAgregadas = new Set(); // ✨ ESCUDO CONTRA DUPLICADOS
 
                         data.forEach(suc => {
@@ -290,8 +546,8 @@ $(document).ready(function () {
 
                         if (preseleccion_suc) {
                             $selectSuc.val(preseleccion_suc.toString());
-                        } 
-                        
+                        }
+
                         if (!$selectSuc.val() && data.length === 1 && !isEditMultiSucursal) {
                             $selectSuc.val(data[0].id_sucursal);
                         }
@@ -299,11 +555,11 @@ $(document).ready(function () {
 
                     $selectSuc.select2({ dropdownParent: $('#modalEditarCotizacion'), theme: 'bootstrap-5', width: '100%' });
 
-                    $('.select-sucursal-fila-edit').each(function() {
+                    $('.select-sucursal-fila-edit').each(function () {
                         let valToSelect = $(this).attr('data-selected-suc') || $(this).val();
                         $(this).html(window.windowSucursalesOpcionesEdit);
                         if (valToSelect) $(this).val(valToSelect);
-                        
+
                         if ($(this).hasClass('select2-hidden-accessible')) {
                             $(this).trigger('change.select2');
                         } else if (isEditMultiSucursal && $.fn.select2) {
@@ -329,7 +585,7 @@ $(document).ready(function () {
                     let plazasUnicas = new Map();
                     data.forEach(suc => {
                         if (suc.ids_plazas && suc.nombres_plazas) {
-                            let ids = suc.ids_plazas.toString().split('||'); 
+                            let ids = suc.ids_plazas.toString().split('||');
                             let nombres = suc.nombres_plazas.split('||');
                             for (let i = 0; i < ids.length; i++) {
                                 let idPlaza = ids[i].trim();
@@ -343,7 +599,7 @@ $(document).ready(function () {
                     if ($infoPlaza.hasClass('select2-hidden-accessible')) {
                         $infoPlaza.select2('destroy');
                     }
-                    $infoPlaza.empty().removeClass('form-select').addClass('form-control').css({'pointer-events': '', 'background-image': '', 'appearance': ''});
+                    $infoPlaza.empty().removeClass('form-select').addClass('form-control').css({ 'pointer-events': '', 'background-image': '', 'appearance': '' });
 
                     if (plazasUnicas.size === 0) {
                         $infoPlaza.append('<option value="">El usuario no tiene plazas ligadas</option>');
@@ -360,7 +616,7 @@ $(document).ready(function () {
                             $infoPlaza.append(`<option value="${id}">${nombre}</option>`);
                         });
                         $infoPlaza.prop('disabled', false).removeClass('bg-light').addClass('bg-white').css('pointer-events', 'auto');
-                        
+
                         // Solo aplica para las vistas de edición (no rompe el cotizador nuevo)
                         if (typeof preseleccion_plaza !== 'undefined' && preseleccion_plaza) {
                             $infoPlaza.val(preseleccion_plaza.toString());
@@ -399,8 +655,8 @@ $(document).ready(function () {
             let estadoBD = p.estado_product ? p.estado_product.toUpperCase().trim() : 'N/A';
             let pasaFiltro = false;
 
-            if (filtroActual === 'TODOS') pasaFiltro = true; 
-            else if (filtroActual === estadoBD) pasaFiltro = true; 
+            if (filtroActual === 'TODOS') pasaFiltro = true;
+            else if (filtroActual === estadoBD) pasaFiltro = true;
             else if (p.id_product == prod_id) pasaFiltro = true;
 
             if (pasaFiltro) {
@@ -408,7 +664,7 @@ $(document).ready(function () {
                 let marca = (p.marca_product && p.marca_product !== 'N/A') ? p.marca_product.toUpperCase() : '';
                 let textoMarca = marca ? ` | Marca: ${marca}` : '';
                 let isSrv = (estadoBD === 'CALIBRACION');
-                
+
                 opciones += `<option value="${p.id_product}" data-servicio="${isSrv}" ${selected}>[${claveM}] ${descM}${textoMarca}</option>`;
             }
         });
@@ -467,7 +723,7 @@ $(document).ready(function () {
 
     function cargarSolicitantes(id_empresa, preseleccion = null, isReadOnly = false, preseleccion_suc = null, preseleccion_plaza = null) {
         let $selSol = $('#edit_select_solicitante');
-        
+
         if ($selSol.hasClass('select2-hidden-accessible')) {
             $selSol.select2('destroy');
         }
@@ -525,7 +781,7 @@ $(document).ready(function () {
         e.preventDefault();
         window.productoAgregadoEnEdicion = false; // ✨ BANDERA APAGADA
         let id_cot = $(this).data('id');
-        let folioVisualModal = $(this).data('folio');
+        let folioVisualModal = String($(this).data('folio'));
         $('#modal_folio_badge').text(folioVisualModal.includes('-') ? folioVisualModal : '#' + folioVisualModal);
 
         $.ajax({
@@ -552,33 +808,33 @@ $(document).ready(function () {
                 $('#tipo_precio').val(cot.tipo_precio).trigger('change');
 
                 $('#edit_tax').val(cot.porcentaje_iva);
-                
+
                 // ✨ Inyectamos el valor oculto y el visual formateado
                 $('#edit_sub_total').val(cot.importe_total);
                 $('#edit_sub_total_visual').val(formatoMoneda.format(cot.importe_total));
-                
+
                 $('#edit_total_amount').val(cot.precio_iva);
                 $('#edit_total_amount_visual').val(formatoMoneda.format(cot.precio_iva));
-                
+
                 let $selEmp = $('#edit_select_empresa');
                 if ($selEmp.hasClass('select2-hidden-accessible')) {
                     $selEmp.select2('destroy');
                 }
                 $selEmp.html('<option value="">Selecciona un cliente...</option>');
                 windowEmpresas.forEach(emp => { $selEmp.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`); });
-                
+
                 $selEmp.data('old', cot.Empresa_id.toString()).val(cot.Empresa_id);
                 $selEmp.select2({ dropdownParent: $('#modalEditarCotizacion') });
 
                 $('#edit_estatus').data('tiene-dir', cot.tiene_dir ? parseInt(cot.tiene_dir) : 0);
 
-                let estatusBD = cot.estatus ? cot.estatus : 'Guardado';
+                let estatusBD = cot.estatus ? cot.estatus : 'Guardado para aprobación';
                 if (estatusBD === 'Autorizada (sin dirección)') estatusBD = 'Autorizada (información completa)';
                 $('#edit_estatus').val(estatusBD).trigger('change');
 
                 let $wrapSucursal = $('#wrapper_selector_sucursal_edit');
-                let $wrapPrecio   = $('#tipo_precio').closest('.mb-4');
-                let $wrapEstatus  = $('#fila_estatus_lan');
+                let $wrapPrecio = $('#tipo_precio').closest('.mb-4');
+                let $wrapEstatus = $('#fila_estatus_lan');
 
                 $wrapPrecio.show();
                 $wrapEstatus.show();
@@ -602,11 +858,11 @@ $(document).ready(function () {
                     if ($('#hidden_edit_empresa').length === 0) {
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
-                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_estatus" name="estatus" value="${cot.estatus ? cot.estatus : 'Guardado'}">`);
+                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_estatus" name="estatus" value="${cot.estatus ? cot.estatus : 'Guardado para aprobación'}">`);
                     } else {
                         $('#hidden_edit_empresa').val(cot.Empresa_id);
                         $('#hidden_edit_precio').val(cot.tipo_precio);
-                        $('#hidden_edit_estatus').val(cot.estatus ? cot.estatus : 'Guardado');
+                        $('#hidden_edit_estatus').val(cot.estatus ? cot.estatus : 'Guardado para aprobación');
                     }
                 }
 
@@ -637,7 +893,7 @@ $(document).ready(function () {
                         let claveM = pData.clave_product.toUpperCase();
                         let descM = pData.descripcion_product.toUpperCase();
                         let estadoBD = pData.estado_product ? pData.estado_product.toUpperCase().trim() : '';
-                        
+
                         if (estadoBD === 'CALIBRACION' || claveM.includes('SERVICIO') || descM.includes('SERVICIO')) {
                             esServicio = true;
                         }
@@ -648,7 +904,7 @@ $(document).ready(function () {
                     rowCount++;
                 });
 
-                $('.select-prod-modal').select2({ 
+                $('.select-prod-modal').select2({
                     theme: 'bootstrap-5',
                     dropdownParent: $('#modalEditarCotizacion'),
                     width: '100%'
@@ -660,7 +916,7 @@ $(document).ready(function () {
                     $('#edit_btn_add_row_bottom').hide();
                     $('.btn-eliminar-fila-unica').hide();
                     $('#formEditarCotizacion button[type="submit"]').hide();
-                }else {
+                } else {
                     verificarBotonFondoEdicion();
                 }
 
@@ -674,13 +930,13 @@ $(document).ready(function () {
     //>>>==============================================
     $("#edit_add_row, #edit_btn_add_row_bottom").click(function () {
         $("#edit_tbody_productos").append(construirFila(rowCount, 0, '', '', 1, '', false, false, '', ''));
-        window.productoAgregadoEnEdicion = true; 
-        
-        $(`#edit_addr${rowCount} .select-prod-modal`).select2({ 
+        window.productoAgregadoEnEdicion = true;
+
+        $(`#edit_addr${rowCount} .select-prod-modal`).select2({
             theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%'
         });
-        $(`#edit_addr${rowCount} .select-sucursal-fila-edit`).select2({ 
-            theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%', placeholder: "Selecciona certificado..." 
+        $(`#edit_addr${rowCount} .select-sucursal-fila-edit`).select2({
+            theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%', placeholder: "Selecciona Sucursal..."
         });
         rowCount++;
         recalcularNumerosFila();
@@ -764,7 +1020,7 @@ $(document).ready(function () {
                 $inputID.show().prop('readonly', false).removeClass('bg-light').prop('required', true).attr('placeholder', 'ID del equipo (Obligatorio)');
             } else {
                 $inputID.prop('required', false).attr('placeholder', 'ID del equipo (Opcional)');
-                
+
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
                     if ($inputID.val() && $inputID.val().trim() !== '') {
                         $inputID.show().prop('readonly', true).addClass('bg-light');
@@ -792,12 +1048,12 @@ $(document).ready(function () {
         let textoInformativo = "";
 
         if (esServicio) {
-            row.find('.price').val(pEquipo.toFixed(2));
+            row.find('.edit-price').val(pEquipo.toFixed(2));
             textoInformativo = `<small class="text-info d-block fw-bold mt-1">Servicio (${formatoMoneda.format(pEquipo)})</small>`;
         } else {
             // El precio unitario general siempre será la suma total (precio antes de IVA)
-            row.find('.price').val(pAntesIva.toFixed(2));
-            
+            row.find('.edit-price').val(pAntesIva.toFixed(2));
+
             if (desglosar) {
                 // Invertimos visualmente los valores si es usado
                 if (estadoBD === 'USADO') {
@@ -816,7 +1072,7 @@ $(document).ready(function () {
         let unitarioRaw = String(row.find('.edit-price').val()).replace(/,/g, '');
         let unitario = parseFloat(unitarioRaw) || 0;
         let totalFila = unitario * qty;
-        
+
         row.find('.edit-total-hidden').val(totalFila > 0 ? totalFila.toFixed(2) : '');
         row.find('.edit-total-visual').val(totalFila > 0 ? formatoMoneda.format(totalFila) : '');
 
@@ -834,7 +1090,7 @@ $(document).ready(function () {
 
         let tax = parseFloat($("#edit_tax").val()) || 0;
         let monto_iva = (sub / 100) * tax;
-        
+
         $("#edit_total_amount").val((sub + monto_iva).toFixed(2));
         $("#edit_total_amount_visual").val(formatoMoneda.format(sub + monto_iva));
     }
@@ -890,24 +1146,6 @@ $(document).ready(function () {
         });
     });
 
-    $(document).on('click', '.btn-borrar-cot', function (e) {
-        e.preventDefault();
-        if (confirm("¿Eliminar permanentemente esta cotización?")) {
-            $.ajax({
-                url: 'api/api_ver_cotizaciones.php',
-                type: 'POST',
-                data: { action: 'eliminar', id_cotizacion: $(this).data('id') },
-                success: function (res) {
-                    if (res.status === 'success') {
-                        cargarTablaPrincipal();
-                    } else {
-                        alert("Error al eliminar: " + res.message);
-                    }
-                }
-            });
-        }
-    });
-
     $(document).on('change', '#edit_filtro_tipo_producto', function () {
         let nuevoFiltro = $(this).val();
 
@@ -947,8 +1185,8 @@ $(document).ready(function () {
             }
 
             $selectProd.html(opcionesActualizadas).val(idProductoActual);
-            $selectProd.select2({ 
-                theme: 'bootstrap-5', 
+            $selectProd.select2({
+                theme: 'bootstrap-5',
                 dropdownParent: $('#modalEditarCotizacion'),
                 width: '100%'
             });
@@ -958,9 +1196,9 @@ $(document).ready(function () {
     let $modalContainer = $('#modalEditarCotizacion');
     let $modalScroll = $('#formEditarCotizacion');
     let $btnTopModal = $('#btnBackToTopModal');
-    
+
     if ($btnTopModal.length) {
-        $modalScroll.on('scroll', function() {
+        $modalScroll.on('scroll', function () {
             if ($(this).scrollTop() > 200) {
                 $btnTopModal.css('display', 'flex');
             } else {
@@ -968,7 +1206,7 @@ $(document).ready(function () {
             }
         });
 
-        $btnTopModal.on('click', function() {
+        $btnTopModal.on('click', function () {
             $modalScroll[0].scrollTo({
                 top: 0,
                 behavior: 'smooth'
@@ -979,4 +1217,157 @@ $(document).ready(function () {
             $btnTopModal.css('display', 'none');
         });
     }
+
+    // >>>============================================== 
+    // >>> 6. NAVEGACIÓN STATEFUL (AUTO-ABRIR MODAL)
+    // >>>============================================== 
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('reopen_edit')) {
+        let idToOpen = urlParams.get('reopen_edit');
+        
+        // ✨ CIBERSEGURIDAD Y UX: Borramos el parámetro de la URL sin recargar la página 
+        // usando la API History de HTML5. Esto evita ciclos infinitos si el usuario refresca (F5).
+        let cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+        
+        // Esperamos 800ms a que DataTables termine de dibujar la tabla 
+        // y simulamos el clic del usuario en el botón de "Editar"
+        setTimeout(() => {
+            let $btnEdit = $('.btn-editar-modal[data-id="' + idToOpen + '"]');
+            if ($btnEdit.length) {
+                // Si el botón existe en la página actual, lo clickeamos
+                $btnEdit.trigger('click');
+            } else {
+                // Si la tabla tiene varias páginas y la cotización no está en la página 1, 
+                // el sistema nos avisará por consola (podríamos forzar la búsqueda en futuras versiones).
+                console.warn("No se encontró el botón de edición para el ID: " + idToOpen);
+            }
+        }, 800);
+    }
+
+    // >>>============================================== 
+    // >>> 7. MÓDULO LOGÍSTICO (MODAL Y GUARDADO)
+    // >>>============================================== 
+    $(document).on('click', '.btn-logistica-modal', function(e) {
+        e.preventDefault();
+        
+        // 1. Extraemos de forma segura los datos incrustados en el botón
+        let id = $(this).data('id');
+        let paq = $(this).data('paqueteria');
+        let guia = $(this).data('guia');
+        let fecha = $(this).data('fecha');
+        
+        // 2. Limpiamos el formulario antes de abrirlo
+        $('#formLogistica')[0].reset();
+        
+        // 3. Inyectamos los datos
+        $('#logistica_id_cotizacion').val(id);
+        if (paq) $('#logistica_paqueteria').val(paq);
+        if (guia) $('#logistica_guia').val(guia);
+        
+        // ✨ UX: Si ya hay fecha registrada, la mostramos. Si no, ponemos la fecha de HOY por defecto.
+        if (fecha) {
+            $('#logistica_fecha').val(fecha);
+        } else {
+            let hoy = new Date().toISOString().split('T')[0];
+            $('#logistica_fecha').val(hoy);
+        }
+        
+        // 4. Mostramos el modal
+        $('#modalLogistica').modal('show');
+    });
+
+    // ✨ EVENTO PARA GUARDAR LOS DATOS DE PAQUETERÍA
+    $('#formLogistica').on('submit', function(e) {
+        e.preventDefault();
+        
+        // 🛡️ UX: Bloqueamos el botón para evitar doble clic accidental
+        let $btn = $(this).find('button[type="submit"]');
+        let originalText = $btn.text();
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Procesando...');
+        
+        $.ajax({
+            url: 'api/api_ver_cotizaciones.php',
+            type: 'POST',
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function(res) {
+                if (res.status === 'success') {
+                    $('#modalLogistica').modal('hide'); // Cerramos el modal
+                    alert(res.message); 
+                    cargarTablaPrincipal(); // 🔄 Recargamos la tabla para que el camión se pinte de Verde
+                } else {
+                    alert("Error: " + res.message);
+                }
+            },
+            error: function(xhr) {
+                // 🛡️ CIBERSEGURIDAD: Controlamos mensajes de error sin exponer detalles del servidor
+                let errorMsg = "Error interno del servidor. Revisa la consola.";
+                if(xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+                alert(errorMsg);
+            },
+            complete: function() {
+                // Restauramos el botón pase lo que pase
+                $btn.prop('disabled', false).text(originalText);
+            }
+        });
+    });
+
+    //>>>============================================== 
+    //>>> 8. FLUJO DE AUTORIZAR / RECHAZAR (ONE-CLICK)
+    //>>>============================================== 
+    $(document).on('click', '.btn-cambiar-estatus', function(e) {
+        e.preventDefault();
+        let id_cot = $(this).data('id');
+        let nuevo_estatus = $(this).data('estatus');
+        let tiene_dir = parseInt($(this).data('tienedir'));
+        let folio = $(this).data('folio');
+
+        let verbo = (nuevo_estatus.includes('Autorizada')) ? 'AUTORIZAR' : 'RECHAZAR';
+
+        // 🛡️ CIBERSEGURIDAD Y UX: Prevenimos peticiones inútiles si faltan direcciones
+        if (nuevo_estatus.includes('Autorizada') && tiene_dir === 0) {
+            alert("⚠️ Acción denegada: La cotización #" + folio + " no tiene direcciones registradas.\n\nPor favor, da clic en el ícono del mapa antes de autorizarla.");
+            return;
+        }
+
+        if (confirm(`¿Estás seguro de que deseas ${verbo} la cotización #${folio}?`)) {
+            $.ajax({
+                url: 'api/api_ver_cotizaciones.php',
+                type: 'POST',
+                data: { action: 'cambiar_estatus', id_cotizacion: id_cot, estatus: nuevo_estatus },
+                dataType: 'json',
+                success: function(res) {
+                    if (res.status === 'success') {
+                        cargarTablaPrincipal(); // Refrescamos la tabla instantáneamente
+                    } else {
+                        alert("Error: " + res.message);
+                    }
+                },
+                error: function() { 
+                    alert("Error de red al actualizar el estatus. Por favor intenta de nuevo."); 
+                }
+            });
+        }
+    });
+
+    $(document).on('click', '.btn-borrar-cot', function (e) {
+        e.preventDefault();
+        if (confirm("¿Eliminar permanentemente esta cotización?")) {
+            $.ajax({
+                url: 'api/api_ver_cotizaciones.php',
+                type: 'POST',
+                data: { action: 'eliminar', id_cotizacion: $(this).data('id') },
+                success: function (res) {
+                    if (res.status === 'success') {
+                        cargarTablaPrincipal();
+                    } else {
+                        alert("Error al eliminar: " + res.message);
+                    }
+                }
+            });
+        }
+    });
 });

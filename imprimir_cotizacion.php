@@ -69,11 +69,11 @@ if ($es_laboratorio) {
     $titulo_cotizacion = "PDF LABORATORIO";
     if (isset($cot['categoria'])) {
         if ($cot['categoria'] == 'Nuevo') {
-            $titulo_cotizacion = "PDF LABORATORIO DE EQUIPOS NUEVOS";
+            $titulo_cotizacion = "ORDEN DE SERVICIO DE CALIBRACION DE EQUIPO NUEVO";
         } elseif ($cot['categoria'] == 'Usado') {
-            $titulo_cotizacion = "PDF LABORATORIO DE EQUIPOS USADOS";
+            $titulo_cotizacion = "ORDEN DE SERVICIO DE CALIBRACION DE EQUIPO USADO";
         } elseif ($cot['categoria'] == 'Calibracion') {
-            $titulo_cotizacion = "PDF LABORATORIO DE SERVICIO DE CALIBRACIÓN";
+            $titulo_cotizacion = "ORDEN DE SERVICIO DE CALIBRACION";
         }
     }
 } else {
@@ -293,9 +293,23 @@ if ($es_multisucursal) {
         <div class="row mb-4">
             <div class="col-6">
                 <p class="m-0" style="font-size:16px; color:#00a3f0;"><strong><?php echo $titulo_cotizacion; ?></strong></p>
-                <p class="m-0"><strong>Serie:</strong> <span><?php echo $serie; ?></span> <?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?> <strong>Folio:</strong> <?php else: ?> <strong>Folio:</strong> <?php endif; ?> <span><?php echo $folio; ?></span></p>
+                <!-- OPCIÓN A: -->
+                <div class="mt-2 mb-2">
+                    <span style="display: inline-block; border: 2px solid #343a40; color: #212529; background-color: #f8f9fa; padding: 4px 12px; border-radius: 4px; font-size: 16px; font-weight: 900; letter-spacing: 0.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                        SERIE: <?php echo $serie; ?> &nbsp;|&nbsp; FOLIO: <?php echo $folio; ?>
+                    </span>
+                </div>
+                <!-- OPCIÓN B: -->
+                <!-- <div class="mt-2 mb-2">
+                    <span style="display: inline-block; border: 2px solid #00a3f0; color: #00a3f0; background-color: #e6f7ff; padding: 4px 12px; border-radius: 4px; font-size: 16px; font-weight: 900; letter-spacing: 0.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                        SERIE: ?php echo $serie; ?> &nbsp;|&nbsp; FOLIO: ?php echo $folio; ?>
+                    </span>
+                </div> -->
+                <!-- <p class="m-0"><strong>Serie:</strong> <span>?php echo $serie; ?></span> ?php if ($cot['division'] == 'LA NETWORKS & TECHNOLOGIES'): ?> <strong>Folio:</strong> ?php else: ?> <strong>Folio:</strong> ?php endif; ?> <span>?php echo $folio; ?></span></p> -->
                 <p class="m-0"><strong>Fecha de elaboración:</strong> <?php echo date('d/m/Y', strtotime($cot['fecha_cot'])); ?></p>
-                <p class="m-0 text-danger"><strong>Fecha de vencimiento:</strong> <?php echo date('d/m/Y', strtotime($cot['fecha_cot'] . ' + 30 days')); ?></p>
+                <?php if (!$es_laboratorio): ?>
+                    <p class="m-0"><strong>Fecha de vencimiento:</strong> <?php echo date('d/m/Y', strtotime($cot['fecha_cot'] . ' + 30 days')); ?></p>
+                <?php endif; ?>
                 <p class="m-0"><strong>Moneda:</strong> Pesos</p>
             </div>
 

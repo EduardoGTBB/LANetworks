@@ -7,7 +7,7 @@
     <!--! ================================================================ !-->
     <main class="nxl-container">
         <div class="nxl-content">
-            <!-- [ page-header ] start -->
+            <!-- [ page-header ] start --
             <div class="page-header">
                 <div class="page-header-left d-flex align-items-center">
                     <div class="page-header-title">
@@ -27,7 +27,7 @@
                                 <span>Back</span>
                             </a>
                         </div>
-                        <!--<div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                        !--<div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
                             <div class="dropdown filter-dropdown">
                                 <a class="btn btn-md btn-light-brand" data-bs-toggle="dropdown" data-bs-offset="0, 10" data-bs-auto-close="outside">
                                     <i class="feather-filter me-2"></i>
@@ -79,7 +79,7 @@
                                 <i class="feather-plus me-2"></i>
                                 <span>Add widget</span>
                             </a>
-                        </div>-->
+                        </div>--
                     </div>
                     <div class="d-md-none d-flex align-items-center">
                         <a href="javascript:void(0)" class="page-header-right-open-toggle">
@@ -88,59 +88,91 @@
                     </div>
                 </div>
             </div>
-            <!-- [ page-header ] end -->
+            !-- [ page-header ] end -->
+
+            <?php 
+                $page_title = "Todas las cotizaciones";
+                $breadcrumb_items = [
+                    "Cotizaciones",
+                    "Todas las cotizaciones"
+                ];
+                // $hide_new_quote_btn = true; // Descomenta esta línea en las páginas donde NO quieras el botón
+                include('views/include/page_header.php'); 
+            ?>
+
+            
             <!-- [ Main Content ] start -->
             <div class="main-content">
                 <div class="row">
-
                     <div class="col-lg-12">
                         <div class="card stretch stretch-full">
-                            <div class="card-header">
-                                <h5 class="card-title">Lista de cotizaciones</h5>
+
+                            <!-- <div class="card-header">
+                                <h5 class="card-title">
+                                    Lista de cotizaciones
+                                    <span id="badge-total-filtro" class="badge bg-soft-success text-success fs-13 px-3 py-2 d-none shadow-sm" style="border: 1px solid rgba(40, 167, 69, 0.3);">
+                                        Total visible: $0.00
+                                    </span>
+                                </h5>
                                 <div class="card-header-action">
-                                    <!-- ✨ NUEVO FILTRO POR ESTATUS -->
                                     <div class="d-flex align-items-center gap-2">
                                         <i class="feather-filter text-primary"></i>
                                         <select id="filtro_estatus_tabla" class="form-select form-select-sm border-primary" style="width: 250px; cursor: pointer;">
                                             <option value="">Mostrar todos los estatus</option>
-                                            <option value="Guardado">Guardado (En proceso)</option>
-                                            <option value="Por aprobar">Por aprobar (Revisión)</option>
+                                            <option value="Guardado para aprobación">Guardado para aprobación</option>
                                             <option value="Autorizada">Autorizadas (Aprobadas)</option>
                                             <option value="No autorizada">No autorizadas (Rechazadas)</option>
                                         </select>
                                     </div>
-                                    <!-- <div class="card-header-btn">
-                                        <div data-bs-toggle="tooltip" title="Delete">
-                                            <a href="javascript:void(0);" class="avatar-text avatar-xs bg-danger" data-bs-toggle="remove"> </a>
-                                        </div>
-                                        <div data-bs-toggle="tooltip" title="Refresh">
-                                            <a href="javascript:void(0);" class="avatar-text avatar-xs bg-warning" data-bs-toggle="refresh"> </a>
-                                        </div>
-                                        <div data-bs-toggle="tooltip" title="Maximize/Minimize">
-                                            <a href="javascript:void(0);" class="avatar-text avatar-xs bg-success" data-bs-toggle="expand"> </a>
-                                        </div>
+                                </div>
+                            </div> -->
+
+                            <div class="card-header">
+                                <!-- ⬅️ ARRIBA IZQUIERDA: Título -->
+                                <div class="d-flex align-items-center gap-3">
+                                    <h5 class="card-title mb-0">Lista de cotizaciones</h5>
+                                </div>
+
+                                <!-- ➡️ ARRIBA DERECHA: Filtro -->
+                                <div class="card-header-action">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="feather-filter text-primary" style="font-size: 1.1rem;"></i>
+                                        <select id="filtro_estatus_tabla" class="form-select form-select-sm border-primary fw-bold text-dark" style="width: 220px; cursor: pointer;">
+                                            <option value="">Mostrar todos los estatus</option>
+                                            <option value="Guardado para aprobación">Guardado para aprobación</option>
+                                            <option value="Autorizada">Autorizadas (Aprobadas)</option>
+                                            <option value="No autorizada">No autorizadas (Rechazadas)</option>
+                                        </select>
                                     </div>
-                                    <div class="dropdown">
-                                        <a href="javascript:void(0);" class="avatar-text avatar-sm" data-bs-toggle="dropdown" data-bs-offset="25, 25">
-                                            <div data-bs-toggle="tooltip" title="Options">
-                                                <i class="feather-more-vertical"></i>
-                                            </div>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-end">
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-at-sign"></i>New</a>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-calendar"></i>Event</a>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-bell"></i>Snoozed</a>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-trash-2"></i>Deleted</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-settings"></i>Settings</a>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i class="feather-life-buoy"></i>Tips & Tricks</a>
-                                        </div>
-                                    </div> -->
                                 </div>
                             </div>
+
                             <div class="card-body custom-card-action p-0">
 
-                                <table class="table table-hover mb-0 w-100" id="tableAllCotizaciones">
+                                <table class="table table-hover mb-0 w-100" id="tableAllCotizaciones" style="table-layout: auto;">
+                                    <thead>
+                                        <tr>
+                                            <th width="15%" class="text-center">Cotización</th>
+                                            <th width="40%" class="text-center">Cliente / Detalles</th>
+                                            <th width="15%" class="text-center">Importe</th>
+                                            <th width="15%" class="text-center">Estatus</th>
+                                            <th width="15%" class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-cotizaciones">
+                                        <tr>
+                                            <td colspan="5">
+                                                <div class="hstack gap-3 justify-content-center">
+                                                    <div class="spinner-border text-primary mt-3" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <p class="mt-2">Cargando cotizaciones...</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <!-- <table class="table table-hover mb-0 w-100" id="tableAllCotizaciones">
                                     <thead>
                                         <tr>
                                             <th>Folio #</th>
@@ -161,7 +193,7 @@
                                                     <p class="mt-2">Cargando cotizaciones...</p>
                                                 </div>
                                             </td>
-                                            <!--<td>
+                                            !--<td>
                                                     03/02/2026
                                                 </td>
                                                 <td>
@@ -183,10 +215,10 @@
                                                             <abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr>
                                                         </a>
                                                     </div>
-                                                </td> -->
+                                                </td> --
                                         </tr>
                                     </tbody>
-                                </table>
+                                </table> -->
 
                             </div>
                         </div>
@@ -213,6 +245,9 @@
                     <input type="hidden" name="action" value="editar">
                     <input type="hidden" name="id_cotizacion" id="edit_id_cotizacion" value="">
                     <input type="hidden" name="is_multisucursal" id="edit_is_multisucursal" value="0">
+
+                    <!-- ✨ FIX CIBERSEGURIDAD: Input necesario para que no se borre el estatus al editar -->
+                    <input type="hidden" name="estatus" id="edit_estatus" value="">
 
                     <!-- <div class="row">
                         <div class="col-md-4 mb-4">
@@ -320,15 +355,14 @@
                                     <h6 class="mb-0 text-white fw-bold"><i class="feather-settings me-2"></i>Parámetros de Cotización</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="mb-4" id="fila_estatus_lan">
+                                    <!-- <div class="mb-4" id="fila_estatus_lan">
                                         <label class="form-label text-dark fw-bold"><i class="feather-activity me-1 text-success"></i>Estatus de la cotización <span class="text-danger">*</span></label>
                                         <select class="form-control border-success" id="edit_estatus" name="estatus" data-select2-selector="status" required>
-                                            <option value="Guardado">Guardado (En proceso)</option>
-                                            <option value="Por aprobar">Por aprobar (Revisión)</option>
+                                            <option value="Guardado para aprobación">Guardado para aprobación</option>
                                             <option value="Autorizada (información completa)">Autorizada (Aprobada)</option>
                                             <option value="No autorizada">No autorizada (Rechazada)</option>
                                         </select>
-                                    </div>
+                                    </div> -->
 
                                     <div class="mb-4">
                                         <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
@@ -452,6 +486,49 @@
                 <button type="button" id="btnBackToTopModal" class="btn btn-primary" title="Volver al inicio">
                     <i class="feather-arrow-up" style="font-size: 1.2rem; font-weight: bold;"></i>
                 </button>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalLogistica" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold text-white"><i class="feather-truck me-2"></i>Datos de Envío</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formLogistica" class="modal-body p-4">
+                    <input type="hidden" name="action" value="guardar_logistica">
+                    <input type="hidden" name="id_cotizacion_logistica" id="logistica_id_cotizacion" value="">
+
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-bold">Empresa de Paquetería <span class="text-danger">*</span></label>
+                        <select class="form-select bg-light text-dark fw-bold border-primary" name="paqueteria" id="logistica_paqueteria" required>
+                            <option value="">Selecciona paquetería...</option>
+                            <option value="DHL">DHL</option>
+                            <option value="FedEx">FedEx</option>
+                            <option value="Estafeta">Estafeta</option>
+                            <option value="UPS">UPS</option>
+                            <option value="Redpack">Redpack</option>
+                            <option value="Paquetexpress">Paquetexpress</option>
+                            <option value="Entrega Local LAN">Entrega Local (Vehículo LAN)</option>
+                            <option value="Otra">Otra...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-bold">Fecha de Envío <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control border-primary fw-bold" name="fecha_envio" id="logistica_fecha" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-dark fw-bold">Número de Guía / Rastreo <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control border-primary text-uppercase fw-bold" name="numero_guia" id="logistica_guia" placeholder="Ej. 773456789012" required>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary fw-bold text-uppercase">Guardar y Notificar</button>
+                        <button type="button" class="btn btn-light text-muted fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
