@@ -127,7 +127,10 @@ try {
             'importe_total' => (float)($_POST['sub_total'] ?? 0),
             'comentarios'   => trim($_POST['comentarios'] ?? ''),
             'precio_iva'    => (float)($_POST['total_amount'] ?? 0),
-            'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 0),
+
+            'porcentaje_iva' => 16.00,
+            // 'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 0),
+            
             'categoria'     => $categoria_limpia,
             'tipo_precio'   => $tipo_precio,
             'division'      => $division,

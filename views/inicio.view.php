@@ -1,7 +1,28 @@
 <?php include ('views/include/head.php'); ?>
 
 <body>
-    
+    <style>
+        /* Convierte todo el texto de esta vista a mayúsculas */
+        .nxl-content, 
+        .nxl-content p, 
+        .nxl-content span, 
+        .nxl-content h3, 
+        .nxl-content h4, 
+        .nxl-content h5, 
+        .nxl-content h6, 
+        .nxl-content a, 
+        .nxl-content div {
+            text-transform: uppercase !important;
+        }
+        
+        /* Asegura que lo que el usuario escriba o seleccione también se vea en mayúsculas */
+        .nxl-content input, 
+        .nxl-content textarea, 
+        .nxl-content select {
+            text-transform: uppercase !important;
+        }
+    </style>
+
     <?php include ('views/include/sidebar.php'); ?>
     <?php include ('views/include/header.php'); ?>
    

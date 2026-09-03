@@ -329,7 +329,7 @@ $(document).ready(function () {
                     }
 
                     // 6. Dibujar Gráfica de Barras (Columnas)
-                    let graficaDatos = res.grafica;
+                    /* let graficaDatos = res.grafica;
                     let labels = [];
                     let values = [];
 
@@ -375,7 +375,93 @@ $(document).ready(function () {
                         };
                         var chart = new ApexCharts(document.querySelector("#payment-records-chart"), options);
                         chart.render();
+                    } */
+
+                    // --------------------------------------------------
+                    // ✨ 6. GRÁFICA PRINCIPAL: BARRA TIPO DOMO
+                    // --------------------------------------------------
+                    let graficaDatos = res.grafica;
+                    let labels = [];
+                    let values = [];
+
+                    // Extraemos los datos reales tal cual vienen de la BD
+                    graficaDatos.forEach(item => {
+                        labels.push(item.mes_texto.toUpperCase()); 
+                        values.push(parseFloat(item.total));
+                    });
+
+                    $('#payment-records-chart').empty();
+
+                    if (values.length === 0) {
+                        $('#payment-records-chart').html('<div class="text-center text-muted py-5 mt-5">No hay historial financiero reciente.</div>');
+                    } else {
+                        var options = {
+                            chart: { 
+                                type: 'bar', // 🚨 ESTO ES LO QUE CREA LA BARRA
+                                height: 300, 
+                                toolbar: { show: false } 
+                            },
+                            series: [{ name: 'Ingresos MXN', data: values }],
+                            xaxis: { 
+                                categories: labels,
+                                labels: { style: { colors: '#a1aab2' } },
+                                axisBorder: { show: false },
+                                axisTicks: { show: false }
+                            },
+                            colors: ['#28395a'], // Tu Azul Marino Corporativo
+                            plotOptions: {
+                                bar: {
+                                    horizontal: false,
+                                    columnWidth: '25%', // 🚨 Hace que la barra sea delgada y elegante
+                                    borderRadius: 12,   // 🚨 Le da la curva de domo en la parte superior
+                                    borderRadiusApplication: 'end', // Solo redondea la punta de arriba
+                                    endingShape: 'rounded'
+                                }
+                            },
+                            dataLabels: { enabled: false },
+                            grid: { 
+                                borderColor: 'rgba(0,0,0,0.05)', 
+                                strokeDashArray: 4, 
+                                padding: { top: 0, right: 0, bottom: 0, left: 10 } 
+                            },
+                            yaxis: {
+                                labels: {
+                                    style: { colors: '#a1aab2' },
+                                    formatter: function (value) { return formatoMoneda.format(value).replace('.00', ''); }
+                                }
+                            },
+                            tooltip: {
+                                theme: 'light',
+                                y: { formatter: function (value) { return formatoMoneda.format(value); } }
+                            }
+                        };
+                        var chart = new ApexCharts(document.querySelector("#payment-records-chart"), options);
+                        chart.render();
                     }
+
+                    // --------------------------------------------------
+                    // ✨ 7. OLA PEQUEÑA AZUL (Cotizaciones del Mes)
+                    // --------------------------------------------------
+                    $('#total-sales-color-graph').empty();
+                    
+                    var optionsOla = {
+                        chart: { 
+                            type: 'area', 
+                            height: 100, 
+                            sparkline: { enabled: true } 
+                        },
+                        stroke: { curve: 'smooth', width: 2 },
+                        fill: { type: 'solid', opacity: 0.3 }, 
+                        series: [{ data: [12, 14, 2, 47, 42, 15, 47, 75, 65, 19, 14] }],
+                        // ✨ COLOR OPCIÓN 1: Azul Cyan Vibrante
+                        colors: ['#44b4f4'], 
+                        tooltip: { 
+                            enabled: false // 🚨 APAGAMOS el tooltip para evitar el cuadro blanco roto
+                        }
+                    };
+                    
+                    var chartOla = new ApexCharts(document.querySelector("#total-sales-color-graph"), optionsOla);
+                    chartOla.render();
                 }
             },
             error: function () {

@@ -90,42 +90,22 @@
             </div>
             !-- [ page-header ] end -->
 
-            <?php 
-                $page_title = "Todas las cotizaciones";
-                $breadcrumb_items = [
-                    "Cotizaciones",
-                    "Todas las cotizaciones"
-                ];
-                // $hide_new_quote_btn = true; // Descomenta esta línea en las páginas donde NO quieras el botón
-                include('views/include/page_header.php'); 
+            <?php
+            $page_title = "Todas las cotizaciones";
+            $breadcrumb_items = [
+                "Cotizaciones",
+                "Todas las cotizaciones"
+            ];
+            // $hide_new_quote_btn = true; // Descomenta esta línea en las páginas donde NO quieras el botón
+            include('views/include/page_header.php');
             ?>
 
-            
+
             <!-- [ Main Content ] start -->
             <div class="main-content">
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card stretch stretch-full">
-
-                            <!-- <div class="card-header">
-                                <h5 class="card-title">
-                                    Lista de cotizaciones
-                                    <span id="badge-total-filtro" class="badge bg-soft-success text-success fs-13 px-3 py-2 d-none shadow-sm" style="border: 1px solid rgba(40, 167, 69, 0.3);">
-                                        Total visible: $0.00
-                                    </span>
-                                </h5>
-                                <div class="card-header-action">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="feather-filter text-primary"></i>
-                                        <select id="filtro_estatus_tabla" class="form-select form-select-sm border-primary" style="width: 250px; cursor: pointer;">
-                                            <option value="">Mostrar todos los estatus</option>
-                                            <option value="Guardado para aprobación">Guardado para aprobación</option>
-                                            <option value="Autorizada">Autorizadas (Aprobadas)</option>
-                                            <option value="No autorizada">No autorizadas (Rechazadas)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div> -->
 
                             <div class="card-header">
                                 <!-- ⬅️ ARRIBA IZQUIERDA: Título -->
@@ -133,22 +113,82 @@
                                     <h5 class="card-title mb-0">Lista de cotizaciones</h5>
                                 </div>
 
-                                <!-- ➡️ ARRIBA DERECHA: Filtro -->
-                                <div class="card-header-action">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="feather-filter text-primary" style="font-size: 1.1rem;"></i>
-                                        <select id="filtro_estatus_tabla" class="form-select form-select-sm border-primary fw-bold text-dark" style="width: 220px; cursor: pointer;">
-                                            <option value="">Mostrar todos los estatus</option>
-                                            <option value="Guardado para aprobación">Guardado para aprobación</option>
-                                            <option value="Autorizada">Autorizadas (Aprobadas)</option>
-                                            <option value="No autorizada">No autorizadas (Rechazadas)</option>
-                                        </select>
+                                <div class="card-header-action pe-md-3">
+                                    <div class="d-flex align-items-center justify-content-end gap-3 flex-wrap">
+
+                                        <!-- 1. ✨ EXPORTAR (Visible siempre para Admins) -->
+                                        <div class="dropdown">
+                                            <!-- UX: Reducido a 34px y fuente 12px -->
+                                            <button class="btn fw-bold d-flex align-items-center shadow-sm dropdown-toggle text-white px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
+                                                <i class="feather-download me-2"></i> EXPORTAR
+                                            </button>
+                                            <ul class="dropdown-menu shadow-lg border-0">
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6>
+                                                </li>
+                                                <li>
+                                                    <!-- ✨ UX/Seguridad: Scope "todas" -->
+                                                    <a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="todas">
+                                                        <i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <!-- ✨ UX/Seguridad: Scope "todas" -->
+                                                    <a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="todas">
+                                                        <i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                        <!-- 2. ✨ FILTRO DE ESTATUS -->
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="feather-filter text-primary" style="font-size: 1rem;"></i>
+                                            <!-- UX: Reducido a 34px y fuente 12px -->
+                                            <select id="filtro_estatus_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-3" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; min-width: 200px;">
+                                                <option value="">Mostrar todos los estatus</option>
+                                                <option value="Guardado para aprobación">Guardado para aprobación</option>
+                                                <option value="Autorizada">Autorizadas (Aprobadas)</option>
+                                                <option value="No autorizada">No autorizadas (Rechazadas)</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- 3. ✨ TOTAL ACUMULADO (El JS lo inyecta aquí) -->
+                                        <div id="contenedor-badge-total"></div>
+
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="card-body custom-card-action p-0">
+                            <!-- ✨ TEMPLATE PESTAÑAS (Estilo Nav-Pills Corporativo Full-Width) -->
+                            <template id="template-tabs-cotizaciones">
+                                <div class="px-4 pt-3 pb-3 w-100" style="display: block; clear: both;">
+                                    <ul class="nav nav-pills nav-justified w-100 gap-3 mb-0" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active fw-bold py-2 tab-filtro-cat custom-lan-tab shadow-sm w-100" data-categoria="TODOS" type="button" role="tab" aria-selected="true">
+                                                <i class="feather-layers me-2"></i>Todas
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link fw-bold py-2 tab-filtro-cat custom-lan-tab shadow-sm w-100" data-categoria="NUEVO" type="button" role="tab" aria-selected="false">
+                                                <i class="feather-star me-2"></i>Nuevos
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link fw-bold py-2 tab-filtro-cat custom-lan-tab shadow-sm w-100" data-categoria="USADO" type="button" role="tab" aria-selected="false">
+                                                <i class="feather-tool me-2"></i>Usados
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link fw-bold py-2 tab-filtro-cat custom-lan-tab shadow-sm w-100" data-categoria="CALIBRACION" type="button" role="tab" aria-selected="false">
+                                                <i class="feather-thermometer me-2"></i>Calibraciones
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </template>
 
+                            <div class="card-body custom-card-action p-0">
                                 <table class="table table-hover mb-0 w-100" id="tableAllCotizaciones" style="table-layout: auto;">
                                     <thead>
                                         <tr>
@@ -156,6 +196,7 @@
                                             <th width="40%" class="text-center">Cliente / Detalles</th>
                                             <th width="15%" class="text-center">Importe</th>
                                             <th width="15%" class="text-center">Estatus</th>
+                                            <th class="d-none">Categoría</th> <!-- 4 (Oculta) -->
                                             <th width="15%" class="text-center">Acciones</th>
                                         </tr>
                                     </thead>
@@ -249,68 +290,6 @@
                     <!-- ✨ FIX CIBERSEGURIDAD: Input necesario para que no se borre el estatus al editar -->
                     <input type="hidden" name="estatus" id="edit_estatus" value="">
 
-                    <!-- <div class="row">
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">División de LAN</label>
-                            <select class="form-control" id="division" name="division" data-select2-selector="status" required>
-                                <option value="">Selecciona una división...</option>
-                                <option value="LA NETWORKS & TECHNOLOGIES">LA NETWORKS & TECHNOLOGIES, SA DE CV</option>
-                                <option value="LA NETWORKS ANALITICAL">LA NETWORKS ANALITICAL, SA DE CV</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Cliente <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_select_empresa" name="Empresa_id" data-select2-selector="status" required>
-                                <option value="">Cargando clientes...</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Estatus de la cotización <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_estatus" name="estatus" data-select2-selector="status" required>
-                                <option value="Guardado">Guardado (En proceso)</option>
-                                <option value="Por aprobar">Por aprobar (Revisión)</option>
-                                <option value="Autorizada (información completa)">Autorizada (Aprobada)</option>
-                                <option value="No autorizada">No autorizada (Rechazada)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Solicitante <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_select_solicitante" name="Usuario_id" data-select2-selector="status" required>
-                                <option value="">Selecciona un cliente primero...</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Sucursal de Destino <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_select_sucursal" name="Sucursal_id" data-select2-selector="status" required>
-                                <option value="">Esperando al solicitante...</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label">Selecciona el precio que se utilizara</span></label>
-                            <select class="form-control" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
-                                <option value="">Selecciona el tipo de precio...</option>
-                                <option value="Farmacia">Farmacia</option>
-                                <option value="Público">Público</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <label class="form-label fw-bold">¿Qué tipo de producto se cotizará?</label>
-                            <select class="form-control max-select" name="categoria" id="edit_filtro_tipo_producto">
-                                <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
-                                <option value="NUEVO">✨ Solo Equipos Nuevos</option>
-                                <option value="USADO">🔧 Solo Equipos Usados</option>
-                                <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
-                            </select>
-                        </div>
-                        
-                    </div> -->
                     <div class="row mb-4">
                         <!-- ✨ TARJETA 1: DATOS COMERCIALES (AZUL) -->
                         <div class="col-lg-6 mb-4 mb-lg-0">
@@ -355,14 +334,6 @@
                                     <h6 class="mb-0 text-white fw-bold"><i class="feather-settings me-2"></i>Parámetros de Cotización</h6>
                                 </div>
                                 <div class="card-body">
-                                    <!-- <div class="mb-4" id="fila_estatus_lan">
-                                        <label class="form-label text-dark fw-bold"><i class="feather-activity me-1 text-success"></i>Estatus de la cotización <span class="text-danger">*</span></label>
-                                        <select class="form-control border-success" id="edit_estatus" name="estatus" data-select2-selector="status" required>
-                                            <option value="Guardado para aprobación">Guardado para aprobación</option>
-                                            <option value="Autorizada (información completa)">Autorizada (Aprobada)</option>
-                                            <option value="No autorizada">No autorizada (Rechazada)</option>
-                                        </select>
-                                    </div> -->
 
                                     <div class="mb-4">
                                         <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
@@ -458,8 +429,9 @@
                                         <th class="fs-10 text-dark text-uppercase">IVA</th>
                                         <td class="w-50">
                                             <div class="input-group mb-2 mb-sm-0">
-                                                <input type="number" name="porcentaje_iva" id="edit_tax" class="form-control border-0 bg-transparent p-0" value="16">
-                                                <div class="input-group-addon">%</div>
+                                                <!-- ✨ UX/SEGURIDAD: Bloqueamos la edición visualmente y forzamos el bg-light (gris) -->
+                                                <input type="number" name="porcentaje_iva" id="edit_tax" class="form-control border-0 bg-light p-0 text-center" value="16" readonly style="pointer-events: none;">
+                                                <div class="input-group-addon border-0 bg-light text-muted fw-bold">%</div>
                                             </div>
                                         </td>
                                     </tr>
@@ -489,6 +461,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal fade" id="modalLogistica" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content border-0 shadow-lg">
@@ -532,6 +505,33 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Ver Orden de Compra (Exclusivo Administradores) -->
+    <div class="modal fade" id="modalVerOC" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold text-white"><i class="feather-file-text me-2"></i>Documentos del Cliente</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-4">
+                        <label class="form-label text-dark fw-bold">Número de Recepción</label>
+                        <input type="text" class="form-control border-success text-center fw-bold fs-16 bg-light text-dark" id="ver_oc_recepcion" readonly>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <!-- El atributo download y target="_blank" permiten previsualizar o descargar el PDF -->
+                        <a href="#" id="btn_descargar_oc" target="_blank" class="btn btn-success fw-bold text-uppercase">
+                            <i class="feather-download-cloud me-2"></i>Ver PDF
+                        </a>
+                        <button type="button" class="btn btn-light text-muted fw-bold" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!--! ================================================================ !-->
     <!--! [End] Main Content !-->
     <!--! ================================================================ !-->

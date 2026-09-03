@@ -140,7 +140,7 @@ $(document).ready(function () {
                         }
 
                         // Nota el from=all agregado
-                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}&from=all" class="avatar-text avatar-md ${claseFondo} ${colorIcon}" ${latido}><abbr title="${textoTooltip}" style="text-decoration:none;"><i class="feather-map-pin"></i></abbr></a>`;
+                        btnCompletarVenta = `<a href="finalizar_venta.php?id=${cot.id_cotizacion}&from=todas_cotizaciones" class="avatar-text avatar-md ${claseFondo} ${colorIcon}" ${latido}><abbr title="${textoTooltip}" style="text-decoration:none;"><i class="feather-map-pin"></i></abbr></a>`;
                     }
 
                     // ✨ 2. LOGÍSTICA INTELIGENTE
@@ -153,7 +153,59 @@ $(document).ready(function () {
                         }
                     }
 
-                    // ✨ 3. EDITAR, ELIMINAR Y PDFs
+                    // ✨ 3. BOTÓN EQUIPO ENTREGADO / ESTATUS DE OC (Fase 1)
+
+                    let btnEntregado = '';
+                    // Como este archivo es solo para LAN, quitamos la dependencia insegura de "esClienteSeguro"
+                    if (estatusTexto === 'Autorizada (información completa)' && cot.numero_guia && cot.numero_guia.trim() !== '') {
+                        if (!cot.fecha_entrega) {
+                            // Aún no se le da clic, mostramos el botón para avisar
+                            btnEntregado = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-primary text-primary border border-primary btn-marcar-entregado" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Marcar como Entregado y Solicitar Orden de Compra" style="text-decoration:none;"><i class="feather-box"></i></abbr></a>`;
+                        } else {
+                            // Ya se dio clic, verificamos si ya subieron la OC
+                            if (cot.oc_cargada === 'Y') {
+                                // ✨ NUEVO: Ahora el botón verde abre el modal y trae los datos de BD
+                                btnEntregado = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-success text-white border border-success btn-ver-oc" data-recepcion="${cot.numero_recepcion}" data-ruta="${cot.ruta_oc}"><abbr title="Ver Número de Recepción y Orden de Compra" style="text-decoration:none;"><i class="feather-file-text"></i></abbr></a>`;
+                            } else {
+                                btnEntregado = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-warning text-warning border border-warning" style="animation: pulse 2s infinite;"><abbr title="Esperando OC del cliente. (Entregado: ${cot.fecha_entrega})" style="text-decoration:none;"><i class="feather-clock"></i></abbr></a>`;
+                            }
+                        }
+                    }
+
+                    // ✨ 4. EDITAR, ELIMINAR Y PDFs
+                    let btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar información" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`;
+
+                    let btnEliminar = '';
+                    if (!estatusTexto.includes('Autorizada') && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
+                        btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-danger text-danger btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr></a>`;
+                    }
+
+                    let btnPdfLab = `<a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}&tipo=lab" target="_blank" class="avatar-text avatar-md bg-soft-info text-info"><abbr title="PDF Laboratorio" style="text-decoration:none;"><i class="feather-thermometer"></i></abbr></a>`;
+                    let btnPdfComercial = `<a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md bg-soft-dark text-dark"><abbr title="PDF Comercial" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>`;
+
+                    // ✨ 4.5 MOTOR DINÁMICO DE BOTONES (Escalable y a prueba de errores)
+                    let botonesActivos = [];
+                    if (btnCompletarVenta) botonesActivos.push(btnCompletarVenta);
+                    if (btnPdfComercial) botonesActivos.push(btnPdfComercial);
+                    if (btnPdfLab) botonesActivos.push(btnPdfLab);
+                    if (btnLogisticaRapida) botonesActivos.push(btnLogisticaRapida);
+                    if (btnEntregado) botonesActivos.push(btnEntregado); // <- Agregamos el nuevo botón
+                    if (btnEditar) botonesActivos.push(btnEditar);
+                    if (btnEliminar) botonesActivos.push(btnEliminar);
+
+                    let filasHTML = '';
+                    for (let i = 0; i < botonesActivos.length; i += 3) {
+                        let rowBotones = botonesActivos.slice(i, i + 3).join('');
+                        let marginClass = (i === 0 && botonesActivos.length > 3) ? 'mb-1' : '';
+                        filasHTML += `<div class="d-flex justify-content-center gap-1 ${marginClass}">${rowBotones}</div>`;
+                    }
+
+                    let contenedorAcciones = `
+                        <div class="d-flex flex-column align-items-center justify-content-center mx-auto">
+                            ${filasHTML}
+                        </div>
+                    `;
+                    /* // ✨ 3. EDITAR, ELIMINAR Y PDFs
                     let btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar información" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`;
 
                     let btnEliminar = '';
@@ -193,7 +245,7 @@ $(document).ready(function () {
                         <div class="d-flex flex-column align-items-center justify-content-center mx-auto">
                             ${filasHTML}
                         </div>
-                    `;
+                    `; */
 
                     // ✨ 5. COLUMNA DE ESTATUS (Interactivo Compacto)
                     let colEstatusHTML = `<span class="badge ${badgeColor}">${estatusTexto}</span>`;
@@ -218,7 +270,7 @@ $(document).ready(function () {
                         `;
                     }
 
-                    // ✨ 6. CONSTRUCCIÓN DE LA FILA FINAL
+                    // ✨ 6. CONSTRUCCIÓN DE LA FILA FINAL (El orden importa para los filtros)
                     let tr = `
                         <tr>
                             <td class="align-middle">
@@ -251,13 +303,17 @@ $(document).ready(function () {
                             </td>
                             
                             <td class="align-middle text-center"><span class="text-dark fw-bold">${formatoMoneda.format(cot.gran_total)}</span></td>
-
-                            <!-- ✨ SOLUCIÓN 1: El span oculto obliga a DataTables a leer el estatus limpio primero -->
+                            
+                            <!-- Columna 3: ESTATUS -->
                             <td class="align-middle text-center">
                                 <span class="d-none">${estatusTexto}</span>
                                 ${colEstatusHTML}
                             </td>
+
+                            <!-- Columna 4: CATEGORÍA (Con .trim() para seguridad) -->
+                            <td class="d-none">${cot.categoria ? cot.categoria.trim().toUpperCase() : 'NUEVO'}</td>
                             
+                            <!-- Columna 5: ACCIONES -->
                             <td class="text-center align-middle" style="min-width: 155px;">
                                 ${contenedorAcciones}
                             </td>
@@ -275,9 +331,16 @@ $(document).ready(function () {
                         ordering: false,
                         searching: true,
                         info: true,
-                        dom: "<'row mb-3 px-4 pt-4'<'col-sm-12 col-md-6 d-flex justify-content-start align-items-center'f><'col-sm-12 col-md-6 d-flex justify-content-end align-items-center'<'#contenedor-badge-total'>>>" +
+                        // ✨ UX: Eliminamos el contenedor del total duplicado
+                        dom: "<'row m-0 px-4 pt-4 pb-3 border-bottom'<'col-12 d-flex justify-content-start align-items-center'f>>" +
+                             "<'row m-0'<'col-12 p-0'<'#contenedor-tabs-datatables'>>>" +
                              "<'table-responsive'tr>" +
-                             "<'row align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
+                             "<'row m-0 align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
+
+                        initComplete: function() {
+                            let tabsHtml = $('#template-tabs-cotizaciones').html();
+                            $('#contenedor-tabs-datatables').html(tabsHtml).css({'width': '100%', 'display': 'block'});
+                        },
 
                         drawCallback: function () {
                             $('.dataTables_paginate > .pagination').addClass('pagination-sm mb-0');
@@ -292,39 +355,37 @@ $(document).ready(function () {
                                 return a + parseValor(b);
                             }, 0);
 
-                            // 🎯 Ubicamos el contenedor inyectado por DataTables
+                            // 🎯 Ubicamos el contenedor en la cabecera
                             let $badgeContainer = $('#contenedor-badge-total');
 
                             if (total > 0) {
                                 let filtroActivo = $('#filtro_estatus_tabla').val();
-                                let colorFondoTexto = 'bg-soft-dark text-dark';
-                                let colorBorde = 'rgba(33, 37, 41, 0.3)';
+                                let bordeBox = '#dee2e6'; let bordeLateral = '#6c757d'; let claseTexto = 'text-secondary';
+                                if (filtroActivo === 'Guardado para aprobación') { bordeBox = '#b8daff'; bordeLateral = '#0d6efd'; claseTexto = 'text-primary'; } 
+                                else if (filtroActivo === 'Autorizada') { bordeBox = '#c3e6cb'; bordeLateral = '#28a745'; claseTexto = 'text-success'; } 
+                                else if (filtroActivo === 'No autorizada') { bordeBox = '#f5c6cb'; bordeLateral = '#dc3545'; claseTexto = 'text-danger'; }
 
-                                if (filtroActivo === 'Guardado para aprobación') {
-                                    colorFondoTexto = 'bg-soft-primary text-primary';
-                                    colorBorde = 'rgba(13, 110, 253, 0.3)';
-                                } else if (filtroActivo === 'Autorizada') {
-                                    colorFondoTexto = 'bg-soft-success text-success';
-                                    colorBorde = 'rgba(40, 167, 69, 0.3)';
-                                } else if (filtroActivo === 'No autorizada') {
-                                    colorFondoTexto = 'bg-soft-danger text-danger';
-                                    colorBorde = 'rgba(220, 53, 69, 0.3)';
-                                }
-
-                                // ✨ Renderizamos el badge directamente en la misma línea del buscador
+                                // ✨ UX: Diseño ultracompacto a 34px
                                 let badgeHTML = `
-                                    <div style="min-width: 260px;" class="d-flex justify-content-end">
-                                        <span class="badge ${colorFondoTexto} fs-13 py-2 px-3 shadow-sm w-100 d-flex justify-content-center align-items-center" style="border: 1px solid ${colorBorde};">
-                                            Total acumulado: <strong class="ms-1">${formatoMoneda.format(total)}</strong>
-                                        </span>
+                                    <div class="d-flex align-items-center bg-white shadow-sm px-3" style="height: 34px; border-radius: 6px; border: 1px solid ${bordeBox}; border-left: 4px solid ${bordeLateral};">
+                                        <span class="text-muted fw-bold text-uppercase me-2" style="font-size: 10px;">Total:</span>
+                                        <span class="fw-bolder ${claseTexto}" style="font-size: 13px;">${formatoMoneda.format(total)}</span>
                                     </div>`;
                                 $badgeContainer.html(badgeHTML);
                             } else {
-                                $badgeContainer.empty(); // Limpiamos si no hay total
+                                $badgeContainer.empty();
                             }
                         }
                     });
+
                     $('#filtro_estatus_tabla').trigger('change');
+                    if (window.pestanaActivaCotizaciones !== 'TODOS') {
+                        aplicarFiltroCategoria(window.pestanaActivaCotizaciones);
+                        setTimeout(() => {
+                            $('.tab-filtro-cat').removeClass('active').attr('aria-selected', 'false');
+                            $(`.tab-filtro-cat[data-categoria="${window.pestanaActivaCotizaciones}"]`).addClass('active').attr('aria-selected', 'true');
+                        }, 50);
+                    }
                 }
             },
             error: function () { $('#tabla-cotizaciones').html('<tr><td colspan="5" class="text-center text-danger py-4">Error al cargar.</td></tr>'); }
@@ -502,8 +563,8 @@ $(document).ready(function () {
         }
     }
 
-    // ✨ CARGA LAS SUCURSALES Y PLAZAS (INDEPENDIENTES Y USANDO SEPARADOR ||)
-    function cargarSucursalesEdicion(usuarioId, preseleccion_suc = null, preseleccion_plaza = null) {
+    // CARGA LAS SUCURSALES Y PLAZAS (INDEPENDIENTES Y USANDO SEPARADOR ||)
+    /* function cargarSucursalesEdicion(usuarioId, preseleccion_suc = null, preseleccion_plaza = null) {
         let $selectSuc = $('#edit_select_sucursal');
         let $infoPlaza = $('#edit_info_plaza');
         let $wrapperPlaza = $('#wrapper_info_plaza_edit');
@@ -568,7 +629,7 @@ $(document).ready(function () {
                     });
 
                     // --- LLENAR PLAZAS (Independientes de la sucursal) ---
-                    /* let plazasUnicas = new Map();
+                    * let plazasUnicas = new Map();
                     data.forEach(suc => {
                         if (suc.id_sae == 1) return; // Matriz no aporta plazas aquí
                         if (suc.ids_plazas && suc.nombres_plazas) {
@@ -580,7 +641,7 @@ $(document).ready(function () {
                                 if(idPlaza && nomPlaza) plazasUnicas.set(idPlaza, nomPlaza);
                             }
                         }
-                    }); */
+                    }); *
 
                     let plazasUnicas = new Map();
                     data.forEach(suc => {
@@ -629,6 +690,143 @@ $(document).ready(function () {
                                 minimumResultsForSearch: Infinity // Evita que salga la caja de búsqueda interna
                             });
                         }
+                    }
+                },
+                error: function () {
+                    $selectSuc.empty().append('<option value="">Error al cargar</option>');
+                    $infoPlaza.empty().append('<option value="">Error al cargar</option>');
+                }
+            });
+        } else {
+            sucursalesCacheEdit = [];
+            $selectSuc.empty().append('<option value="">Esperando al solicitante...</option>');
+            $infoPlaza.empty().append('<option value="">Esperando sucursal...</option>');
+            $wrapperPlaza.slideUp('fast');
+        }
+    } */
+
+    // 1. Función para cargar sucursales y plazas, recibiendo y respetando isReadOnly
+    function cargarSucursalesEdicion(usuarioId, preseleccion_suc = null, preseleccion_plaza = null, isReadOnly = false) {
+        let $selectSuc = $('#edit_select_sucursal');
+        let $infoPlaza = $('#edit_info_plaza');
+        let $wrapperPlaza = $('#wrapper_info_plaza_edit');
+
+        if ($selectSuc.hasClass('select2-hidden-accessible')) {
+            $selectSuc.select2('destroy');
+        }
+        $selectSuc.empty().append('<option value="">Cargando...</option>');
+        $infoPlaza.empty().append('<option value="">Cargando plazas...</option>');
+
+        if (usuarioId) {
+            $wrapperPlaza.slideDown('fast');
+            $.ajax({
+                url: 'api/api_cotizador.php?action=get_sucursales_usuario&usuario_id=' + usuarioId,
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    sucursalesCacheEdit = data;
+
+                    // --- LLENAR SUCURSALES ---
+                    $selectSuc.empty();
+                    window.windowSucursalesOpcionesEdit = '<option value="">Selecciona destino...</option>';
+
+                    if (data.length === 0) {
+                        $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
+                        window.windowSucursalesOpcionesEdit = '<option value="" disabled>Sin sucursales asignadas</option>';
+                    } else {
+                        $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
+
+                        let sucursalesAgregadas = new Set(); // ✨ ESCUDO CONTRA DUPLICADOS
+
+                        data.forEach(suc => {
+                            if (!sucursalesAgregadas.has(suc.id_sucursal)) {
+                                sucursalesAgregadas.add(suc.id_sucursal);
+                                let nombreVisual = suc.nombre_listo_para_mostrar;
+                                $selectSuc.append(`<option value="${suc.id_sucursal}">${nombreVisual}</option>`);
+                                window.windowSucursalesOpcionesEdit += `<option value="${suc.id_sucursal}">${nombreVisual}</option>`;
+                            }
+                        });
+
+                        if (preseleccion_suc) {
+                            $selectSuc.val(preseleccion_suc.toString());
+                        }
+
+                        if (!$selectSuc.val() && data.length === 1 && !isEditMultiSucursal) {
+                            $selectSuc.val(data[0].id_sucursal);
+                        }
+                    }
+
+                    $selectSuc.select2({ dropdownParent: $('#modalEditarCotizacion'), theme: 'bootstrap-5', width: '100%' });
+
+                    // ✨ BLOQUEO PARA SUCURSAL SI ESTÁ AUTORIZADA
+                    if (isReadOnly) {
+                        $selectSuc.prop('disabled', true);
+                    }
+
+                    $('.select-sucursal-fila-edit').each(function () {
+                        let valToSelect = $(this).attr('data-selected-suc') || $(this).val();
+                        $(this).html(window.windowSucursalesOpcionesEdit);
+                        if (valToSelect) $(this).val(valToSelect);
+
+                        if ($(this).hasClass('select2-hidden-accessible')) {
+                            $(this).trigger('change.select2');
+                        } else if (isEditMultiSucursal && $.fn.select2) {
+                            $(this).select2({ theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%', placeholder: "Selecciona destino..." });
+
+                            // ✨ Bloqueamos también los selects internos si es multisucursal
+                            if (isReadOnly) $(this).prop('disabled', true);
+                        }
+                    });
+
+                    // --- LLENAR PLAZAS ---
+                    let plazasUnicas = new Map();
+                    data.forEach(suc => {
+                        if (suc.ids_plazas && suc.nombres_plazas) {
+                            let ids = suc.ids_plazas.toString().split('||');
+                            let nombres = suc.nombres_plazas.split('||');
+                            for (let i = 0; i < ids.length; i++) {
+                                let idPlaza = ids[i].trim();
+                                let nomPlaza = nombres[i].trim();
+                                if (idPlaza && nomPlaza) plazasUnicas.set(idPlaza, nomPlaza);
+                            }
+                        }
+                    });
+
+                    // 🧹 Limpiamos Select2 previo
+                    if ($infoPlaza.hasClass('select2-hidden-accessible')) {
+                        $infoPlaza.select2('destroy');
+                    }
+                    $infoPlaza.empty().removeClass('form-select').addClass('form-control').css({ 'pointer-events': '', 'background-image': '', 'appearance': '' });
+
+                    if (plazasUnicas.size === 0) {
+                        $infoPlaza.append('<option value="">El usuario no tiene plazas ligadas</option>');
+                    } else if (plazasUnicas.size === 1) {
+                        let plazaActiva = Array.from(plazasUnicas.entries())[0];
+                        $infoPlaza.append(`<option value="${plazaActiva[0]}" selected>${plazaActiva[1]}</option>`);
+                    } else {
+                        $infoPlaza.append('<option value="">Selecciona la plaza...</option>');
+                        plazasUnicas.forEach((nombre, id) => {
+                            $infoPlaza.append(`<option value="${id}">${nombre}</option>`);
+                        });
+
+                        if (typeof preseleccion_plaza !== 'undefined' && preseleccion_plaza) {
+                            $infoPlaza.val(preseleccion_plaza.toString());
+                        }
+
+                        if ($.fn.select2) {
+                            $infoPlaza.select2({
+                                theme: 'bootstrap-5',
+                                width: '100%',
+                                minimumResultsForSearch: Infinity
+                            });
+                        }
+                    }
+
+                    // ✨ CORRECCIÓN DE CIBERSEGURIDAD: Evaluamos isReadOnly ANTES de decidir si bloqueamos o no
+                    if (isReadOnly || plazasUnicas.size <= 1) {
+                        $infoPlaza.prop('disabled', true).removeClass('bg-white').addClass('bg-light').css('pointer-events', 'none');
+                    } else {
+                        $infoPlaza.prop('disabled', false).removeClass('bg-light').addClass('bg-white').css('pointer-events', 'auto');
                     }
                 },
                 error: function () {
@@ -721,7 +919,7 @@ $(document).ready(function () {
         `;
     }
 
-    function cargarSolicitantes(id_empresa, preseleccion = null, isReadOnly = false, preseleccion_suc = null, preseleccion_plaza = null) {
+    /* function cargarSolicitantes(id_empresa, preseleccion = null, isReadOnly = false, preseleccion_suc = null, preseleccion_plaza = null) {
         let $selSol = $('#edit_select_solicitante');
 
         if ($selSol.hasClass('select2-hidden-accessible')) {
@@ -760,6 +958,49 @@ $(document).ready(function () {
         if (!val || $(this).data('old') === val) return;
         $(this).data('old', val);
         cargarSucursalesEdicion(val, null, null);
+    }); */
+
+    // ✨ 2. Cargar Solicitantes también recibe y pasa el parámetro de bloqueo
+    function cargarSolicitantes(id_empresa, preseleccion = null, isReadOnly = false, preseleccion_suc = null, preseleccion_plaza = null) {
+        let $selSol = $('#edit_select_solicitante');
+
+        if ($selSol.hasClass('select2-hidden-accessible')) {
+            $selSol.select2('destroy');
+        }
+        $selSol.html('<option value="">Cargando...</option>');
+
+        $.ajax({
+            url: 'api/api_cotizador.php?action=get_usuarios&empresa_id=' + id_empresa,
+            method: 'GET',
+            success: function (users) {
+                $selSol.html('<option value="">Selecciona...</option>');
+                users.forEach(u => { $selSol.append(`<option value="${u.id_usuario}">${u.nombre} ${u.apellido_pat} ${u.apellido_mat}</option>`); });
+
+                if (preseleccion) {
+                    $selSol.data('old', preseleccion.toString()).val(preseleccion);
+                    // ✨ Pasamos "isReadOnly" hacia la carga de sucursales/plazas
+                    cargarSucursalesEdicion(preseleccion, preseleccion_suc, preseleccion_plaza, isReadOnly);
+                }
+
+                $selSol.select2({ dropdownParent: $('#modalEditarCotizacion') });
+
+                if (isReadOnly) {
+                    $selSol.prop('disabled', true);
+                    if ($('#hidden_edit_usuario').length === 0) {
+                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_usuario" name="Usuario_id" value="${preseleccion}">`);
+                    } else {
+                        $('#hidden_edit_usuario').val(preseleccion);
+                    }
+                }
+            }
+        });
+    }
+
+    $('#edit_select_solicitante').on('change', function () {
+        let val = $(this).val();
+        if (!val || $(this).data('old') === val) return;
+        $(this).data('old', val);
+        cargarSucursalesEdicion(val, null, null, false); // Si lo cambia a mano, no está bloqueado
     });
 
     $('#edit_select_empresa').on('change', function () { cargarSolicitantes($(this).val()); });
@@ -1081,18 +1322,26 @@ $(document).ready(function () {
 
     function calcEditTotal() {
         let sub = 0;
+        
         $("#tab_logic_edit tbody tr.fila-producto").each(function () {
             let t = parseFloat($(this).find(".edit-total-hidden").val()) || 0;
             sub += t;
         });
+        
         $("#edit_sub_total").val(sub.toFixed(2));
         $("#edit_sub_total_visual").val(formatoMoneda.format(sub));
 
-        let tax = parseFloat($("#edit_tax").val()) || 0;
+        // let tax = parseFloat($("#edit_tax").val()) || 0;
+        let tax = 16;
         let monto_iva = (sub / 100) * tax;
 
-        $("#edit_total_amount").val((sub + monto_iva).toFixed(2));
-        $("#edit_total_amount_visual").val(formatoMoneda.format(sub + monto_iva));
+        /* $("#edit_total_amount").val((sub + monto_iva).toFixed(2));
+        $("#edit_total_amount_visual").val(formatoMoneda.format(sub + monto_iva)); */
+        // Calculamos el Gran Total y actualizamos visuales
+        let totalFinal = sub + monto_iva;
+        
+        $("#edit_total_amount").val(totalFinal.toFixed(2));
+        $("#edit_total_amount_visual").val(formatoMoneda.format(totalFinal));
     }
 
     // 4. GUARDAR CAMBIOS
@@ -1130,7 +1379,7 @@ $(document).ready(function () {
                     if (estatusSeleccionado.includes('Autorizada') || window.productoAgregadoEnEdicion) {
                         alert("Cambios guardados. Serás redirigido para verificar las direcciones de los equipos.");
                         window.productoAgregadoEnEdicion = false;
-                        window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val() + '&editado=1';
+                        window.location.href = 'finalizar_venta.php?id=' + $('#edit_id_cotizacion').val() + '&editado=1&from=todas_cotizaciones';
                     } else {
                         alert("Cambios guardados exitosamente.");
                         cargarTablaPrincipal();
@@ -1224,12 +1473,12 @@ $(document).ready(function () {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('reopen_edit')) {
         let idToOpen = urlParams.get('reopen_edit');
-        
+
         // ✨ CIBERSEGURIDAD Y UX: Borramos el parámetro de la URL sin recargar la página 
         // usando la API History de HTML5. Esto evita ciclos infinitos si el usuario refresca (F5).
         let cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-        window.history.replaceState({path: cleanUrl}, '', cleanUrl);
-        
+        window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+
         // Esperamos 800ms a que DataTables termine de dibujar la tabla 
         // y simulamos el clic del usuario en el botón de "Editar"
         setTimeout(() => {
@@ -1248,23 +1497,23 @@ $(document).ready(function () {
     // >>>============================================== 
     // >>> 7. MÓDULO LOGÍSTICO (MODAL Y GUARDADO)
     // >>>============================================== 
-    $(document).on('click', '.btn-logistica-modal', function(e) {
+    $(document).on('click', '.btn-logistica-modal', function (e) {
         e.preventDefault();
-        
+
         // 1. Extraemos de forma segura los datos incrustados en el botón
         let id = $(this).data('id');
         let paq = $(this).data('paqueteria');
         let guia = $(this).data('guia');
         let fecha = $(this).data('fecha');
-        
+
         // 2. Limpiamos el formulario antes de abrirlo
         $('#formLogistica')[0].reset();
-        
+
         // 3. Inyectamos los datos
         $('#logistica_id_cotizacion').val(id);
         if (paq) $('#logistica_paqueteria').val(paq);
         if (guia) $('#logistica_guia').val(guia);
-        
+
         // ✨ UX: Si ya hay fecha registrada, la mostramos. Si no, ponemos la fecha de HOY por defecto.
         if (fecha) {
             $('#logistica_fecha').val(fecha);
@@ -1272,43 +1521,43 @@ $(document).ready(function () {
             let hoy = new Date().toISOString().split('T')[0];
             $('#logistica_fecha').val(hoy);
         }
-        
+
         // 4. Mostramos el modal
         $('#modalLogistica').modal('show');
     });
 
     // ✨ EVENTO PARA GUARDAR LOS DATOS DE PAQUETERÍA
-    $('#formLogistica').on('submit', function(e) {
+    $('#formLogistica').on('submit', function (e) {
         e.preventDefault();
-        
+
         // 🛡️ UX: Bloqueamos el botón para evitar doble clic accidental
         let $btn = $(this).find('button[type="submit"]');
         let originalText = $btn.text();
         $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Procesando...');
-        
+
         $.ajax({
             url: 'api/api_ver_cotizaciones.php',
             type: 'POST',
             data: $(this).serialize(),
             dataType: 'json',
-            success: function(res) {
+            success: function (res) {
                 if (res.status === 'success') {
                     $('#modalLogistica').modal('hide'); // Cerramos el modal
-                    alert(res.message); 
+                    alert(res.message);
                     cargarTablaPrincipal(); // 🔄 Recargamos la tabla para que el camión se pinte de Verde
                 } else {
                     alert("Error: " + res.message);
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 // 🛡️ CIBERSEGURIDAD: Controlamos mensajes de error sin exponer detalles del servidor
                 let errorMsg = "Error interno del servidor. Revisa la consola.";
-                if(xhr.responseJSON && xhr.responseJSON.message) {
+                if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMsg = xhr.responseJSON.message;
                 }
                 alert(errorMsg);
             },
-            complete: function() {
+            complete: function () {
                 // Restauramos el botón pase lo que pase
                 $btn.prop('disabled', false).text(originalText);
             }
@@ -1318,7 +1567,7 @@ $(document).ready(function () {
     //>>>============================================== 
     //>>> 8. FLUJO DE AUTORIZAR / RECHAZAR (ONE-CLICK)
     //>>>============================================== 
-    $(document).on('click', '.btn-cambiar-estatus', function(e) {
+    $(document).on('click', '.btn-cambiar-estatus', function (e) {
         e.preventDefault();
         let id_cot = $(this).data('id');
         let nuevo_estatus = $(this).data('estatus');
@@ -1339,15 +1588,15 @@ $(document).ready(function () {
                 type: 'POST',
                 data: { action: 'cambiar_estatus', id_cotizacion: id_cot, estatus: nuevo_estatus },
                 dataType: 'json',
-                success: function(res) {
+                success: function (res) {
                     if (res.status === 'success') {
                         cargarTablaPrincipal(); // Refrescamos la tabla instantáneamente
                     } else {
                         alert("Error: " + res.message);
                     }
                 },
-                error: function() { 
-                    alert("Error de red al actualizar el estatus. Por favor intenta de nuevo."); 
+                error: function () {
+                    alert("Error de red al actualizar el estatus. Por favor intenta de nuevo.");
                 }
             });
         }
@@ -1369,5 +1618,97 @@ $(document).ready(function () {
                 }
             });
         }
+    });
+
+    // >>>============================================== 
+    // >>> 9. FLUJO: MARCAR EQUIPO COMO ENTREGADO
+    // >>>============================================== 
+    $(document).on('click', '.btn-marcar-entregado', function (e) {
+        e.preventDefault();
+        let id_cot = $(this).data('id');
+        let folio = $(this).data('folio');
+
+        if (confirm(`Al marcar la cotización #${folio} como Entregada, se disparará un correo automático solicitando al cliente su Orden de Compra.\n\n¿Deseas proceder?`)) {
+            let $btn = $(this);
+            $btn.css('pointer-events', 'none').css('opacity', '0.5');
+
+            $.ajax({
+                url: 'api/api_ver_cotizaciones.php',
+                type: 'POST',
+                data: { action: 'marcar_entregado', id_cotizacion: id_cot },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.status === 'success') {
+                        alert(res.message);
+                        cargarTablaPrincipal(); // Mágicamente el botón cambiará al reloj amarillo
+                    } else {
+                        alert("Error: " + res.message);
+                        $btn.css('pointer-events', '').css('opacity', '1');
+                    }
+                },
+                error: function () {
+                    alert("Error de red. Por favor intenta de nuevo.");
+                    $btn.css('pointer-events', '').css('opacity', '1');
+                }
+            });
+        }
+    });
+
+    // >>>============================================== 
+    // >>> MODULO: ADMIN VE ORDEN DE COMPRA Y RECEPCIÓN
+    // >>>============================================== 
+    $(document).on('click', '.btn-ver-oc', function (e) {
+        e.preventDefault();
+
+        // 1. Extraemos los datos ocultos en el botón
+        let recepcion = $(this).data('recepcion');
+        let ruta_pdf = $(this).data('ruta');
+
+        // 2. Inyectamos los datos en el modal
+        $('#ver_oc_recepcion').val(recepcion);
+
+        // Asignamos la ruta real (ej: uploads/ocs/archivo.pdf) al enlace del botón
+        $('#btn_descargar_oc').attr('href', ruta_pdf);
+
+        // 3. Mostramos el modal
+        $('#modalVerOC').modal('show');
+    });
+
+    // >>>============================================== 
+    // >>> ✨ SISTEMA DE PESTAÑAS (NAV-TABS) Y EXPORTACIÓN
+    // >>>============================================== 
+    window.pestanaActivaCotizaciones = 'TODOS';
+
+    $(document).on('click', '.tab-filtro-cat', function (e) {
+        e.preventDefault();
+        $('.tab-filtro-cat').removeClass('active').attr('aria-selected', 'false');
+        $(this).addClass('active').attr('aria-selected', 'true');
+
+        let categoria = $(this).data('categoria');
+        window.pestanaActivaCotizaciones = categoria;
+        aplicarFiltroCategoria(categoria);
+    });
+
+    function aplicarFiltroCategoria(categoria) {
+        let $tablaDT = $('#tableAllCotizaciones').DataTable();
+        if (categoria === 'TODOS') {
+            $tablaDT.column(4).search('').draw();
+        } else {
+            let regex = '^\\s*' + categoria + '\\s*$';
+            $tablaDT.column(4).search(regex, true, false).draw();
+        }
+    }
+
+    $(document).on('click', '.btn-exportar-filtrado', function (e) {
+        e.preventDefault();
+
+        let tipo = $(this).data('tipo');
+        let scope = $(this).data('scope') || 'todas';
+        let estatus = $('#filtro_estatus_tabla').val();
+        let categoria = window.pestanaActivaCotizaciones === 'TODOS' ? '' : window.pestanaActivaCotizaciones;
+        let busqueda = $('#tableAllCotizaciones').DataTable().search();
+
+        let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
+        window.open(url, '_blank');
     });
 });

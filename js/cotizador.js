@@ -558,13 +558,28 @@ $(document).ready(function () {
     // >>> 7. ENVIAR EL FORMULARIO
     $('#nueva_cotizacion').on('submit', function (e) {
         e.preventDefault();
+
+        let $plaza = $('#info_plaza');
+        if (!$plaza.prop('disabled') && !$plaza.val()) {
+            alert("⚠️ Por favor, selecciona una Plaza Asignada antes de guardar.");
+            $plaza.focus();
+            return; // Detenemos el proceso
+        }
+
         $('#tab_logic tbody tr').each(function () { calculateTotal($(this)); });
 
         let btnSubmit = $(this).find('button[type="submit"]');
         let textoOriginal = btnSubmit.text();
         btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
 
+        let $disabledFields = $(this).find(':disabled');
+        $disabledFields.prop('disabled', false);
+
         let formData = $(this).serialize();
+
+        // Volvemos a bloquearlos inmediatamente para que el usuario no note nada
+        $disabledFields.prop('disabled', true);
+        
         if (formData.indexOf('Empresa_id=') === -1) {
             formData += '&Empresa_id=1';
         }

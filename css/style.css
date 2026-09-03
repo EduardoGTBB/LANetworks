@@ -314,4 +314,170 @@ span.select2.select2-container.form-control {
     padding-bottom: 8px !important;
     line-height: 1.4 !important;
 }
+/* >>> ============================================== */
+/* >>>        MOTOR DE IDENTIDAD CORPORATIVA LAN      */
+/* >>> ============================================== */
 
+/* 🟢 OPCIÓN 1: Corporativo Clásico (Tonos Originales de tu diseño) [ACTIVA] */
+:root {
+    --lan-primary: #28395a;
+    --lan-accent: #44b4f4;
+    --lan-bg-body: #eff6ff;
+    --lan-text-main: #1e293b;
+    --lan-text-muted: #64748b;
+    --lan-accent-rgb: 68, 180, 244;
+}
+
+/* =========================================================
+   🚀 REGLAS DE ESTILO B2B (Se adaptan a la paleta activa)
+   ========================================================= */
+
+/* Sobreescritura global de la plantilla */
+body, .nxl-content {
+    background-color: var(--lan-bg-body) !important;
+    color: var(--lan-text-muted) !important;
+}
+
+h1, h2, h3, h4, h5, h6, .text-dark, .card-title {
+    color: var(--lan-text-main) !important;
+}
+
+/* 1. BOTONES PRINCIPALES Y HOVER */
+.btn-primary {
+    background-color: var(--lan-primary) !important;
+    border-color: var(--lan-primary) !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--lan-accent) !important;
+    border-color: var(--lan-accent) !important;
+    box-shadow: 0 4px 10px rgba(var(--lan-accent-rgb), 0.4) !important;
+}
+
+/* 2. TEXTOS E ICONOS PRIMARIOS (Menú, links, iconos) */
+.text-primary, .feather-primary {
+    color: var(--lan-primary) !important;
+}
+
+/* 3. MODALES Y TARJETAS (Cabeceras) */
+.modal-header.bg-primary, 
+.card-header.bg-primary,
+.bg-primary {
+    background-color: var(--lan-primary) !important;
+}
+
+/* 4. RADIO BUTTONS Y CHECKBOXES */
+.form-check-input:checked {
+    background-color: var(--lan-accent) !important;
+    border-color: var(--lan-accent) !important;
+}
+
+/* 5. BORDES ACTIVOS (Inputs al hacer clic) */
+.form-control:focus, .form-select:focus {
+    border-color: var(--lan-accent) !important;
+    box-shadow: 0 0 0 0.25rem rgba(var(--lan-accent-rgb), 0.25) !important;
+}
+
+/* 6. FONDOS SUAVES (Badges, cajitas de iconos o datatables) */
+.bg-soft-primary {
+    background-color: rgba(var(--lan-accent-rgb), 0.12) !important;
+    color: var(--lan-primary) !important;
+}
+
+/* 7. BORDES (Cards o divisiones primarias) */
+.border-primary {
+    border-color: var(--lan-primary) !important;
+}
+
+/* =========================================================
+    ✨ ESTILOS SELECT2 UNIVERSALES - PALETA CORPORATIVA
+   ======================================================== */
+
+/* 1. Elemento que YA ESTÁ seleccionado (cuando NO pasas el mouse) */
+.select2-container .select2-results__option[aria-selected="true"] {
+    background-color: rgba(var(--lan-accent-rgb), 0.12) !important;
+    color: var(--lan-primary) !important;
+    font-weight: bold !important;
+}
+
+/* 2. Elemento iluminado al pasar el ratón (Hover) */
+.select2-container .select2-results__option--highlighted[aria-selected],
+.select2-container .select2-results__option--highlighted[aria-selected="true"] {
+    background-color: var(--lan-accent) !important;
+    color: #ffffff !important;
+}
+
+/* 3. Borde iluminado de la caja EXTERIOR (Resplandor fino y elegante) */
+.select2-container--open .select2-selection,
+.select2-container--focus .select2-selection {
+    border-color: var(--lan-accent) !important;
+    box-shadow: 0 0 0 0.15rem rgba(var(--lan-accent-rgb), 0.25) !important;
+    outline: 0 !important;
+}
+
+/* 4. 🚨 CORRECCIÓN: Quitar el cuadro interior raro al escribir en multi-selects */
+.select2-selection--multiple .select2-search__field,
+.select2-selection--multiple .select2-search__field:focus {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background-color: transparent !important;
+}
+
+/* 5. Buscador interno de los Selects normales (El que se despliega) */
+.select2-dropdown .select2-search__field:focus {
+    border: 1px solid var(--lan-accent) !important;
+    box-shadow: 0 0 0 0.15rem rgba(var(--lan-accent-rgb), 0.25) !important;
+    outline: none !important;
+}
+
+/* 6. Aseguramos que el texto por defecto respete el color oscuro */
+.select2-container .select2-results__option {
+    color: var(--lan-text-main) !important;
+}
+
+/* =========================================================
+   ✨ LIMPIEZA DE INPUTS NUMÉRICOS (Ocultar flechas/spinners)
+   ========================================================= */
+
+/* Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* =========================================================
+   ✨ ESTILOS PESTAÑAS (NAV-PILLS) CORPORATIVAS LAN
+   ========================================================= */
+/* Estado Inactivo (Gris limpio y sobrio) */
+.custom-lan-tab {
+    background-color: #ffffff !important;
+    color: var(--lan-text-muted) !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important; /* Bordes suavemente redondeados */
+    transition: all 0.3s ease !important;
+}
+
+/* Efecto al pasar el cursor (Hover) */
+.custom-lan-tab:hover {
+    border-color: var(--lan-accent) !important;
+    color: var(--lan-primary) !important;
+    transform: translateY(-2px); /* Pequeño salto 3D */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05) !important;
+}
+
+/* Estado Activo (Color principal LAN: Azul Oscuro) */
+.custom-lan-tab.active {
+    background-color: var(--lan-primary) !important;
+    color: #ffffff !important;
+    border-color: var(--lan-primary) !important;
+    box-shadow: 0 4px 10px rgba(40, 57, 90, 0.3) !important; /* Sombra corporativa */
+}

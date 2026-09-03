@@ -517,9 +517,25 @@ if ($es_multisucursal) {
                                                     $suc_destino_crudo = trim($d['nombre_sucursal_destino'] ?? '');
                                                     $nombre_destino_print = ($suc_destino_crudo === '-' || $suc_destino_crudo === '') ? 'SIN SUCURSAL' : htmlspecialchars($suc_destino_crudo);
                                                     ?>
-                                                    <strong style="color: #000;">📍 Certificado (<?php echo mb_strtoupper($nombre_destino_print, 'UTF-8'); ?>):</strong>
-                                                    <!-- <strong style="color: #000;">📍 Certificado (?php echo htmlspecialchars($d['nombre_sucursal_destino']); ?>):</strong> -->
-                                                    <?php
+
+                                                    <!-- ✨ NUEVO DISEÑO: SUCURSAL Y DOMICILIO EN LÍNEAS SEPARADAS -->
+                                                    <span style="font-size: 9px; color: #444; display: block; line-height: 1.4;">
+                                                        <strong style="color: #000;">SUCURSAL (<?php echo mb_strtoupper($nombre_destino_print, 'UTF-8'); ?>)</strong><br>
+
+                                                        <strong style="color: #000;">DOMICILIO:</strong>
+                                                        <?php
+                                                        $calleCertDetalle = htmlspecialchars($d['calle_numero_cert']);
+                                                        if (!empty($d['entre_calle_cert']) && !empty($d['y_calle_cert'])) {
+                                                            $calleCertDetalle .= ' ' . htmlspecialchars($d['entre_calle_cert']) . ' y ' . htmlspecialchars($d['y_calle_cert']);
+                                                        } elseif (!empty($d['entre_calle_cert'])) {
+                                                            $calleCertDetalle .= ' ' . htmlspecialchars($d['entre_calle_cert']);
+                                                        }
+                                                        echo $calleCertDetalle . ', Col. ' . htmlspecialchars($d['colonia_cert']) . ', ' . htmlspecialchars($d['municipio_cert']) . ', ' . htmlspecialchars($d['estado_cert']) . ' C.P. ' . htmlspecialchars($d['cp_cert']);
+                                                        ?>
+                                                    </span>
+                                                    
+                                                    <!-- <strong style="color: #000;">📍 Certificado (?php echo mb_strtoupper($nombre_destino_print, 'UTF-8'); ?>):</strong>
+                                                    ?php
                                                     $calleCertDetalle = htmlspecialchars($d['calle_numero_cert']);
                                                     if (!empty($d['entre_calle_cert']) && !empty($d['y_calle_cert'])) {
                                                         $calleCertDetalle .= ' ' . htmlspecialchars($d['entre_calle_cert']) . ' y ' . htmlspecialchars($d['y_calle_cert']);
@@ -527,7 +543,8 @@ if ($es_multisucursal) {
                                                         $calleCertDetalle .= ' ' . htmlspecialchars($d['entre_calle_cert']);
                                                     }
                                                     echo $calleCertDetalle . ', Col. ' . htmlspecialchars($d['colonia_cert']) . ', ' . htmlspecialchars($d['municipio_cert']) . ', ' . htmlspecialchars($d['estado_cert']) . ' C.P. ' . htmlspecialchars($d['cp_cert']);
-                                                    ?>
+                                                    
+                                                    ?> -->
                                                 </span>
                                             <?php endif; ?>
                                         </div>
