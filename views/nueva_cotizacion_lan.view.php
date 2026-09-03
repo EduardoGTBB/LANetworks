@@ -348,7 +348,7 @@
                                                                 <th class="fs-10 text-dark text-uppercase">IVA</th>
                                                                 <td class="w-50">
                                                                     <div class="input-group mb-2 mb-sm-0">
-                                                                        <input type="number" class="form-control border-0 bg-transparent p-0" id="tax" placeholder="16" value="16" name="porcentaje_iva">
+                                                                        <input type="number" class="form-control border-0 bg-transparent p-0" id="tax" placeholder="16" value="16" name="porcentaje_iva" readonly>
                                                                         <div class="input-group-addon">%</div>
                                                                     </div>
                                                                 </td>

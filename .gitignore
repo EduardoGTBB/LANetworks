@@ -1,11 +1,17 @@
 #Carpeta de pruebas
 Pruebas/
+uploads/
 
 #Importadores
 importar_plazas.php
 importar_sucursales.php
 importar_usuarios.php
 admin_importar_sucursales.php
+
+#ArchivosParaPruebasLocales
+mails/mail_notificacion_admins_oc_local.php
+mails/mail_notificacion_logistica_local.php
+mails/mail_solicitud_oc_local.php
 
 #CSV
 *.csv

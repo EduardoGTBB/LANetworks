@@ -591,8 +591,8 @@ $(document).ready(function () {
                     let cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
                     window.history.replaceState({path: cleanUrl}, '', cleanUrl);
 
-                    alert(res.message);
-                    window.location.href = $('#url_origen').val();
+                    let urlDestino = $('#url_origen').val() || 'ver_cotizaciones.php';
+                    window.location.replace(urlDestino);
                 } else {
                     alert("Error: " + res.message);
                     btnSubmit.prop('disabled', false).text(textoOriginal);
