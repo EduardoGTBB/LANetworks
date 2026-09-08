@@ -385,7 +385,12 @@
         <?php include('views/include/footer.php'); ?>
     </main>
 
-    <button type="button" id="btnBackToTop" class="btn btn-primary shadow-lg" title="Volver al inicio">
+    <!-- <button type="button" id="btnBackToTop" class="btn btn-primary shadow-lg" title="Volver al inicio">
+        <i class="feather-arrow-up" style="font-size: 1.2rem; font-weight: bold;"></i>
+    </button> -->
+
+    <!-- ✨ UX/PHP: Inyectamos la clase 'btn-back-top-b2b' SOLO si es un cliente -->
+    <button type="button" id="btnBackToTop" class="btn btn-primary shadow-lg <?php echo isset($_SESSION['id_usuario_cliente']) ? 'btn-back-top-b2b' : ''; ?>" title="Volver al inicio">
         <i class="feather-arrow-up" style="font-size: 1.2rem; font-weight: bold;"></i>
     </button>
     <!--! ================================================================ !-->

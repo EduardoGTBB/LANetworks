@@ -80,7 +80,8 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    display: none; /* Oculto por defecto, se muestra vía JS */
+    display: none;
+    /* Oculto por defecto, se muestra vía JS */
     align-items: center;
     justify-content: center;
     opacity: 0.8;
@@ -89,30 +90,42 @@
 
 #btnBackToTop:hover {
     opacity: 1;
-    transform: scale(1.1); /* Efecto de crecimiento al pasar el mouse */
+    transform: scale(1.1);
+    /* Efecto de crecimiento al pasar el mouse */
+}
+
+/* ✨ UX: Elevación dinámica para el Portal B2B (Evita chocar con WhatsApp) */
+#btnBackToTop.btn-back-top-b2b {
+    bottom: 110px !important; /* Lo sube exactamente por encima del ícono de WA */
 }
 
 /* --- Estilos del Botón Volver Arriba (Modal) --- */
 #btnBackToTopModal {
-    position: absolute; /* ✨ CLAVE: Absolute lo encierra dentro de la caja del modal */
-    bottom: 25px;       /* Distancia desde el borde inferior de la caja blanca */
-    left: 30px;         /* ✨ CLAVE: Alineado a la zona izquierda, lejos de los botones de acción */
-    z-index: 1060;      
+    position: absolute;
+    /* ✨ CLAVE: Absolute lo encierra dentro de la caja del modal */
+    bottom: 25px;
+    /* Distancia desde el borde inferior de la caja blanca */
+    left: 30px;
+    /* ✨ CLAVE: Alineado a la zona izquierda, lejos de los botones de acción */
+    z-index: 1060;
     width: 45px;
     height: 45px;
     border-radius: 50%;
-    display: none;      /* Controlado por el JS */
+    display: none;
+    /* Controlado por el JS */
     align-items: center;
     justify-content: center;
     opacity: 0.9;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2); /* Sombra elegante */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    /* Sombra elegante */
     transition: all 0.3s ease;
 }
 
 #btnBackToTopModal:hover {
     opacity: 1;
     transform: scale(1.1);
-    background-color: #0d6efd; /* Forzamos el azul de Bootstrap al pasar el mouse */
+    background-color: #0d6efd;
+    /* Forzamos el azul de Bootstrap al pasar el mouse */
     color: #fff;
 }
 
@@ -269,7 +282,7 @@ span.select2.select2-container.form-control {
 /* 10. Engrosar la caja principal SOLO dentro de las tablas de partidas */
 #tab_logic .select2-container--bootstrap-5 .select2-selection--single,
 #tab_logic_edit .select2-container--bootstrap-5 .select2-selection--single {
-    min-height: 42px !important; 
+    min-height: 42px !important;
     padding: 4px 12px !important;
     border: 1px solid #ced4da !important;
     border-radius: 5px !important;
@@ -279,9 +292,12 @@ span.select2.select2-container.form-control {
 #tab_logic .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered,
 #tab_logic_edit .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
     color: #495057 !important;
-    padding-right: 35px !important; /* 👈 Muro de contención para proteger la flecha */
-    text-overflow: ellipsis !important; /* 👈 Agrega los ... al final */
-    white-space: nowrap !important; /* 👈 Impide que la tabla se haga gruesa */
+    padding-right: 35px !important;
+    /* 👈 Muro de contención para proteger la flecha */
+    text-overflow: ellipsis !important;
+    /* 👈 Agrega los ... al final */
+    white-space: nowrap !important;
+    /* 👈 Impide que la tabla se haga gruesa */
     overflow: hidden !important;
     display: block !important;
 }
@@ -300,6 +316,7 @@ span.select2.select2-container.form-control {
     padding: 6px 12px !important;
     background-color: #ffffff !important;
 }
+
 #modalEditarCotizacion .select2-search--dropdown .select2-search__field:focus {
     border-color: #86b7fe !important;
     outline: 0 !important;
@@ -314,6 +331,7 @@ span.select2.select2-container.form-control {
     padding-bottom: 8px !important;
     line-height: 1.4 !important;
 }
+
 /* >>> ============================================== */
 /* >>>        MOTOR DE IDENTIDAD CORPORATIVA LAN      */
 /* >>> ============================================== */
@@ -333,12 +351,20 @@ span.select2.select2-container.form-control {
    ========================================================= */
 
 /* Sobreescritura global de la plantilla */
-body, .nxl-content {
+body,
+.nxl-content {
     background-color: var(--lan-bg-body) !important;
     color: var(--lan-text-muted) !important;
 }
 
-h1, h2, h3, h4, h5, h6, .text-dark, .card-title {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.text-dark,
+.card-title {
     color: var(--lan-text-main) !important;
 }
 
@@ -349,19 +375,21 @@ h1, h2, h3, h4, h5, h6, .text-dark, .card-title {
     color: #ffffff !important;
 }
 
-.btn-primary:hover, .btn-primary:focus {
+.btn-primary:hover,
+.btn-primary:focus {
     background-color: var(--lan-accent) !important;
     border-color: var(--lan-accent) !important;
     box-shadow: 0 4px 10px rgba(var(--lan-accent-rgb), 0.4) !important;
 }
 
 /* 2. TEXTOS E ICONOS PRIMARIOS (Menú, links, iconos) */
-.text-primary, .feather-primary {
+.text-primary,
+.feather-primary {
     color: var(--lan-primary) !important;
 }
 
 /* 3. MODALES Y TARJETAS (Cabeceras) */
-.modal-header.bg-primary, 
+.modal-header.bg-primary,
 .card-header.bg-primary,
 .bg-primary {
     background-color: var(--lan-primary) !important;
@@ -374,7 +402,8 @@ h1, h2, h3, h4, h5, h6, .text-dark, .card-title {
 }
 
 /* 5. BORDES ACTIVOS (Inputs al hacer clic) */
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
     border-color: var(--lan-accent) !important;
     box-shadow: 0 0 0 0.25rem rgba(var(--lan-accent-rgb), 0.25) !important;
 }
@@ -462,7 +491,8 @@ input[type="number"] {
     background-color: #ffffff !important;
     color: var(--lan-text-muted) !important;
     border: 1px solid #dee2e6 !important;
-    border-radius: 8px !important; /* Bordes suavemente redondeados */
+    border-radius: 8px !important;
+    /* Bordes suavemente redondeados */
     transition: all 0.3s ease !important;
 }
 
@@ -470,8 +500,9 @@ input[type="number"] {
 .custom-lan-tab:hover {
     border-color: var(--lan-accent) !important;
     color: var(--lan-primary) !important;
-    transform: translateY(-2px); /* Pequeño salto 3D */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05) !important;
+    transform: translateY(-2px);
+    /* Pequeño salto 3D */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05) !important;
 }
 
 /* Estado Activo (Color principal LAN: Azul Oscuro) */
@@ -479,5 +510,14 @@ input[type="number"] {
     background-color: var(--lan-primary) !important;
     color: #ffffff !important;
     border-color: var(--lan-primary) !important;
-    box-shadow: 0 4px 10px rgba(40, 57, 90, 0.3) !important; /* Sombra corporativa */
+    box-shadow: 0 4px 10px rgba(40, 57, 90, 0.3) !important;
+    /* Sombra corporativa */
+}
+
+#filtro_mes_tabla:focus,
+#filtro_estatus_tabla:focus,
+.dataTables_filter input:focus {
+    box-shadow: none !important;
+    border-color: #2b3d5b !important;
+    outline: none !important;
 }

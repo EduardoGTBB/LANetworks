@@ -107,18 +107,14 @@
                     <div class="col-lg-12">
                         <div class="card stretch stretch-full">
 
-                            <div class="card-header">
-                                <!-- ⬅️ ARRIBA IZQUIERDA: Título -->
+                            <!-- <div class="card-header">
                                 <div class="d-flex align-items-center gap-3">
                                     <h5 class="card-title mb-0">Lista de cotizaciones</h5>
                                 </div>
 
                                 <div class="card-header-action pe-md-3">
                                     <div class="d-flex align-items-center justify-content-end gap-3 flex-wrap">
-
-                                        <!-- 1. ✨ EXPORTAR (Visible siempre para Admins) -->
                                         <div class="dropdown">
-                                            <!-- UX: Reducido a 34px y fuente 12px -->
                                             <button class="btn fw-bold d-flex align-items-center shadow-sm dropdown-toggle text-white px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
                                                 <i class="feather-download me-2"></i> EXPORTAR
                                             </button>
@@ -127,13 +123,11 @@
                                                     <h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6>
                                                 </li>
                                                 <li>
-                                                    <!-- ✨ UX/Seguridad: Scope "todas" -->
                                                     <a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="todas">
                                                         <i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <!-- ✨ UX/Seguridad: Scope "todas" -->
                                                     <a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="todas">
                                                         <i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio
                                                     </a>
@@ -141,10 +135,8 @@
                                             </ul>
                                         </div>
 
-                                        <!-- 2. ✨ FILTRO DE ESTATUS -->
                                         <div class="d-flex align-items-center gap-2">
                                             <i class="feather-filter text-primary" style="font-size: 1rem;"></i>
-                                            <!-- UX: Reducido a 34px y fuente 12px -->
                                             <select id="filtro_estatus_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-3" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; min-width: 200px;">
                                                 <option value="">Mostrar todos los estatus</option>
                                                 <option value="Guardado para aprobación">Guardado para aprobación</option>
@@ -153,8 +145,71 @@
                                             </select>
                                         </div>
 
-                                        <!-- 3. ✨ TOTAL ACUMULADO (El JS lo inyecta aquí) -->
                                         <div id="contenedor-badge-total"></div>
+
+                                    </div>
+                                </div>
+                            </div> -->
+
+                            <!-- ✨ CONTENEDOR MAESTRO DE CABECERA (Bloque estricto) -->
+                            <div class="card-header p-0 border-bottom-0 w-100 d-block">
+                                
+                                <!-- ✨ FILA 1: Título y Buscador -->
+                                <div class="d-flex justify-content-between align-items-center w-100 px-4 py-3">
+                                    <h5 class="card-title mb-0">Lista de cotizaciones</h5>
+                                    <div id="contenedor-buscador-dt"></div>
+                                </div>
+
+                                <!-- ✨ FILA 2: Botones y Filtros Expandidos (Sin fondo gris) -->
+                                <div class="px-4 pb-3 pt-3 border-bottom bg-light-subtle">
+                                    <!-- ✨ FIX: Usamos flex-wrap y quitamos overflow-x para que el Dropdown no se recorte -->
+                                    <div class="d-flex flex-row align-items-center gap-3 flex-wrap w-100">
+
+                                        <!-- 1. EXPORTAR (me-auto lo empuja a la izquierda) -->
+                                        <div class="dropdown me-auto">
+                                            <button class="btn fw-bold d-flex align-items-center shadow-sm dropdown-toggle text-white px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
+                                                <i class="feather-download me-2"></i> EXPORTAR
+                                            </button>
+                                            <ul class="dropdown-menu shadow-lg border-0">
+                                                <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6></li>
+                                                <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="todas"><i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial</a></li>
+                                                <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="todas"><i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio</a></li>
+                                            </ul>
+                                        </div>
+
+                                        <!-- 2. MES -->
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="feather-calendar text-primary" style="font-size: 1rem;"></i>
+                                            <select id="filtro_mes_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-2" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 160px;" title="Filtrar por mes">
+                                                <option value="">Todos los meses</option>
+                                                <option value="-01-">Enero</option>
+                                                <option value="-02-">Febrero</option>
+                                                <option value="-03-">Marzo</option>
+                                                <option value="-04-">Abril</option>
+                                                <option value="-05-">Mayo</option>
+                                                <option value="-06-">Junio</option>
+                                                <option value="-07-">Julio</option>
+                                                <option value="-08-">Agosto</option>
+                                                <option value="-09-">Septiembre</option>
+                                                <option value="-10-">Octubre</option>
+                                                <option value="-11-">Noviembre</option>
+                                                <option value="-12-">Diciembre</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- 3. ESTATUS -->
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="feather-filter text-primary" style="font-size: 1rem;"></i>
+                                            <select id="filtro_estatus_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-3" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 230px;">
+                                                <option value="">Mostrar todos los estatus</option>
+                                                <option value="Guardado para aprobación">Guardado para aprobación</option>
+                                                <option value="Autorizada">Autorizadas (Aprobadas)</option>
+                                                <option value="No autorizada">No autorizadas (Rechazadas)</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- 4. TOTAL -->
+                                        <div id="contenedor-badge-total" class="flex-shrink-0"></div>
 
                                     </div>
                                 </div>
@@ -197,12 +252,13 @@
                                             <th width="15%" class="text-center">Importe</th>
                                             <th width="15%" class="text-center">Estatus</th>
                                             <th class="d-none">Categoría</th> <!-- 4 (Oculta) -->
+                                            <th class="d-none">Mes</th>
                                             <th width="15%" class="text-center">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tabla-cotizaciones">
                                         <tr>
-                                            <td colspan="5">
+                                            <td colspan="7">
                                                 <div class="hstack gap-3 justify-content-center">
                                                     <div class="spinner-border text-primary mt-3" role="status">
                                                         <span class="visually-hidden">Cargando...</span>
