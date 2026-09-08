@@ -2094,11 +2094,10 @@ function obtenerDatosClientePorCotizacion(PDO $pdo, int $id_cotizacion): array|f
 // <<< ==============================================
 
 // [fn] Obtener datos aplanados para Exportación a Excel (Dinámico)
-function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0): array {
+function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0, string $mes = ''): array {
     $whereClause = "1=1";
     $params = [];
 
-    // Filtro 1: Estatus
     if (!empty($estatus)) {
         if (strpos($estatus, 'Autorizada') !== false) {
             $whereClause .= " AND c.estatus LIKE :estatus";
@@ -2109,19 +2108,29 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
         }
     }
 
-    // Filtro 2: Categoría
     if (!empty($categoria) && $categoria !== 'TODOS') {
-        $whereClause .= " AND c.categoria = :categoria";
+        $whereClause .= " AND UPPER(c.categoria) = UPPER(:categoria)";
         $params[':categoria'] = $categoria;
     }
 
-    // Filtro 3: Buscador libre
+    /* //  NUEVO FILTRO CIBERSEGURO POR MES
+    if (!empty($mes)) {
+        $whereClause .= " AND c.fecha_cot LIKE :mes";
+        $params[':mes'] = $mes . '-%'; // Filtra todo lo que comience con YYYY-MM
+    } */
+
+    // ✨ Filtro 3: Mes (Compatible con formato -MM-)
+    if (!empty($mes)) {
+        $whereClause .= " AND c.fecha_cot LIKE :mes";
+        // Envolvemos el mes en comodines (%) para que atrape "-09-" dentro de "2026-09-05"
+        $params[':mes'] = '%' . $mes . '%'; 
+    }
+
     if (!empty($busqueda)) {
         $whereClause .= " AND (c.folio_especial LIKE :busqueda OR e.razon_social LIKE :busqueda OR pr.descripcion_product LIKE :busqueda OR pr.clave_product LIKE :busqueda)";
         $params[':busqueda'] = "%{$busqueda}%";
     }
 
-    // ✨ Filtro 4 (ZERO TRUST): Restricción de Alcance ("Mis Cotizaciones")
     if ($scope === 'mis_cotizaciones') {
         if ($id_cliente > 0) {
             $whereClause .= " AND c.Usuario_empresa_id = :id_cliente";

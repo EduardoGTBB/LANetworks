@@ -18,6 +18,7 @@ try {
     $scope = $_GET['scope'] ?? 'todas'; // ✨ Recibimos el scope
     $estatus = $_GET['estatus'] ?? '';
     $categoria = $_GET['categoria'] ?? '';
+    $mes = trim($_GET['mes'] ?? ''); // ✨ NUEVO
     $busqueda = $_GET['search'] ?? '';
 
     // ✨ Ciberseguridad: Extraemos el ID exacto de la sesión
@@ -25,7 +26,7 @@ try {
     $id_cliente = isset($_SESSION['id_usuario_cliente']) ? (int)$_SESSION['id_usuario_cliente'] : 0;
     
     // Le enviamos los parámetros a la Base de Datos
-    $datos = obtenerReporteExportacion($pdo, $estatus, $categoria, $busqueda, $scope, $id_admin, $id_cliente);
+    $datos = obtenerReporteExportacion($pdo, $estatus, $categoria, $busqueda, $scope, $id_admin, $id_cliente, $mes);
     
     $fecha_actual = date('Y-m-d_H-i');
     $nombre_archivo = "Reporte_" . ucfirst($tipo_reporte) . "_LAN_{$fecha_actual}.csv";
