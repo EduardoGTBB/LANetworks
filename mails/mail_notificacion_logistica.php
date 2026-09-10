@@ -8,6 +8,7 @@ if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) {
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+// Incluimos PHPMailer
 require_once __DIR__ . '/PHPMailer/src/Exception.php';
 require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
 require_once __DIR__ . '/PHPMailer/src/SMTP.php';
@@ -16,21 +17,23 @@ function enviarCorreoLogistica($destinatario, $nombre_cliente, $folio, $paqueter
     $mail = new PHPMailer(true);
 
     try {
-        // ⚙️ Configuración del Servidor SMTP PRODUCCIÓN
+        // ⚙️ Configuración del Servidor SMTP (Conectando a tu VPS Producción)
         $mail->isSMTP();
-        $mail->SMTPDebug  = 0; 
-        $mail->Host       = SMTP_HOST; 
-        $mail->Port       = 465;       
-        $mail->SMTPSecure = 'ssl';     
+        $mail->SMTPDebug  = 0; // Cambia a 2 temporalmente si quieres ver errores de conexión en la consola
+        $mail->Host       = SMTP_HOST; // Tomado de tu config.php
+        $mail->Port       = 465;       // O 587 si tu proveedor bloquea el 465 en localhost
+        $mail->SMTPSecure = 'ssl';     // Usa 'tls' si cambias el puerto a 587
         $mail->SMTPAuth   = true;
         $mail->Username   = SMTP_USER;
         $mail->Password   = SMTP_PASS;
         $mail->CharSet    = 'UTF-8';
 
         // ====================================================================
-        // 🚀 CIBERSEGURIDAD PRODUCCIÓN: ENVIAR A CLIENTE REAL
+        // 🛑 CIBERSEGURIDAD: MODO DE PRUEBA LOCAL ACTIVADO
+        // Comenta la línea del cliente real y fuerza tu correo para la prueba
         // ====================================================================
-        $correo_final = $destinatario; // Desbloqueado para VPS
+        // $correo_final = $destinatario; // <- USAR ESTE EN PRODUCCIÓN
+        $correo_final = 'eduardototo774@yahoo.com'; // <- PON TU CORREO AQUÍ PARA LA PRUEBA LOCAL
 
         // 👤 Remitente y Destinatario
         $mail->setFrom(SMTP_USER, 'LA Networks SAC');

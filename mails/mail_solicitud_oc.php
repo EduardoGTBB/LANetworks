@@ -17,7 +17,7 @@ function enviarCorreoSolicitudOC($destinatario, $nombre_cliente, $folio) {
 
     try {
         $mail->isSMTP();
-        $mail->Host       = SMTP_HOST; 
+        $mail->Host       = SMTP_HOST; // En Local pon 'sandbox.smtp.mailtrap.io' temporalmente
         $mail->Port       = 465;
         $mail->SMTPSecure = 'ssl';
         $mail->SMTPAuth   = true;
@@ -25,10 +25,14 @@ function enviarCorreoSolicitudOC($destinatario, $nombre_cliente, $folio) {
         $mail->Password   = SMTP_PASS;
         $mail->CharSet    = 'UTF-8';
 
+        // PRUEBA LOCAL -> $correo_final = 'tu_correo@gmail.com';
+        //$correo_final = $destinatario;
+
         // ====================================================================
-        // 🚀 CIBERSEGURIDAD PRODUCCIÓN: ENVIAR A CLIENTE REAL
+        // 🛑 CIBERSEGURIDAD: MODO DE PRUEBA LOCAL ACTIVADO
         // ====================================================================
-        $correo_final = $destinatario; // Desbloqueado para VPS
+        // $correo_final = $destinatario; // <- COMENTADO PARA NO ALERTAR AL CLIENTE
+        $correo_final = 'eduardototo774@yahoo.com'; // <- PON AQUÍ TU CORREO DE PRUEBAS (O el de LAN)
 
         $mail->setFrom(SMTP_USER, 'LA Networks SAC');
         $mail->addAddress($correo_final, htmlspecialchars($nombre_cliente, ENT_QUOTES, 'UTF-8'));

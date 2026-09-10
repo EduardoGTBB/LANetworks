@@ -173,9 +173,18 @@ $(document).ready(function () {
                     }
 
                     // 4. EDITAR, ELIMINAR Y PDFs
-                    let btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar información" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`;
 
-                    let btnEliminar = '';
+                    // ✨ UX: Cambiamos el icono a un "Ojo" si está rechazada
+                    let tooltipEdicion = (estatusTexto === 'No autorizada' || estatusTexto === 'Autorizada (información completa)') ? 'Ver detalles' : 'Editar información';
+                    
+                    let btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="${tooltipEdicion}" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`;
+                    
+                    /* let btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar información" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`; */
+
+                    // let btnEliminar = '';
+                    // El botón eliminar siempre está disponible
+                    let btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-danger text-danger btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr></a>`;
+
                     if (!estatusTexto.includes('Autorizada') && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
                         btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-danger text-danger btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr></a>`;
                     }
@@ -297,25 +306,40 @@ $(document).ready(function () {
                         info: true,
 
                         dom: "<'#temp-search-dt.d-none'f>" +
-                             "<'row m-0'<'col-12 p-0'<'#contenedor-tabs-datatables'>>>" +
-                             "<'table-responsive'tr>" +
-                             "<'row m-0 align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
+                            "<'row m-0'<'col-12 p-0'<'#contenedor-tabs-datatables'>>>" +
+                            "<'table-responsive'tr>" +
+                            "<'row m-0 align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
 
-                        initComplete: function() {
-                            // 1. Inyectamos los Tabs
+                        initComplete: function () {
                             let tabsHtml = $('#template-tabs-cotizaciones').html();
-                            $('#contenedor-tabs-datatables').html(tabsHtml).css({'width': '100%', 'display': 'block'});
+                            $('#contenedor-tabs-datatables').html(tabsHtml).css({ 'width': '100%', 'display': 'block' });
 
-                            // 2. ✨ Desprendemos el buscador y destruimos el div sobrante
                             let $search = $('#temp-search-dt .dataTables_filter').detach();
-                            $('#temp-search-dt').remove(); // Destrucción total del espacio en blanco
-                            
+                            $('#temp-search-dt').remove();
+
                             $('#contenedor-buscador-dt').empty().append($search);
-                            
-                            // Ajustes estéticos
-                            $('.dataTables_filter').css({'margin': '0', 'padding': '0', 'text-align': 'right'});
+
+                            $('.dataTables_filter').css({ 'margin': '0', 'padding': '0', 'text-align': 'right' });
                             $('.dataTables_filter label').addClass('mb-0 d-flex align-items-center justify-content-end gap-2 fw-bold text-muted').css('font-size', '13px');
-                            $('.dataTables_filter input').addClass('form-control shadow-sm m-0').css({'border-radius': '6px', 'border': '1px solid #ced4da', 'height': '34px', 'width': '250px'});
+                            $('.dataTables_filter input').addClass('form-control shadow-sm m-0').css({ 'border-radius': '6px', 'border': '1px solid #ced4da', 'height': '34px', 'width': '250px' });
+
+                            // ✨ FIX UX: Disparamos los filtros justo cuando DataTables está 100% indexado
+                            setTimeout(() => {
+                                $('#filtro_estatus_tabla').trigger('change');
+
+                                // $('#filtro_fecha_tabla').trigger('change');
+
+                                // ✨ FIX UX: Le avisamos a DataTables si el navegador dejó una fecha guardada al recargar
+                                if ($('#filtro_fecha_tabla').val() !== '') {
+                                    $('#filtro_fecha_tabla').trigger('change');
+                                }
+
+                                if (window.pestanaActivaCotizaciones !== 'TODOS') {
+                                    aplicarFiltroCategoria(window.pestanaActivaCotizaciones);
+                                    $('.tab-filtro-cat').removeClass('active').attr('aria-selected', 'false');
+                                    $(`.tab-filtro-cat[data-categoria="${window.pestanaActivaCotizaciones}"]`).addClass('active').attr('aria-selected', 'true');
+                                }
+                            }, 100);
                         },
 
                         drawCallback: function () {
@@ -336,10 +360,19 @@ $(document).ready(function () {
 
                             if (total > 0) {
                                 let filtroActivo = $('#filtro_estatus_tabla').val();
-                                let bordeBox = '#dee2e6'; let bordeLateral = '#6c757d'; let claseTexto = 'text-secondary';
-                                if (filtroActivo === 'Guardado para aprobación') { bordeBox = '#b8daff'; bordeLateral = '#0d6efd'; claseTexto = 'text-primary'; }
-                                else if (filtroActivo === 'Autorizada') { bordeBox = '#c3e6cb'; bordeLateral = '#28a745'; claseTexto = 'text-success'; }
-                                else if (filtroActivo === 'No autorizada') { bordeBox = '#f5c6cb'; bordeLateral = '#dc3545'; claseTexto = 'text-danger'; }
+                                let tabActiva = window.pestanaActivaCotizaciones;
+
+                                let bordeBox = '#dee2e6'; 
+                                let bordeLateral = '#6c757d'; 
+                                let claseTexto = 'text-secondary';
+
+                                if (filtroActivo === 'Guardado para aprobación'){ 
+                                    bordeBox = '#b8daff'; bordeLateral = '#0d6efd'; claseTexto = 'text-primary'; 
+                                }else if (filtroActivo === 'Autorizada') { 
+                                    bordeBox = '#c3e6cb'; bordeLateral = '#28a745'; claseTexto = 'text-success'; 
+                                }else if (filtroActivo === 'No autorizada' || tabActiva === 'CANCELADAS') { 
+                                    bordeBox = '#f5c6cb'; bordeLateral = '#dc3545'; claseTexto = 'text-danger'; 
+                                }
 
                                 // ✨ UX: Diseño ultracompacto a 34px
                                 let badgeHTML = `
@@ -686,7 +719,20 @@ $(document).ready(function () {
                 isEditMultiSucursal = (!sucId || sucId == 0 || sucId === '0' || sucId === 'null');
                 $('#edit_is_multisucursal').val(isEditMultiSucursal ? '1' : '0');
 
-                let isReadOnly = (cot.estatus === 'Autorizada (información completa)' || cot.estatus === 'No autorizada');
+                // let isReadOnly = (cot.estatus === 'Autorizada (información completa)' || cot.estatus === 'No autorizada');
+                // Si está Rechazada, es 'Solo Lectura' para TODOS. 
+                // Si está Autorizada, es 'Solo Lectura' para los clientes, pero editable para el Admin.
+                // ✨ UX/Seguridad: Determinamos si el modal se bloquea
+                let isReadOnly = false;
+                let perfilActual = (typeof USER_PERFIL !== 'undefined') ? USER_PERFIL : 'cliente';
+
+                if (cot.estatus === 'No autorizada') {
+                    // 🔒 REGLA 1: Rechazadas = Bloqueo total para todos (Inmutables)
+                    isReadOnly = true;
+                } else if (cot.estatus.includes('Autorizada') && perfilActual !== 'admin') {
+                    // 🔒 REGLA 2: Autorizadas = Bloqueadas solo si NO eres admin
+                    isReadOnly = true;
+                }
                 $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', false);
                 $('#edit_add_row').show();
                 $('#formEditarCotizacion button[type="submit"]').prop('disabled', false).text('Actualizar Cambios').show();
@@ -1336,13 +1382,48 @@ $(document).ready(function () {
         aplicarFiltroCategoria(categoria);
     });
 
-    function aplicarFiltroCategoria(categoria) {
+    /* function aplicarFiltroCategoria(categoria) {
         let $tablaDT = $('#tableAllCotizaciones').DataTable();
         if (categoria === 'TODOS') {
             $tablaDT.column(4).search('').draw();
         } else {
             let regex = '^\\s*' + categoria + '\\s*$';
             $tablaDT.column(4).search(regex, true, false).draw();
+        }
+    } */
+    function aplicarFiltroCategoria(categoria) {
+        let $tablaDT = $('#tableAllCotizaciones').DataTable();
+        
+        // ✨ Primero, limpiamos AMBAS columnas (Categoría Oculta y Estatus)
+        $tablaDT.column(4).search(''); 
+        $tablaDT.column(3).search(''); 
+
+        if (categoria === 'TODOS') {
+            // Si eligió TODOS, y hay un filtro de estatus global arriba, lo respetamos
+            let estatusGlobal = $('#filtro_estatus_tabla').val();
+            if(estatusGlobal) {
+                $tablaDT.column(3).search('^\\s*' + estatusGlobal, true, false);
+            }
+            $tablaDT.draw();
+            
+        } else if (categoria === 'CANCELADAS') {
+            // ✨ LÓGICA NUEVA: Filtramos la columna 3 (Estatus) buscando "No autorizada"
+            $tablaDT.column(3).search('^\\s*No autorizada', true, false).draw();
+            
+            // Opcional: Forzamos visualmente el selector global de arriba para que coincida
+            $('#filtro_estatus_tabla').val('No autorizada');
+            
+        } else {
+            // Lógica original: Filtramos por NUEVO o USADO en la Columna 4
+            let regex = '^\\s*' + categoria + '\\s*$';
+            $tablaDT.column(4).search(regex, true, false);
+            
+            // Y respetamos el estatus global de arriba si lo hubiera
+            let estatusGlobal = $('#filtro_estatus_tabla').val();
+            if(estatusGlobal) {
+                $tablaDT.column(3).search('^\\s*' + estatusGlobal, true, false);
+            }
+            $tablaDT.draw();
         }
     }
 
@@ -1358,13 +1439,13 @@ $(document).ready(function () {
         let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
         window.open(url, '_blank');
     });
-
+    
     // >>>============================================== 
     // >>>  MOTOR DE EXPORTACIÓN INTELIGENTE
     // >>>============================================== 
-    $(document).on('click', '.btn-exportar-filtrado', function(e) {
+    /* $(document).on('click', '.btn-exportar-filtrado', function (e) {
         e.preventDefault();
-        
+
         let tipo = $(this).data('tipo');
         let scope = $(this).data('scope') || 'todas'; // ✨ Capturamos el alcance (Mis cotizaciones vs Todas)
         let estatus = $('#filtro_estatus_tabla').val();
@@ -1373,53 +1454,87 @@ $(document).ready(function () {
 
         // Armamos la URL inyectando los filtros y el Scope
         let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
-        
+
         // Abrimos la descarga en una nueva pestaña
         window.open(url, '_blank');
     });
 
+    $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
+        e.preventDefault();
+
+        let tipo = $(this).attr('data-tipo') || $(this).data('tipo');
+        let scope = $(this).attr('data-scope') || $(this).data('scope') || 'todas';
+        let estatus = $('#filtro_estatus_tabla').val() || '';
+        let fecha = $('#filtro_fecha_tabla').val() || ''; // ✨ Atrapamos la fecha seleccionada
+        let categoria = window.pestanaActivaCotizaciones === 'TODOS' ? '' : window.pestanaActivaCotizaciones;
+
+        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+        let busqueda = $tablaDT.search() || '';
+
+        // Cambiamos el parámetro &mes= por &fecha=
+        let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&fecha=${encodeURIComponent(fecha)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
+        window.open(url, '_blank');
+    }); */
+
+    $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
+        e.preventDefault();
+
+        let tipo = $(this).attr('data-tipo') || $(this).data('tipo');
+        let scope = $(this).attr('data-scope') || $(this).data('scope') || 'todas';
+        let estatus = $('#filtro_estatus_tabla').val() || '';
+        let fecha = $('#filtro_fecha_tabla').val() || ''; 
+        
+        // ✨ LÓGICA BI: "Canceladas" no es un producto, es un estatus. 
+        // Vaciamos la categoría para que PHP filtre solo por el Estatus ("No autorizada")
+        let categoria = (window.pestanaActivaCotizaciones === 'TODOS' || window.pestanaActivaCotizaciones === 'CANCELADAS') ? '' : window.pestanaActivaCotizaciones;
+
+        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+        let busqueda = $tablaDT.search() || '';
+
+        let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&fecha=${encodeURIComponent(fecha)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
+        window.open(url, '_blank');
+    });
+
     // >>>============================================== 
-    // >>> MOTOR DE FILTRADO NATIVO POR MES Y ESTATUS
+    // >>> ✨ MOTOR DE FILTRADO NATIVO POR FECHA Y ESTATUS
     // >>>============================================== 
-    $(document).off('change', '#filtro_mes_tabla').on('change', '#filtro_mes_tabla', function () {
-        let mes = $(this).val(); 
+    $(document).off('change', '#filtro_fecha_tabla').on('change', '#filtro_fecha_tabla', function () {
+        let fecha = $(this).val(); // Devuelve formato "YYYY-MM-DD"
         let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
 
-        if (mes) {
-            $tablaDT.column(5).search(mes, false, true).draw();
+        if (fecha) {
+            // Buscamos coincidencia exacta de la fecha en la Columna 5
+            $tablaDT.column(5).search('^' + fecha + '$', true, false).draw();
         } else {
-            $tablaDT.column(5).search('', false, true).draw();
+            $tablaDT.column(5).search('', true, false).draw();
         }
     });
 
     $(document).off('change', '#filtro_estatus_tabla').on('change', '#filtro_estatus_tabla', function () {
         let valor = $(this).val();
-        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+        let $tablaDT = $('#tableAllCotizaciones').DataTable();
+
+        //  Si el usuario cambia el estatus manual, lo sacamos de la pestaña "Canceladas" 
+        // para que no se confundan los filtros (a menos que haya elegido "No autorizada")
+        if (window.pestanaActivaCotizaciones === 'CANCELADAS' && valor !== 'No autorizada') {
+            window.pestanaActivaCotizaciones = 'TODOS';
+            $('.tab-filtro-cat').removeClass('active').attr('aria-selected', 'false');
+            $(`.tab-filtro-cat[data-categoria="TODOS"]`).addClass('active').attr('aria-selected', 'true');
+            $tablaDT.column(4).search(''); // Limpiamos categoría
+        }
 
         if (valor) {
             $tablaDT.column(3).search('^\\s*' + valor, true, false).draw();
+            // Si seleccionó manualmente "No autorizada", activamos la pestaña de Canceladas por él
+            if (valor === 'No autorizada' && window.pestanaActivaCotizaciones !== 'CANCELADAS') {
+                window.pestanaActivaCotizaciones = 'CANCELADAS';
+                $('.tab-filtro-cat').removeClass('active').attr('aria-selected', 'false');
+                $(`.tab-filtro-cat[data-categoria="CANCELADAS"]`).addClass('active').attr('aria-selected', 'true');
+                $tablaDT.column(4).search('');
+            }
         } else {
             $tablaDT.column(3).search('', true, false).draw();
         }
     });
-
-    // >>>============================================== 
-    // >>> MOTOR DE EXPORTACIÓN INTELIGENTE
-    // >>>============================================== 
-    $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function(e) {
-        e.preventDefault();
-        
-        let tipo = $(this).attr('data-tipo');
-        let scope = $(this).attr('data-scope') || 'todas'; 
-        let estatus = $('#filtro_estatus_tabla').val() || '';
-        let mes = $('#filtro_mes_tabla').val() || ''; 
-        let categoria = window.pestanaActivaCotizaciones === 'TODOS' ? '' : window.pestanaActivaCotizaciones;
-        
-        // Atrapamos la búsqueda de la tabla que está activa
-        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
-        let busqueda = $tablaDT.search() || '';
-
-        let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&mes=${encodeURIComponent(mes)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
-        window.open(url, '_blank');
-    });
+    
 });

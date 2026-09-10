@@ -75,14 +75,49 @@ try {
 
             if ($is_multi) $sucursal_id = null;
 
+            // Verificamos si es Administrador
+            $es_admin = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin');
+
             $cotizacion_actual = editarCotizacionporID($pdo, $id_cotizacion);
-            if ($cotizacion_actual && in_array($cotizacion_actual['estatus'], ['Autorizada (información completa)', 'No autorizada'])) {
+
+            if ($cotizacion_actual) {
+                $estatus_actual = $cotizacion_actual['estatus'];
+                
+                // 🔒 REGLA 1: NADIE (ni el admin) puede editar una cotización rechazada
+                if ($estatus_actual === 'No autorizada') {
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'Operación denegada. Las cotizaciones Rechazadas son inmutables y no pueden ser modificadas.'
+                    ]);
+                    exit;
+                }
+
+                // 🔒 REGLA 2: Solo el Admin puede editar cotizaciones Autorizadas
+                if (!$es_admin && strpos($estatus_actual, 'Autorizada') !== false) {
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'Operación denegada. Solo un Administrador puede modificar cotizaciones Autorizadas.'
+                    ]);
+                    exit;
+                }
+            }
+            
+            /* // Si NO es admin, aplicamos el candado estricto
+            if (!$es_admin && $cotizacion_actual && in_array($cotizacion_actual['estatus'], ['Autorizada (información completa)', 'No autorizada'])) {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Operación denegada. Las cotizaciones marcadas como Ganadas o Perdidas no pueden ser modificadas por tu perfil.'
+                ]);
+                exit;
+            } */
+
+            /* if ($cotizacion_actual && in_array($cotizacion_actual['estatus'], ['Autorizada (información completa)', 'No autorizada'])) {
                 echo json_encode([
                     'status' => 'error',
                     'message' => 'Operación denegada. Las cotizaciones marcadas como Ganadas o Perdidas no pueden ser modificadas.'
                 ]);
                 exit;
-            }
+            } */
 
             $ids_detalles  = $_POST['id_detalle'] ?? [];
             $productos_ids = $_POST['productos'] ?? [];
@@ -156,7 +191,10 @@ try {
             $id = (int)($_POST['id_cotizacion'] ?? 0);
             $cotizacion_actual = editarCotizacionporID($pdo, $id);
 
-            if ($cotizacion_actual) {
+            // Verificamos si es Administrador
+            $es_admin = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin');
+
+            /* if ($cotizacion_actual) {
                 $estatus_actual = $cotizacion_actual['estatus'];
                 if (strpos($estatus_actual, 'Autorizada') !== false || $estatus_actual === 'No autorizada') {
                     echo json_encode([
@@ -165,6 +203,28 @@ try {
                     ]);
                     exit;
                 }
+            } */
+
+            if ($cotizacion_actual) {
+                $estatus_actual = $cotizacion_actual['estatus'];
+                // 🔒 Si NO es admin, bloqueamos la eliminación de cotizaciones cerradas
+                if (!$es_admin && (strpos($estatus_actual, 'Autorizada') !== false || $estatus_actual === 'No autorizada')) {
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'Operación denegada. No puedes eliminar una cotización que ya está Autorizada o Rechazada.'
+                    ]);
+                    exit;
+                }
+            }
+
+            // ✨ 1. Eliminación del archivo físico de la OC si existe
+            $stmtOC = $pdo->prepare("SELECT ruta_oc FROM cotizacion WHERE id_cotizacion = ?");
+            $stmtOC->execute([$id]);
+            $ruta_oc = $stmtOC->fetchColumn();
+            
+            // Si hay ruta y el archivo existe en el servidor, lo destruimos (unlink)
+            if ($ruta_oc && file_exists(__DIR__ . '/../' . $ruta_oc)) {
+                unlink(__DIR__ . '/../' . $ruta_oc);
             }
 
             borrarCotizacion($pdo, $id);

@@ -9,9 +9,13 @@ importar_usuarios.php
 admin_importar_sucursales.php
 
 #ArchivosParaPruebasLocales
-mails/mail_notificacion_admins_oc_local.php
-mails/mail_notificacion_logistica_local.php
-mails/mail_solicitud_oc_local.php
+mails/mail_notificacion_admins_oc_prod.php
+mails/mail_notificacion_logistica_prod.php
+mails/mail_solicitud_oc_prod.php
+
+mails/mail_notificacion_admins_oc.php
+mails/mail_notificacion_logistica.php
+mails/mail_solicitud_oc.php
 
 #CSV
 *.csv
