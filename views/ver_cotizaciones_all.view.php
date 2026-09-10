@@ -177,7 +177,7 @@
                                             </ul>
                                         </div>
 
-                                        <!-- 2. MES -->
+                                        <!-- 2. MES 
                                         <div class="d-flex align-items-center gap-2">
                                             <i class="feather-calendar text-primary" style="font-size: 1rem;"></i>
                                             <select id="filtro_mes_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-2" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 160px;" title="Filtrar por mes">
@@ -195,6 +195,12 @@
                                                 <option value="-11-">Noviembre</option>
                                                 <option value="-12-">Diciembre</option>
                                             </select>
+                                        </div>-->
+
+                                        <!-- 2. FECHA EXACTA -->
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="feather-calendar text-primary" style="font-size: 1rem;"></i>
+                                            <input type="date" id="filtro_fecha_tabla" class="form-control border-primary fw-bold text-dark shadow-sm px-2" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 140px;" title="Filtrar por fecha exacta">
                                         </div>
 
                                         <!-- 3. ESTATUS -->
@@ -215,7 +221,7 @@
                                 </div>
                             </div>
 
-                            <!-- ✨ TEMPLATE PESTAÑAS (Estilo Nav-Pills Corporativo Full-Width) -->
+                            <!-- TEMPLATE PESTAÑAS (Estilo Nav-Pills Corporativo Full-Width) -->
                             <template id="template-tabs-cotizaciones">
                                 <div class="px-4 pt-3 pb-3 w-100" style="display: block; clear: both;">
                                     <ul class="nav nav-pills nav-justified w-100 gap-3 mb-0" role="tablist">
@@ -234,9 +240,15 @@
                                                 <i class="feather-tool me-2"></i>Usados
                                             </button>
                                         </li>
-                                        <li class="nav-item" role="presentation">
+                                        <!-- <li class="nav-item" role="presentation">
                                             <button class="nav-link fw-bold py-2 tab-filtro-cat custom-lan-tab shadow-sm w-100" data-categoria="CALIBRACION" type="button" role="tab" aria-selected="false">
                                                 <i class="feather-thermometer me-2"></i>Calibraciones
+                                            </button>
+                                        </li> -->
+                                        <li class="nav-item" role="presentation">
+                                            <!-- Pestaña de Canceladas -->
+                                            <button class="nav-link fw-bold py-2 tab-filtro-cat custom-lan-tab shadow-sm w-100" data-categoria="CANCELADAS" type="button" role="tab" aria-selected="false">
+                                                <i class="feather-x-circle me-2 text-danger"></i>Canceladas
                                             </button>
                                         </li>
                                     </ul>
@@ -1130,6 +1142,12 @@
     <!-- <script>
         const ES_CLIENTE_PORTAL = ?php echo isset($_SESSION['id_usuario_cliente']) ? 'true' : 'false'; ?>;
     </script> -->
+
+    <!-- CIBERSEGURIDAD UI: Declaramos los permisos globales para esta vista de Administradores -->
+    <script>
+        const ES_CLIENTE_PORTAL = false;
+        const USER_PERFIL = "<?php echo $_SESSION['perfil'] ?? 'admin'; ?>";
+    </script>
 </body>
 
 </html>

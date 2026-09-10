@@ -41,56 +41,6 @@
                     <div class="col-lg-12">
                         <div class="card stretch stretch-full">
 
-                            <!-- <div class="card-header">
-                                <div class="d-flex align-items-center gap-3">
-                                    <h5 class="card-title mb-0">Lista de cotizaciones</h5>
-                                </div>
-
-                                <div class="card-header-action pe-md-3">
-                                    <div class="d-flex align-items-center justify-content-end gap-3 flex-wrap">
-                                        
-                                        !-- 1. CIBERSEGURIDAD: EXPORTAR (Oculto para Clientes B2B) --
-                                        h<php if (!isset($_SESSION['id_usuario_cliente'])): ?>
-                                        <div class="dropdown">
-                                            !-- UX: Reducido a 34px y fuente más pequeña (fs-12) --
-                                            <button class="btn fw-bold d-flex align-items-center shadow-sm dropdown-toggle text-white px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
-                                                <i class="feather-download me-2"></i> EXPORTAR
-                                            </button>
-                                            <ul class="dropdown-menu shadow-lg border-0">
-                                                <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6></li>
-                                                <li>
-                                                    !-- ✨ UX/Seguridad: Agregamos data-scope --
-                                                    <a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="mis_cotizaciones">
-                                                        <i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="mis_cotizaciones">
-                                                        <i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <php endif; ?>
-
-                                        !-- 2. FILTRO DE ESTATUS --
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="feather-filter text-primary" style="font-size: 1rem;"></i>
-                                            !-- UX: Reducido a 34px y fuente a 12px --
-                                            <select id="filtro_estatus_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-3" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; min-width: 200px;">
-                                                <option value="">Mostrar todos los estatus</option>
-                                                <option value="Guardado para aprobación">Guardado para aprobación</option>
-                                                <option value="Autorizada">Autorizadas (Aprobadas)</option>
-                                                <option value="No autorizada">No autorizadas (Rechazadas)</option>
-                                            </select>
-                                        </div>
-
-                                        !-- 3. TOTAL ACUMULADO (El JS lo inyecta aquí) --
-                                        <div id="contenedor-badge-total"></div>
-                                    </div>
-                                </div>
-                            </div> -->
-
                             <!-- ✨ CONTENEDOR MAESTRO DE CABECERA (Bloque estricto) -->
                             <div class="card-header p-0 border-bottom-0 w-100 d-block">
 
@@ -101,22 +51,24 @@
                                 </div>
 
                                 <!-- ✨ FILA 2: Botones y Filtros Equilibrados -->
-                                <div class="px-4 pb-3 border-bottom">
-                                    <div class="d-flex flex-row align-items-center gap-3 flex-nowrap w-100" style="overflow-x: auto; white-space: nowrap;">
+                                <div class="px-4 pb-3 pt-3 border-bottom">
+                                    <div class="d-flex flex-row align-items-center gap-3 flex-wrap w-100">
                                         
                                         <!-- 1. EXPORTAR (me-auto lo empuja a la izquierda, separándolo del resto) -->
-                                        <div class="dropdown me-auto">
-                                            <button class="btn fw-bold d-flex align-items-center shadow-sm dropdown-toggle text-white px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
-                                                <i class="feather-download me-2"></i> EXPORTAR
-                                            </button>
-                                            <ul class="dropdown-menu shadow-lg border-0">
-                                                <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6></li>
-                                                <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="todas"><i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial</a></li>
-                                                <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="todas"><i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio</a></li>
-                                            </ul>
-                                        </div>
+                                        <?php if (!isset($_SESSION['id_usuario_cliente'])): ?>
+                                            <div class="dropdown me-auto">
+                                                <button class="btn fw-bold d-flex align-items-center shadow-sm dropdown-toggle text-white px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
+                                                    <i class="feather-download me-2"></i> EXPORTAR
+                                                </button>
+                                                <ul class="dropdown-menu shadow-lg border-0">
+                                                    <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6></li>
+                                                    <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="mis_cotizaciones"><i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial</a></li>
+                                                    <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="mis_cotizaciones"><i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio</a></li>
+                                                </ul>
+                                            </div>
+                                        <?php endif; ?>
 
-                                        <!-- 2. MES (Ancho fijo controlado) -->
+                                        <!-- 2. MES (Ancho fijo controlado) --
                                         <div class="d-flex align-items-center gap-2">
                                             <i class="feather-calendar text-primary" style="font-size: 1rem;"></i>
                                             <select id="filtro_mes_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-2" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 160px;" title="Filtrar por mes">
@@ -134,6 +86,11 @@
                                                 <option value="-11-">Noviembre</option>
                                                 <option value="-12-">Diciembre</option>
                                             </select>
+                                        </div> -->
+
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="feather-calendar text-primary" style="font-size: 1rem;"></i>
+                                            <input type="date" id="filtro_fecha_tabla" class="form-control border-primary fw-bold text-dark shadow-sm px-2" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 140px;" title="Filtrar por fecha exacta">
                                         </div>
 
                                         <!-- 3. ESTATUS (Ancho fijo controlado) -->
@@ -173,9 +130,15 @@
                                                 <i class="feather-tool me-2"></i>Usados
                                             </button>
                                         </li>
-                                        <li class="nav-item" role="presentation">
+                                        <!-- <li class="nav-item" role="presentation">
                                             <button class="nav-link fw-bold py-2 tab-filtro-cat custom-lan-tab shadow-sm w-100" data-categoria="CALIBRACION" type="button" role="tab" aria-selected="false">
                                                 <i class="feather-thermometer me-2"></i>Calibraciones
+                                            </button>
+                                        </li> -->
+                                        <li class="nav-item" role="presentation">
+                                            <!-- Pestaña de Canceladas -->
+                                            <button class="nav-link fw-bold py-2 tab-filtro-cat custom-lan-tab shadow-sm w-100" data-categoria="CANCELADAS" type="button" role="tab" aria-selected="false">
+                                                <i class="feather-x-circle me-2 text-danger"></i>Canceladas
                                             </button>
                                         </li>
                                     </ul>

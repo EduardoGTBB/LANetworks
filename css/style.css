@@ -96,7 +96,8 @@
 
 /* ✨ UX: Elevación dinámica para el Portal B2B (Evita chocar con WhatsApp) */
 #btnBackToTop.btn-back-top-b2b {
-    bottom: 110px !important; /* Lo sube exactamente por encima del ícono de WA */
+    bottom: 110px !important;
+    /* Lo sube exactamente por encima del ícono de WA */
 }
 
 /* --- Estilos del Botón Volver Arriba (Modal) --- */
@@ -514,7 +515,7 @@ input[type="number"] {
     /* Sombra corporativa */
 }
 
-#filtro_mes_tabla:focus,
+#filtro_fecha_tabla:focus,
 #filtro_estatus_tabla:focus,
 .dataTables_filter input:focus {
     box-shadow: none !important;

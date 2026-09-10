@@ -275,7 +275,7 @@ function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
 }
 
 // [fn] Borrar cotizacion
-function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
+/* function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
 {
     try {
         //$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -297,6 +297,35 @@ function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
         return true;
     } catch (Exception $e) {
 
+        $pdo->rollBack();
+        throw new Exception("Error al borrar la base de datos: " . $e->getMessage());
+    }
+} */
+
+// [fn] Borrar cotizacion (Con limpieza en Cascada)
+function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
+{
+    try {
+        $pdo->beginTransaction();
+
+        // 1. Borramos la tabla hijo (Partidas/Equipos)
+        $sqldetalle = "DELETE FROM detalle_cotizacion WHERE Cotizacion_id = :id";
+        $stmtDet = $pdo->prepare($sqldetalle);
+        $stmtDet->execute([':id' => $id_cotizacion]);
+
+        // ✨ 2. Limpieza en cascada: Borramos todas las direcciones y datos de envío vinculados
+        $pdo->prepare("DELETE FROM domicilio_fiscal WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
+        $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
+        $pdo->prepare("DELETE FROM domicilio_envio WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
+
+        // 3. Borramos la tabla padre (La cotización principal)
+        $sqlCotizacion = "DELETE FROM cotizacion WHERE id_cotizacion = :id";
+        $stmtCot = $pdo->prepare($sqlCotizacion);
+        $stmtCot->execute([':id' => $id_cotizacion]);
+
+        $pdo->commit();
+        return true;
+    } catch (Exception $e) {
         $pdo->rollBack();
         throw new Exception("Error al borrar la base de datos: " . $e->getMessage());
     }
@@ -2094,7 +2123,7 @@ function obtenerDatosClientePorCotizacion(PDO $pdo, int $id_cotizacion): array|f
 // <<< ==============================================
 
 // [fn] Obtener datos aplanados para Exportación a Excel (Dinámico)
-function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0, string $mes = ''): array {
+function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0, string $fecha = ''): array {
     $whereClause = "1=1";
     $params = [];
 
@@ -2120,10 +2149,16 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
     } */
 
     // ✨ Filtro 3: Mes (Compatible con formato -MM-)
-    if (!empty($mes)) {
+    /* if (!empty($mes)) {
         $whereClause .= " AND c.fecha_cot LIKE :mes";
         // Envolvemos el mes en comodines (%) para que atrape "-09-" dentro de "2026-09-05"
         $params[':mes'] = '%' . $mes . '%'; 
+    } */
+
+    //✨ Filtro 3: Fecha Exacta (YYYY-MM-DD)
+    if (!empty($fecha)) {
+        $whereClause .= " AND c.fecha_cot = :fecha"; // Búsqueda rápida y exacta en MySQL
+        $params[':fecha'] = $fecha; 
     }
 
     if (!empty($busqueda)) {
