@@ -1,31 +1,31 @@
-<?php include ('views/include/head.php'); ?>
+<?php include('views/include/head.php'); ?>
 
 <body>
     <style>
         /* Convierte todo el texto de esta vista a mayúsculas */
-        .nxl-content, 
-        .nxl-content p, 
-        .nxl-content span, 
-        .nxl-content h3, 
-        .nxl-content h4, 
-        .nxl-content h5, 
-        .nxl-content h6, 
-        .nxl-content a, 
+        .nxl-content,
+        .nxl-content p,
+        .nxl-content span,
+        .nxl-content h3,
+        .nxl-content h4,
+        .nxl-content h5,
+        .nxl-content h6,
+        .nxl-content a,
         .nxl-content div {
             text-transform: uppercase !important;
         }
-        
+
         /* Asegura que lo que el usuario escriba o seleccione también se vea en mayúsculas */
-        .nxl-content input, 
-        .nxl-content textarea, 
+        .nxl-content input,
+        .nxl-content textarea,
         .nxl-content select {
             text-transform: uppercase !important;
         }
     </style>
 
-    <?php include ('views/include/sidebar.php'); ?>
-    <?php include ('views/include/header.php'); ?>
-   
+    <?php include('views/include/sidebar.php'); ?>
+    <?php include('views/include/header.php'); ?>
+
     <!--! [Start] Main Content !-->
     <!--! ================================================================ !-->
     <main class="nxl-container">
@@ -112,34 +112,217 @@
             !-- [ page-header ] end -->
 
 
-            <?php 
-                $page_title = "Inicio";
-                $breadcrumb_items = [
-                    "Inicio"
-                ];
-                
-                // ✨ Inyectamos el HTML exacto de tu fechador como una variable
-                // Asegúrate de usar las clases o IDs correctos que tu JavaScript ya está leyendo
-                $custom_header_center = '
+            <?php
+            $page_title = "Inicio";
+            $breadcrumb_items = [
+                "Inicio"
+            ];
+
+            // ✨ Inyectamos el HTML exacto de tu fechador como una variable
+            // Asegúrate de usar las clases o IDs correctos que tu JavaScript ya está leyendo
+            $custom_header_center = '
                     <div class="input-group input-group-sm bg-white border rounded shadow-sm" style="max-width: 260px;">
                         <span class="input-group-text bg-transparent border-0 text-muted pe-1"><i class="feather-calendar"></i></span>
                         <input type="text" class="form-control border-0 bg-transparent fw-bold text-dark text-center" id="rango_fechas_dashboard" value="JUL 27, 26 - AUG 25, 26" readonly style="cursor: pointer;">
                     </div>
                 ';
-                
-                include('views/include/page_header.php'); 
+
+            include('views/include/page_header.php');
             ?>
             <!-- [ Main Content ] start -->
             <div class="main-content">
-                <div class="row">
-                    <!-- [Invoices Awaiting Payment] start -->
+                <div class="row mb-4">
+
+                    <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-12 d-flex flex-column gap-3 mb-4 mb-lg-0">
+                        <!-- Tarjeta 1: Cotizaciones -->
+                        <div class="card m-0 flex-fill shadow-sm border-0 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-4">
+                                    <div class="d-flex gap-4 align-items-center">
+                                        <div class="avatar-text avatar-lg bg-gray-200">
+                                            <i class="feather-box"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fs-4 fw-bold text-dark"><span id="dash_total">0</span></div>
+                                            <h3 class="fs-13 fw-semibold text-truncate-1-line">Cotizaciones</h3>
+                                        </div>
+                                    </div>
+                                    <a href="javascript:void(0);"><i class="feather-more-vertical"></i></a>
+                                </div>
+                                <div class="pt-4">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span class="fs-12 fw-medium text-muted text-truncate">Total cotizaciones</span>
+                                        <div class="text-end text-nowrap ms-3">
+                                            <span class="fs-12 fw-bold text-dark" id="dash_total_sub">0</span>
+                                            <span class="fs-11 text-muted" id="dash_total_per">(100%)</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress mt-2 ht-3">
+                                        <div class="progress-bar bg-primary" id="dash_total_bar" role="progressbar" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta 2: Autorizadas -->
+                        <div class="card m-0 flex-fill shadow-sm border-0 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-4">
+                                    <div class="d-flex gap-4 align-items-center">
+                                        <div class="avatar-text avatar-lg bg-gray-200">
+                                            <i class="feather-briefcase text-success"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fs-4 fw-bold text-dark"><span id="dash_ganadas">0</span></div>
+                                            <h3 class="fs-13 fw-semibold text-truncate-1-line">AUTORIZADAS</h3>
+                                        </div>
+                                    </div>
+                                    <a href="javascript:void(0);"><i class="feather-more-vertical"></i></a>
+                                </div>
+                                <div class="pt-4">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span class="fs-12 fw-medium text-muted text-truncate">Cotizaciones</span>
+                                        <div class="text-end text-nowrap ms-3">
+                                            <span class="fs-12 fw-bold text-dark" id="dash_ganadas_sub">0</span>
+                                            <span class="fs-11 text-muted" id="dash_ganadas_per">(0%)</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress mt-2 ht-3">
+                                        <div class="progress-bar bg-success" id="dash_ganadas_bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta 3: Monto Total -->
+                        <div class="card m-0 flex-fill shadow-sm border-0 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-4">
+                                    <div class="d-flex gap-4 align-items-center">
+                                        <div class="avatar-text avatar-lg bg-gray-200">
+                                            <i class="feather-activity text-danger"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fs-4 fw-bold text-dark"><span id="dash_monto">$0.00</span></div>
+                                            <h3 class="fs-13 fw-semibold text-truncate-1-line">Monto Total</h3>
+                                        </div>
+                                    </div>
+                                    <a href="javascript:void(0);"><i class="feather-more-vertical"></i></a>
+                                </div>
+                                <div class="pt-4">
+                                    <div class="d-flex flex-wrap align-items-end justify-content-between mb-1">
+                                        <span class="fs-12 fw-medium text-muted me-2 mb-1">Cotizaciones del mes</span>
+                                        <div class="text-end text-nowrap mb-1">
+                                            <span class="fs-12 fw-bold text-dark" id="dash_monto_sub">$0.00</span>
+                                            <span class="fs-11 text-muted" id="dash_monto_per">(100%)</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress ht-3">
+                                        <div class="progress-bar bg-danger" id="dash_monto_bar" role="progressbar" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 🖼️ COLUMNA DERECHA: Carrusel Responsivo -->
+                    <div class="col-xxl-8 col-xl-7 col-lg-7 col-md-12">
+                        <div class="card stretch stretch-full overflow-hidden m-0 border-0 shadow-sm rounded-4 position-relative" style="min-height: 480px; height: 100%;">
+
+                            <div class="position-absolute top-0 start-0 w-100 p-4 d-flex justify-content-between align-items-center" style="z-index: 99; pointer-events: none;">
+                                <!-- Agregamos un fondo blanco translúcido para que resalte incluso en la foto negra -->
+                                <div style="background: rgba(255, 255, 255, 0.85); padding: 12px 20px; border-radius: 10px; backdrop-filter: blur(4px); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                                    <h5 class="fw-bolder text-primary mb-1" style="letter-spacing: 1px;">
+                                        <i class="feather-box me-2"></i>NUESTROS PRODUCTOS
+                                    </h5>
+                                </div>
+                            </div>
+
+                            <div id="carouselEquipos" class="carousel slide carousel-fade w-100 h-100" data-bs-ride="carousel" data-bs-interval="4000">
+
+                                <!-- Indicadores Inferiores -->
+                                <div class="carousel-indicators" style="background-color: rgba(0, 0, 0, 0.4); border-radius: 20px; padding: 6px 15px; width: fit-content; margin-left: auto; margin-right: auto; margin-bottom: 15px; backdrop-filter: blur(2px);">
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="0" class="active" aria-current="true"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="1"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="2"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="3"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="4"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="5"></button>
+                                </div>
+
+                                <!-- Contenido del Carrusel -->
+                                <div class="carousel-inner h-100 bg-white" style="border-radius: 1rem;">
+
+                                    <!-- Banner: Usamos 'contain' para que la imagen se vea completa sin hacer zoom -->
+                                    <div class="carousel-item active h-100" style="background-color: #ffffff;">
+                                        <a href="assets/pdf/elitech.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de GSP 6Pro">
+                                            <img src="assets/images/general/carrusel/gsp6pro.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="GSP 6Pro">
+                                        </a>
+                                    </div>
+
+                                    <!-- Foto de producto (fondo blanco) -->
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="assets/pdf/VA-INF151.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de VA-INF151">
+                                            <img src="assets/images/general/carrusel/VA-INF151.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 2rem;" alt="Equipo VA-INF151">
+                                        </a>
+                                    </div>
+
+                                    <!-- Banner RC 17 -->
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="assets/pdf/elitech.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de RC17">
+                                            <img src="assets/images/general/carrusel/rc17.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="RC 17">
+                                        </a>
+                                    </div>
+
+                                    <!-- Foto de producto RC4 PRO -->
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="assets/pdf/RC4PRO.jpeg" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de RC4-PRO">
+                                            <img src="assets/images/general/carrusel/RC4PRO.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 2rem;" alt="RC4 PRO">
+                                        </a>
+                                    </div>
+
+                                    <!-- Banner Tlog 100 -->
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="assets/pdf/elitech.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de tlog100">
+                                            <img src="assets/images/general/carrusel/tlog100.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Tlog 100">
+                                        </a>
+                                    </div>
+
+                                    <!-- Foto oscura: Fondo oscuro para armonizar -->
+                                    <div class="carousel-item h-100" style="background-color: #0b0c10;">
+                                        <a href="assets/pdf/VA-DT905.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de GSP 6Pro">
+                                            <img src="assets/images/general/carrusel/VA-DT905.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1.5rem;" alt="VA-DT905">
+                                        </a>
+                                    </div>
+
+                                </div>
+
+                                <!-- Controles Laterales -->
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carouselEquipos" data-bs-slide="prev" style="width: 8%;">
+                                    <div class="d-flex align-items-center justify-content-center rounded-circle shadow" style="background-color: rgba(0, 0, 0, 0.4); width: 45px; height: 45px; backdrop-filter: blur(2px); transition: 0.3s;">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
+                                    </div>
+                                    <span class="visually-hidden">Anterior</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carouselEquipos" data-bs-slide="next" style="width: 8%;">
+                                    <div class="d-flex align-items-center justify-content-center rounded-circle shadow" style="background-color: rgba(0, 0, 0, 0.4); width: 45px; height: 45px; backdrop-filter: blur(2px); transition: 0.3s;">
+                                        <span class="carousel-control-next-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
+                                    </div>
+                                    <span class="visually-hidden">Siguiente</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- //& Total Cotizaciones start --
                     <div class="col-xxl-6 col-md-6 col-lg-6">
                         <div class="card stretch stretch-full">
                             <div class="card-body">
                                 <div class="d-flex align-items-start justify-content-between mb-4">
                                     <div class="d-flex gap-4 align-items-center">
                                         <div class="avatar-text avatar-lg bg-gray-200">
-                                            <!-- <i class="feather-dollar-sign"></i> -->
+                                            !-- <i class="feather-dollar-sign"></i> --
                                             <i class="feather-box"></i>
                                         </div>
                                         <div>
@@ -163,7 +346,7 @@
                                         <div class="progress-bar bg-primary" id="dash_total_bar" role="progressbar" style="width: 100%"></div>
                                     </div>
                                 </div>
-                                <!-- <div class="pt-4">
+                                !-- <div class="pt-4">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Total cotizaciones </a>
                                         <div class="w-100 text-end">
@@ -174,13 +357,14 @@
                                     <div class="progress mt-2 ht-3">
                                         <div class="progress-bar bg-primary" id="dash_total_bar" role="progressbar" style="width: 100%"></div>
                                     </div>
-                                </div> -->
+                                </div> --
                             </div>
                         </div>
                     </div>
-                    <!-- [Invoices Awaiting Payment] end -->
-                    <!-- //& Pendientes start -->
-                    <!-- <div class="col-xxl-4 col-md-6 col-lg-4">
+                    !-- //& Total Cotizaciones end -->
+
+                <!-- //& Pendientes start -->
+                <!-- <div class="col-xxl-4 col-md-6 col-lg-4">
                         <div class="card stretch stretch-full">
                             <div class="card-body">
                                 <div class="d-flex align-items-start justify-content-between mb-4">
@@ -212,9 +396,9 @@
                             </div>
                         </div>
                     </div> -->
-                    <!-- //& Pendientes end -->
+                <!-- //& Pendientes end -->
 
-                    <!-- //& Autorizadas start -->
+                <!-- //& Autorizadas start --
                     <div class="col-xxl-6 col-md-6 col-lg-6">
                         <div class="card stretch stretch-full">
                             <div class="card-body">
@@ -244,7 +428,7 @@
                                         <div class="progress-bar bg-success" id="dash_ganadas_bar" role="progressbar" style="width: 0%"></div>
                                     </div>
                                 </div>
-                                <!-- <div class="pt-4">
+                                !-- <div class="pt-4">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line">Cotizaciones</a>
                                         <div class="w-100 text-end">
@@ -255,13 +439,14 @@
                                     <div class="progress mt-2 ht-3">
                                         <div class="progress-bar bg-success" id="dash_ganadas_bar" role="progressbar" style="width: 0%"></div>
                                     </div>
-                                </div> -->
+                                </div> --
                             </div>
                         </div>
                     </div>
-                    <!-- //& Autorizadas end -->
-                    
-                    <!-- [Conversion Rate] start -->
+                    !-- //& Autorizadas end -->
+
+
+                <!-- //& Total Mes start --
                     <div class="col-xxl-12 col-md-12 col-lg-12">
                         <div class="card stretch stretch-full">
                             <div class="card-body">
@@ -291,7 +476,7 @@
                                         <div class="progress-bar bg-danger" id="dash_monto_bar" role="progressbar" style="width: 100%"></div>
                                     </div>
                                 </div>
-                                <!-- <div class="pt-4">
+                                !-- <div class="pt-4">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="javascript:void(0);" class="fs-12 fw-medium text-muted text-truncate-1-line"> Cotizaciones del mes </a>
                                         <div class="w-50 text-end">
@@ -302,13 +487,14 @@
                                     <div class="progress mt-2 ht-3">
                                         <div class="progress-bar bg-danger" id="dash_monto_bar" role="progressbar" style="width: 100%"></div>
                                     </div>
-                                </div> -->
+                                </div> --
                             </div>
                         </div>
                     </div>
-                    <!-- [Conversion Rate] end -->
-                    
-                    <!-- [Payment Records] start -->
+                    !-- //& Total Mes  end -->
+
+                <!-- [Payment Records] start -->
+                <div class="row">
                     <div class="col-xxl-8">
                         <div class="card stretch stretch-full">
                             <div class="card-header">
@@ -349,20 +535,20 @@
                             <div class="card-footer">
                                 <div class="row g-4">
                                     <!-- <div class="col-lg-3">
-                                        <div class="p-3 border border-dashed rounded">
-                                            <div class="fs-12 text-muted mb-1">Pendientes</div>
-                                            <h6 class="fw-bold text-dark" id="dash_chart_pendientes">$0.00</h6>
-                                            <div class="progress mt-2 ht-3">
-                                                <div class="progress-bar bg-primary" id="dash_chart_pendientes_bar" role="progressbar" style="width: 0%"></div>
+                                            <div class="p-3 border border-dashed rounded">
+                                                <div class="fs-12 text-muted mb-1">Pendientes</div>
+                                                <h6 class="fw-bold text-dark" id="dash_chart_pendientes">$0.00</h6>
+                                                <div class="progress mt-2 ht-3">
+                                                    <div class="progress-bar bg-primary" id="dash_chart_pendientes_bar" role="progressbar" style="width: 0%"></div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div> -->
+                                        </div> -->
                                     <div class="col-lg-4">
                                         <div class="p-3 border border-dashed rounded">
                                             <div class="fs-12 text-muted mb-1">Autorizadas</div>
                                             <h6 class="fw-bold text-dark" id="dash_chart_ganadas">$0.00</h6>
                                             <div class="progress mt-2 ht-3">
-                                                <div class="progress-bar bg-success" id="dash_chart_ganadas_bar"role="progressbar" style="width: 0%"></div>
+                                                <div class="progress-bar bg-success" id="dash_chart_ganadas_bar" role="progressbar" style="width: 0%"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -375,7 +561,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-lg-4">
                                         <div class="p-3 border border-dashed rounded">
                                             <div class="fs-12 text-muted mb-1">Totales</div>
@@ -406,52 +592,52 @@
                             <div class="card-body" id="dash_lista_recientes">
                                 <div class="text-center text-muted py-4">Cargando datos...</div>
                                 <!-- <div class="d-flex align-items-center justify-content-between">
-                                    <div class="hstack gap-3">
-                                        <div class="avatar-image avatar-lg p-2 rounded">
-                                            <img class="img-fluid" src="assets/images/brand/shopify.png" alt="" />
+                                        <div class="hstack gap-3">
+                                            <div class="avatar-image avatar-lg p-2 rounded">
+                                                <img class="img-fluid" src="assets/images/brand/shopify.png" alt="" />
+                                            </div>
+                                            <div>
+                                                <a href="javascript:void(0);" class="d-block">Shopify eCommerce Store</a>
+                                                <span class="fs-12 text-muted">Development</span>
+                                            </div>
                                         </div>
                                         <div>
-                                            <a href="javascript:void(0);" class="d-block">Shopify eCommerce Store</a>
-                                            <span class="fs-12 text-muted">Development</span>
+                                            <div class="fw-bold text-dark">$1200</div>
+                                            <div class="fs-12 text-end">20/01/2026</div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <div class="fw-bold text-dark">$1200</div>
-                                        <div class="fs-12 text-end">20/01/2026</div>
-                                    </div>
-                                </div>
-                                <hr class="border-dashed my-3" />
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="hstack gap-3">
-                                        <div class="avatar-image avatar-lg p-2 rounded">
-                                            <img class="img-fluid" src="assets/images/brand/app-store.png" alt="" />
-                                        </div>
-                                        <div>
-                                            <a href="javascript:void(0);" class="d-block">iOS Apps Development</a>
-                                            <span class="fs-12 text-muted">Development</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold text-dark">$1450</div>
-                                        <div class="fs-12 text-end">12/02/2026</div>
-                                    </div>
-                                </div>
-                                <hr class="border-dashed my-3" />
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="hstack gap-3">
-                                        <div class="avatar-image avatar-lg p-2 rounded">
-                                            <img class="img-fluid" src="assets/images/brand/figma.png" alt="" />
+                                    <hr class="border-dashed my-3" />
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="hstack gap-3">
+                                            <div class="avatar-image avatar-lg p-2 rounded">
+                                                <img class="img-fluid" src="assets/images/brand/app-store.png" alt="" />
+                                            </div>
+                                            <div>
+                                                <a href="javascript:void(0);" class="d-block">iOS Apps Development</a>
+                                                <span class="fs-12 text-muted">Development</span>
+                                            </div>
                                         </div>
                                         <div>
-                                            <a href="javascript:void(0);" class="d-block">Figma Dashboard Design</a>
-                                            <span class="fs-12 text-muted">UI/UX Design</span>
+                                            <div class="fw-bold text-dark">$1450</div>
+                                            <div class="fs-12 text-end">12/02/2026</div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <div class="fw-bold text-dark">$1250</div>
-                                        <div class="fs-12 text-end">26/02/2026</div>
-                                    </div>
-                                </div> -->
+                                    <hr class="border-dashed my-3" />
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="hstack gap-3">
+                                            <div class="avatar-image avatar-lg p-2 rounded">
+                                                <img class="img-fluid" src="assets/images/brand/figma.png" alt="" />
+                                            </div>
+                                            <div>
+                                                <a href="javascript:void(0);" class="d-block">Figma Dashboard Design</a>
+                                                <span class="fs-12 text-muted">UI/UX Design</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">$1250</div>
+                                            <div class="fs-12 text-end">26/02/2026</div>
+                                        </div>
+                                    </div> -->
                             </div>
                             <a href="ver_cotizaciones.php" class="card-footer fs-11 fw-bold text-uppercase text-center py-4">Ver cotizaciones</a>
                         </div>
@@ -459,80 +645,81 @@
                     <!-- [Total Sales] end !-->
                     <!-- [Mini] start -->
                     <!--<div class="col-lg-4">
-                        <div class="card mb-4 stretch stretch-full">
-                            <div class="card-header d-flex align-items-center justify-content-between">
-                                <div class="d-flex gap-3 align-items-center">
-                                    <div class="avatar-text">
-                                        <i class="feather feather-star"></i>
+                            <div class="card mb-4 stretch stretch-full">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <div class="avatar-text">
+                                            <i class="feather feather-star"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-dark">Tasks Completed</div>
+                                            <div class="fs-12 text-muted">22/35 completed</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div class="fw-semibold text-dark">Tasks Completed</div>
-                                        <div class="fs-12 text-muted">22/35 completed</div>
-                                    </div>
+                                    <div class="fs-4 fw-bold text-dark">22/35</div>
                                 </div>
-                                <div class="fs-4 fw-bold text-dark">22/35</div>
-                            </div>
-                            <div class="card-body d-flex align-items-center justify-content-between gap-4">
-                                <div id="task-completed-area-chart"></div>
-                                <div class="fs-12 text-muted text-nowrap">
-                                    <span class="fw-semibold text-primary">28% more</span><br />
-                                    <span>from last week</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="card mb-4 stretch stretch-full">
-                            <div class="card-header d-flex align-items-center justify-content-between">
-                                <div class="d-flex gap-3 align-items-center">
-                                    <div class="avatar-text">
-                                        <i class="feather feather-file-text"></i>
+                                <div class="card-body d-flex align-items-center justify-content-between gap-4">
+                                    <div id="task-completed-area-chart"></div>
+                                    <div class="fs-12 text-muted text-nowrap">
+                                        <span class="fw-semibold text-primary">28% more</span><br />
+                                        <span>from last week</span>
                                     </div>
-                                    <div>
-                                        <div class="fw-semibold text-dark">New Tasks</div>
-                                        <div class="fs-12 text-muted">0/20 tasks</div>
-                                    </div>
-                                </div>
-                                <div class="fs-4 fw-bold text-dark">5/20</div>
-                            </div>
-                            <div class="card-body d-flex align-items-center justify-content-between gap-4">
-                                <div id="new-tasks-area-chart"></div>
-                                <div class="fs-12 text-muted text-nowrap">
-                                    <span class="fw-semibold text-success">34% more</span><br />
-                                    <span>from last week</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="card mb-4 stretch stretch-full">
-                            <div class="card-header d-flex align-items-center justify-content-between">
-                                <div class="d-flex gap-3 align-items-center">
-                                    <div class="avatar-text">
-                                        <i class="feather feather-airplay"></i>
+                        <div class="col-lg-4">
+                            <div class="card mb-4 stretch stretch-full">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <div class="avatar-text">
+                                            <i class="feather feather-file-text"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-dark">New Tasks</div>
+                                            <div class="fs-12 text-muted">0/20 tasks</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div class="fw-semibold text-dark">Project Done</div>
-                                        <div class="fs-12 text-muted">20/30 project</div>
-                                    </div>
+                                    <div class="fs-4 fw-bold text-dark">5/20</div>
                                 </div>
-                                <div class="fs-4 fw-bold text-dark">20/30</div>
-                            </div>
-                            <div class="card-body d-flex align-items-center justify-content-between gap-4">
-                                <div id="project-done-area-chart"></div>
-                                <div class="fs-12 text-muted text-nowrap">
-                                    <span class="fw-semibold text-danger">42% more</span><br />
-                                    <span>from last week</span>
+                                <div class="card-body d-flex align-items-center justify-content-between gap-4">
+                                    <div id="new-tasks-area-chart"></div>
+                                    <div class="fs-12 text-muted text-nowrap">
+                                        <span class="fw-semibold text-success">34% more</span><br />
+                                        <span>from last week</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>-->
+                        <div class="col-lg-4">
+                            <div class="card mb-4 stretch stretch-full">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <div class="avatar-text">
+                                            <i class="feather feather-airplay"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-dark">Project Done</div>
+                                            <div class="fs-12 text-muted">20/30 project</div>
+                                        </div>
+                                    </div>
+                                    <div class="fs-4 fw-bold text-dark">20/30</div>
+                                </div>
+                                <div class="card-body d-flex align-items-center justify-content-between gap-4">
+                                    <div id="project-done-area-chart"></div>
+                                    <div class="fs-12 text-muted text-nowrap">
+                                        <span class="fw-semibold text-danger">42% more</span><br />
+                                        <span>from last week</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>-->
                     <!-- [Mini] end !-->
                 </div>
             </div>
-            <!-- [ Main Content ] end -->
         </div>
-        
+        <!-- [ Main Content ] end -->
+        </div>
+
         <?php include('views/include/footer.php'); ?>
     </main>
     <!--! ================================================================ !-->

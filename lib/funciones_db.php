@@ -195,31 +195,12 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
 // >>> ============================================== 
 // |------Ver_cotizaciones_por_Usuario/Cliente------
 
-// [fn] Obtener las cotizaciones por Usuario Logeado
-/* function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
-{
-    $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
-                   e.razon_social, u.nombre, u.apellido_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio,
-                   pz.nombre_plaza,
-                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
-                   (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
-            FROM cotizacion c
-            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
-            LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
-            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
-            WHERE c.Usuario_admin_id = :admin_id
-            ORDER BY c.id_cotizacion DESC";
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':admin_id' => $id_user_admin]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-} */
 // [fn] Obtener las cotizaciones por Usuario Logeado (LAN)
 function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
 {
     $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
                    e.razon_social, u.nombre, u.apellido_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio,
-                   c.fecha_entrega, c.numero_recepcion, c.ruta_oc, c.oc_cargada,
+                   c.fecha_entrega, c.fecha_estimada_recepcion, c.numero_recepcion, c.ruta_oc, c.oc_cargada,
                    pz.nombre_plaza,
                    (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
@@ -234,32 +215,13 @@ function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
     $stmt->execute([':admin_id' => $id_user_admin]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
-/* // [fn] Obtener las cotizaciones por cliente
-function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
-{
-    $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
-                   e.razon_social, u.nombre, u.apellido_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio,
-                   pz.nombre_plaza,
-                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
-                   (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
-            FROM cotizacion c
-            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
-            LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
-            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
-            WHERE c.Usuario_empresa_id = :cliente_id
-            ORDER BY c.id_cotizacion DESC";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':cliente_id' => $id_usuario_cliente]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-} */
 
 // [fn] Obtener las cotizaciones por cliente
 function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
 {
     $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
                    e.razon_social, u.nombre, u.apellido_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio,
-                   c.fecha_entrega, c.numero_recepcion, c.ruta_oc, c.oc_cargada,
+                   c.fecha_entrega, c.fecha_estimada_recepcion, c.numero_recepcion, c.ruta_oc, c.oc_cargada,
                    pz.nombre_plaza,
                    (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
@@ -273,34 +235,6 @@ function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
     $stmt->execute([':cliente_id' => $id_usuario_cliente]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
-// [fn] Borrar cotizacion
-/* function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
-{
-    try {
-        //$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $pdo->beginTransaction();
-
-        // %Primero borramos la tabla hijo 
-        $sqldetalle = "DELETE FROM detalle_cotizacion WHERE Cotizacion_id = :id";
-        $stmtDet = $pdo->prepare($sqldetalle);
-        $stmtDet->execute([':id' => $id_cotizacion]);
-
-        // %Borramos la tabla padre
-        $sqlCotizacion = "DELETE FROM cotizacion WHERE id_cotizacion = :id";
-        $stmtCot = $pdo->prepare($sqlCotizacion);
-        $stmtCot->execute([':id' => $id_cotizacion]);
-
-        // %Confirmacion cambios
-        $pdo->commit();
-        return true;
-    } catch (Exception $e) {
-
-        $pdo->rollBack();
-        throw new Exception("Error al borrar la base de datos: " . $e->getMessage());
-    }
-} */
 
 // [fn] Borrar cotizacion (Con limpieza en Cascada)
 function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
@@ -516,7 +450,7 @@ function obtenerTodasLasCotizaciones(PDO $pdo): array
     $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
                    e.razon_social, u.nombre, u.apellido_pat, u.apellido_mat,
                    ua.admin_nombre, ua.admin_apell_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio, 
-                   c.fecha_entrega, c.numero_recepcion, c.ruta_oc, c.oc_cargada,
+                   c.fecha_entrega, c.fecha_estimada_recepcion, c.numero_recepcion, c.ruta_oc, c.oc_cargada,
                    pz.nombre_plaza,
                    (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
@@ -607,14 +541,15 @@ function obtenerClientesCotizacionesPendientes(PDO $pdo): array {
 }
 
 // [fn] Guardar datos logísticos (Guía y Paquetería)
-function guardarLogisticaCotizacion(PDO $pdo, int $id_cotizacion, string $paqueteria, string $numero_guia, ?string $fecha_envio): bool {
+function guardarLogisticaCotizacion(PDO $pdo, int $id_cotizacion, string $paqueteria, string $numero_guia, ?string $fecha_envio, ?string $fecha_estimada): bool {
     try {
-        $sql = "UPDATE cotizacion SET paqueteria = :paq, numero_guia = :guia, fecha_envio = :fecha WHERE id_cotizacion = :id";
+        $sql = "UPDATE cotizacion SET paqueteria = :paq, numero_guia = :guia, fecha_envio = :fecha, fecha_estimada_recepcion = :fecha_est WHERE id_cotizacion = :id";
         $stmt = $pdo->prepare($sql);
         return $stmt->execute([
             ':paq' => $paqueteria,
             ':guia' => $numero_guia,
             ':fecha' => $fecha_envio,
+            ':fecha_est' => $fecha_estimada,
             ':id' => $id_cotizacion
         ]);
     } catch (Exception $e) {
@@ -623,7 +558,7 @@ function guardarLogisticaCotizacion(PDO $pdo, int $id_cotizacion, string $paquet
     }
 }
 
-// ✨ NUEVA: Función para marcar el equipo como entregado
+// [fn] Función para marcar el equipo como entregado
 function marcarEquipoEntregado(PDO $pdo, int $id_cotizacion): bool {
     try {
         $sql = "UPDATE cotizacion SET fecha_entrega = CURDATE() WHERE id_cotizacion = :id";
@@ -635,7 +570,7 @@ function marcarEquipoEntregado(PDO $pdo, int $id_cotizacion): bool {
     }
 }
 
-// ✨ NUEVA: Función para extraer a los Administradores de LAN (Para notificación de OC)
+// [fn] Función para extraer a los Administradores de LAN (Para notificación de OC)
 function obtenerCorreosAdministradoresLAN(PDO $pdo): array {
     try {
         // Ciberseguridad: Filtramos estrictamente por perfil 'admin' y estatus 'Y'
@@ -649,7 +584,7 @@ function obtenerCorreosAdministradoresLAN(PDO $pdo): array {
     }
 }
 
-// ✨ NUEVA: Función para guardar la Orden de Compra subida por el cliente
+// [fn] Función para guardar la Orden de Compra subida por el cliente
 function guardarOrdenCompraCliente(PDO $pdo, int $id_cotizacion, string $numero_recepcion, string $ruta_oc): bool {
     try {
         $sql = "UPDATE cotizacion 
@@ -2103,7 +2038,7 @@ function obtenerCotizacionesRecientes(PDO $pdo, int $id_cliente, int $id_admin, 
 // [fn] Obtener datos del cliente para notificaciones (Logística)
 function obtenerDatosClientePorCotizacion(PDO $pdo, int $id_cotizacion): array|false {
     try {
-        $sql = "SELECT c.folio_especial, u.nombre, u.correo, e.razon_social 
+        $sql = "SELECT c.folio_especial, u.nombre, u.apellido_pat, u.correo, e.razon_social 
                 FROM cotizacion c 
                 INNER JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario 
                 INNER JOIN empresa e ON c.Empresa_id = e.id_empresa
@@ -2123,7 +2058,7 @@ function obtenerDatosClientePorCotizacion(PDO $pdo, int $id_cotizacion): array|f
 // <<< ==============================================
 
 // [fn] Obtener datos aplanados para Exportación a Excel (Dinámico)
-function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0, string $fecha = ''): array {
+function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0,string $fecha_inicio = '', string $fecha_fin = ''): array {
     $whereClause = "1=1";
     $params = [];
 
@@ -2142,23 +2077,11 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
         $params[':categoria'] = $categoria;
     }
 
-    /* //  NUEVO FILTRO CIBERSEGURO POR MES
-    if (!empty($mes)) {
-        $whereClause .= " AND c.fecha_cot LIKE :mes";
-        $params[':mes'] = $mes . '-%'; // Filtra todo lo que comience con YYYY-MM
-    } */
-
-    // ✨ Filtro 3: Mes (Compatible con formato -MM-)
-    /* if (!empty($mes)) {
-        $whereClause .= " AND c.fecha_cot LIKE :mes";
-        // Envolvemos el mes en comodines (%) para que atrape "-09-" dentro de "2026-09-05"
-        $params[':mes'] = '%' . $mes . '%'; 
-    } */
-
     //✨ Filtro 3: Fecha Exacta (YYYY-MM-DD)
-    if (!empty($fecha)) {
-        $whereClause .= " AND c.fecha_cot = :fecha"; // Búsqueda rápida y exacta en MySQL
-        $params[':fecha'] = $fecha; 
+    if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+        $whereClause .= " AND c.fecha_cot BETWEEN :f_inicio AND :f_fin"; 
+        $params[':f_inicio'] = $fecha_inicio; 
+        $params[':f_fin'] = $fecha_fin; 
     }
 
     if (!empty($busqueda)) {

@@ -42,6 +42,8 @@ function enviarCorreoFacturacionUnico(array $correos_admins, string $folio, stri
             }
         }
 
+        $nombre_seguro = htmlspecialchars($nombre_cliente, ENT_QUOTES, 'UTF-8');
+
         $mail->isHTML(true);
         $mail->Subject = "✅ OC Recibida - Cotización #{$folio} Lista para Facturar";
         
@@ -51,7 +53,8 @@ function enviarCorreoFacturacionUnico(array $correos_admins, string $folio, stri
                     <h2 style='color: #0d6efd; margin-bottom: 0;'>Documentación Completada</h2>
                 </div>
                 <p style='font-size: 16px;'>Hola <strong>Equipo Administrativo</strong>,</p>
-                <p>El cliente <strong>{$nombre_cliente}</strong> ha subido exitosamente su Orden de Compra y ha capturado su número de recepción para la cotización <strong>#{$folio}</strong>.</p>
+
+                <p>El cliente <strong>{$nombre_seguro}</strong> ha subido exitosamente su Orden de Compra y ha capturado su número de recepción para la cotización <strong>#{$folio}</strong>.</p>
                 
                 <div style='background-color: #f8f9fa; border-left: 4px solid #0d6efd; padding: 15px; margin: 20px 0;'>
                     <p style='margin: 5px 0;'><strong>Cotización:</strong> #{$folio}</p>

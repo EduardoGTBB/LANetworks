@@ -2,11 +2,6 @@
 declare(strict_types=1);
 session_start();
 
-/* // 🛡️ ZERO TRUST: Validar sesión activa (Admins y Clientes B2B permitidos)
-if (!isset($_SESSION['id_user_admin']) && !isset($_SESSION['id_usuario_cliente'])) {
-    http_response_code(403);
-    exit('Acceso denegado. Personal no autorizado.');
-} */
 // 🛡️ ZERO TRUST: Validar sesión activa (Solo Admins LAN permitidos)
 if (!isset($_SESSION['id_user_admin']) || isset($_SESSION['id_usuario_cliente'])) {
     http_response_code(403);
@@ -23,7 +18,8 @@ try {
     $scope = $_GET['scope'] ?? 'todas'; 
     $estatus = $_GET['estatus'] ?? '';
     $categoria = $_GET['categoria'] ?? '';
-    $fecha = trim($_GET['fecha'] ?? ''); // 🚀 ATRAMAPOS FECHA EXACTA
+    $fecha_inicio = trim($_GET['fecha_inicio'] ?? ''); // 🚀 RANGO INICIO
+    $fecha_fin = trim($_GET['fecha_fin'] ?? '');       // 🚀 RANGO FIN
     $busqueda = $_GET['search'] ?? '';
 
     // Ciberseguridad: Extraemos el ID exacto de la sesión
@@ -31,7 +27,7 @@ try {
     $id_cliente = isset($_SESSION['id_usuario_cliente']) ? (int)$_SESSION['id_usuario_cliente'] : 0;
     
     // 2. EXTRAER DATOS CON LOS FILTROS APLICADOS
-    $datos = obtenerReporteExportacion($pdo, $estatus, $categoria, $busqueda, $scope, $id_admin, $id_cliente, $fecha);
+    $datos = obtenerReporteExportacion($pdo, $estatus, $categoria, $busqueda, $scope, $id_admin, $id_cliente, $fecha_inicio, $fecha_fin);
     
     $fecha_actual = date('Y-m-d_H-i');
     $nombre_archivo = "Reporte_" . ucfirst($tipo_reporte) . "_LAN_{$fecha_actual}.csv";
