@@ -17,7 +17,7 @@ function enviarCorreoSolicitudOC($destinatario, $nombre_cliente, $folio) {
 
     try {
         $mail->isSMTP();
-        $mail->Host       = SMTP_HOST; // En Local pon 'sandbox.smtp.mailtrap.io' temporalmente
+        $mail->Host       = SMTP_HOST; 
         $mail->Port       = 465;
         $mail->SMTPSecure = 'ssl';
         $mail->SMTPAuth   = true;
@@ -25,17 +25,15 @@ function enviarCorreoSolicitudOC($destinatario, $nombre_cliente, $folio) {
         $mail->Password   = SMTP_PASS;
         $mail->CharSet    = 'UTF-8';
 
-        // PRUEBA LOCAL -> $correo_final = 'tu_correo@gmail.com';
-        //$correo_final = $destinatario;
+        // ====================================================================
+        // 🚀 CIBERSEGURIDAD PRODUCCIÓN: ENVIAR A CLIENTE REAL
+        // ====================================================================
+        $correo_final = $destinatario; // Desbloqueado para VPS
 
-        // ====================================================================
-        // 🛑 CIBERSEGURIDAD: MODO DE PRUEBA LOCAL ACTIVADO
-        // ====================================================================
-        // $correo_final = $destinatario; // <- COMENTADO PARA NO ALERTAR AL CLIENTE
-        $correo_final = 'eduardototo774@yahoo.com'; // <- PON AQUÍ TU CORREO DE PRUEBAS (O el de LAN)
+        $nombre_seguro = htmlspecialchars($nombre_cliente, ENT_QUOTES, 'UTF-8');
 
         $mail->setFrom(SMTP_USER, 'LA Networks SAC');
-        $mail->addAddress($correo_final, htmlspecialchars($nombre_cliente, ENT_QUOTES, 'UTF-8'));
+        $mail->addAddress($correo_final, $nombre_seguro);
 
         $mail->isHTML(true);
         $mail->Subject = "⚠️ Acción Requerida: Orden de Compra - Cotización #{$folio}";
@@ -45,7 +43,7 @@ function enviarCorreoSolicitudOC($destinatario, $nombre_cliente, $folio) {
                 <div style='text-align: center; margin-bottom: 20px;'>
                     <h2 style='color: #28a745; margin-bottom: 0;'>¡Tu equipo ha sido entregado!</h2>
                 </div>
-                <p style='font-size: 16px;'>Hola <strong>{$nombre_cliente}</strong>,</p>
+                <p style='font-size: 16px;'>Hola <strong>{$nombre_seguro}</strong>,</p>
                 <p>Nuestro sistema indica que los equipos correspondientes a la cotización <strong>#{$folio}</strong> han sido recibidos exitosamente en tus instalaciones.</p>
                 
                 <div style='background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;'>

@@ -235,14 +235,15 @@ try {
             $paqueteria = trim($_POST['paqueteria'] ?? '');
             $numero_guia = trim($_POST['numero_guia'] ?? '');
             $fecha_envio = !empty($_POST['fecha_envio']) ? $_POST['fecha_envio'] : null;
+            $fecha_estimada = !empty($_POST['fecha_estimada']) ? $_POST['fecha_estimada'] : null;
 
-            if ($id_cotizacion === 0 || empty($paqueteria) || empty($numero_guia) || empty($fecha_envio)) {
+            if ($id_cotizacion === 0 || empty($paqueteria) || empty($numero_guia) || empty($fecha_envio) || empty($fecha_estimada)) {
                 echo json_encode(['status' => 'error', 'message' => 'Faltan datos de envío.']);
                 exit;
             }
 
             // A. Guardamos la logística en Base de Datos
-            $guardado = guardarLogisticaCotizacion($pdo, $id_cotizacion, $paqueteria, $numero_guia, $fecha_envio);
+            $guardado = guardarLogisticaCotizacion($pdo, $id_cotizacion, $paqueteria, $numero_guia, $fecha_envio, $fecha_estimada);
 
             if ($guardado) {
                 // B. Extraemos los datos del cliente
@@ -250,6 +251,21 @@ try {
 
                 if ($datosCliente && !empty($datosCliente['correo'])) {
                     $folio = $datosCliente['folio_especial'] ? $datosCliente['folio_especial'] : str_pad((string)$id_cotizacion, 5, '0', STR_PAD_LEFT);
+
+                    // LÓGICA DE NOMBRES
+                    $nombre_pila = trim($datosCliente['nombre']);
+                    $apellido_pat = trim($datosCliente['apellido_pat'] ?? '');
+
+                    // Dividimos el nombre por espacios para contar cuántos tiene
+                    $palabras_nombre = array_filter(explode(' ', $nombre_pila));
+
+                    if (count($palabras_nombre) >= 2) {
+                        // Tiene 2 o más nombres (Ej: "MARIA LUISA")
+                        $nombre_saludo = $nombre_pila;
+                    } else {
+                        // Tiene 1 solo nombre (Ej: "ARTURO"), le sumamos el apellido paterno
+                        $nombre_saludo = $nombre_pila . ' ' . $apellido_pat;
+                    }
                     
                     // C. Inyectamos la capa de correos (Aislada por seguridad MVC)
                     $ruta_mail = __DIR__ . '/../mails/mail_notificacion_logistica.php';
@@ -258,11 +274,13 @@ try {
                         require_once $ruta_mail;
                         enviarCorreoLogistica(
                             $datosCliente['correo'], 
-                            $datosCliente['nombre'], 
+                            /* $datosCliente['nombre'], */ 
+                            $nombre_saludo,
                             $folio, 
                             $paqueteria, 
                             $numero_guia, 
-                            $fecha_envio
+                            $fecha_envio,
+                            $fecha_estimada
                         );
                     } else {
                         error_log("Ciberseguridad: No se encontró el archivo de correo: " . $ruta_mail);
@@ -323,13 +341,20 @@ try {
                 
                 if ($datosCliente && !empty($datosCliente['correo'])) {
                     $folio = $datosCliente['folio_especial'] ? $datosCliente['folio_especial'] : str_pad((string)$id_cotizacion, 5, '0', STR_PAD_LEFT);
+
+                    $nombre_pila = trim($datosCliente['nombre']);
+                    $apellido_pat = trim($datosCliente['apellido_pat'] ?? '');
+                    $palabras_nombre = array_filter(explode(' ', $nombre_pila));
+
+                    $nombre_saludo = (count($palabras_nombre) >= 2) ? $nombre_pila : trim($nombre_pila . ' ' . $apellido_pat);
+                    $fecha_est = $datosCliente['fecha_estimada_recepcion'] ?? '';
                     
                     // C. Inyectamos motor de correos de forma segura (MVC)
                     $ruta_mail = __DIR__ . '/../mails/mail_solicitud_oc.php';
                     
                     if (file_exists($ruta_mail)) {
                         require_once $ruta_mail;
-                        enviarCorreoSolicitudOC($datosCliente['correo'], $datosCliente['nombre'], $folio);
+                        enviarCorreoSolicitudOC($datosCliente['correo'], $nombre_saludo, $folio);
                     } else {
                         error_log("Ciberseguridad: No se encontró el mail: " . $ruta_mail);
                     }
@@ -427,7 +452,17 @@ try {
                 if ($es_primera_carga) {
                     $datosCliente = obtenerDatosClientePorCotizacion($pdo, $id_cotizacion);
                     $folio_real = ($datosCliente && !empty($datosCliente['folio_especial'])) ? $datosCliente['folio_especial'] : str_pad((string)$id_cotizacion, 5, '0', STR_PAD_LEFT);
-                    $nombre_cliente_real = ($datosCliente && !empty($datosCliente['nombre'])) ? $datosCliente['nombre'] : ($_SESSION['nombre'] ?? 'Cliente');
+                    /* $nombre_cliente_real = ($datosCliente && !empty($datosCliente['nombre'])) ? $datosCliente['nombre'] : ($_SESSION['nombre'] ?? 'Cliente'); */
+
+                    // ✨ LÓGICA INTELIGENTE DE NOMBRES
+                    if ($datosCliente && !empty($datosCliente['nombre'])) {
+                        $nombre_pila = trim($datosCliente['nombre']);
+                        $apellido_pat = trim($datosCliente['apellido_pat'] ?? '');
+                        $palabras_nombre = array_filter(explode(' ', $nombre_pila));
+                        $nombre_cliente_real = (count($palabras_nombre) >= 2) ? $nombre_pila : trim($nombre_pila . ' ' . $apellido_pat);
+                    } else {
+                        $nombre_cliente_real = $_SESSION['nombre'] ?? 'Cliente';
+                    }
 
                     $admins = obtenerCorreosAdministradoresLAN($pdo);
                     

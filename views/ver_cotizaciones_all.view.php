@@ -197,10 +197,58 @@
                                             </select>
                                         </div>-->
 
-                                        <!-- 2. FECHA EXACTA -->
+                                        <!-- 2. FECHA EXACTA 
                                         <div class="d-flex align-items-center gap-2">
                                             <i class="feather-calendar text-primary" style="font-size: 1rem;"></i>
                                             <input type="date" id="filtro_fecha_tabla" class="form-control border-primary fw-bold text-dark shadow-sm px-2" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 140px;" title="Filtrar por fecha exacta">
+                                        </div>-->
+
+                                        <!-- 2. FILTRO DE FECHAS AVANZADO (ESTÁTICO Y DIRECTO) -->
+                                        <div class="dropdown">
+                                            <!-- Botón principal Estático -->
+                                            <button class="btn btn-light bg-white border-primary fw-bold text-dark shadow-sm d-flex align-items-center gap-2 px-3" type="button" id="btnFiltroPeriodo" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b;">
+                                                <i class="feather-calendar text-primary"></i> 
+                                                <span id="texto_periodo">Periodo: Todos</span>
+                                                <i class="feather-chevron-down ms-1 text-muted"></i>
+                                            </button>
+                                            
+                                            <!-- Menú desplegable ampliado (440px) -->
+                                            <div class="dropdown-menu shadow-lg border-0 p-4" style="min-width: 440px; border-radius: 12px; z-index: 1060; right: auto;">
+                                                
+                                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                                    <h6 class="text-dark fw-bolder mb-0" style="font-size: 15px; letter-spacing: 0.5px;">Filtrar por:</h6>
+                                                    <!-- ✨ Botón Limpiar (Nuclear CSS: Sin salto ni sombra) -->
+                                                    <button type="button" class="btn btn-sm fw-bold text-primary border px-2" id="btn_limpiar_periodo" style="font-size: 11px; background-color: #f8f9fa; transition: none !important; transform: none !important; box-shadow: none !important;">
+                                                        <i class="feather-refresh-cw me-1"></i>LIMPIAR
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Opcion 1: Mes Específico (Sin animaciones) -->
+                                                <div class="form-check mb-4 d-flex align-items-center ps-4">
+                                                    <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_mes" value="mes" checked style="cursor:pointer; width: 18px; height: 18px; margin-left: -1.5rem;">
+                                                    <label class="form-check-label text-dark fw-bold mb-0 flex-grow-1 fs-13" style="cursor:pointer;" for="radio_mes">Mes específico</label>
+                                                    <input type="month" class="form-control form-control-sm fw-bold" id="input_mes_filtro" style="width: 160px; cursor:pointer; color: #495057; border: 1px solid #ced4da; height: 38px;">
+                                                </div>
+                                                
+                                                <!-- Opcion 2: Rango manual -->
+                                                <div class="form-check mb-3 d-flex align-items-center ps-4">
+                                                    <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_rango" value="rango" style="cursor:pointer; width: 18px; height: 18px; margin-left: -1.5rem;">
+                                                    <label class="form-check-label text-dark fw-bold mb-0 fs-13" style="cursor:pointer;" for="radio_rango">Rango de fechas</label>
+                                                </div>
+                                                
+                                                <!-- Entradas de rango (Sin animaciones) -->
+                                                <div class="d-flex align-items-center justify-content-between mb-4 ps-4 pe-2 gap-3">
+                                                    <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2" id="fecha_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; width: 160px; height: 38px;">
+                                                    <span class="text-muted fw-bold">a</span>
+                                                    <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2" id="fecha_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; width: 160px; height: 38px;">
+                                                </div>
+                                                
+                                                <!-- Botones de Acción (Estáticos) -->
+                                                <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
+                                                    <button type="button" class="btn btn-sm btn-light fw-bold text-muted border px-4 py-2" id="btn_cancelar_periodo" style="background-color: #f8f9fa;">CANCELAR</button>
+                                                    <button type="button" class="btn btn-sm fw-bold text-white px-4 py-2" id="btn_aceptar_periodo" style="background-color: #0d6efd; border: 1px solid #0d6efd;">APLICAR</button>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <!-- 3. ESTATUS -->
@@ -555,9 +603,15 @@
                             <option value="Otra">Otra...</option>
                         </select>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label text-dark fw-bold">Fecha de Envío <span class="text-danger">*</span></label>
                         <input type="date" class="form-control border-primary fw-bold" name="fecha_envio" id="logistica_fecha" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-bold">Estimada de Recepción</label>
+                        <input type="date" class="form-control border-primary fw-bold" name="fecha_estimada" id="logistica_fecha_estimada" required>
                     </div>
 
                     <div class="mb-4">

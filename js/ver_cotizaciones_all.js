@@ -145,13 +145,22 @@ $(document).ready(function () {
 
                     // 2. LOGÍSTICA INTELIGENTE
                     let btnLogisticaRapida = '';
+                    let fechaEstimadaVal = cot.fecha_estimada_recepcion ? cot.fecha_estimada_recepcion : '';
+
                     if (estatusTexto === 'Autorizada (información completa)') {
+                        if (!cot.numero_guia || cot.numero_guia.trim() === '') {
+                            btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-danger text-danger border border-danger btn-logistica-modal" style="animation: pulse 1.5s infinite;" data-id="${cot.id_cotizacion}" data-paqueteria="" data-guia="" data-fecha="" data-fecha-est="${fechaEstimadaVal}"><abbr title="¡URGENTE! Añadir Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
+                        } else {
+                            btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-success text-success border border-success border-opacity-25 btn-logistica-modal" data-id="${cot.id_cotizacion}" data-paqueteria="${cot.paqueteria}" data-guia="${cot.numero_guia}" data-fecha="${cot.fecha_envio}" data-fecha-est="${fechaEstimadaVal}"><abbr title="Ver/Actualizar Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
+                        }
+                    }
+                    /* if (estatusTexto === 'Autorizada (información completa)') {
                         if (!cot.numero_guia || cot.numero_guia.trim() === '') {
                             btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-danger text-danger border border-danger btn-logistica-modal" style="animation: pulse 1.5s infinite;" data-id="${cot.id_cotizacion}" data-paqueteria="" data-guia="" data-fecha=""><abbr title="¡URGENTE! Añadir Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
                         } else {
                             btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-success text-success border border-success border-opacity-25 btn-logistica-modal" data-id="${cot.id_cotizacion}" data-paqueteria="${cot.paqueteria}" data-guia="${cot.numero_guia}" data-fecha="${cot.fecha_envio}"><abbr title="Ver/Actualizar Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
                         }
-                    }
+                    } */
 
                     // 3. BOTÓN EQUIPO ENTREGADO / ESTATUS DE OC (Fase 1)
 
@@ -1198,6 +1207,7 @@ $(document).ready(function () {
         let paq = $(this).data('paqueteria');
         let guia = $(this).data('guia');
         let fecha = $(this).data('fecha');
+        let fecha_est = $(this).data('fecha-est');
 
         // 2. Limpiamos el formulario antes de abrirlo
         $('#formLogistica')[0].reset();
@@ -1213,6 +1223,11 @@ $(document).ready(function () {
         } else {
             let hoy = new Date().toISOString().split('T')[0];
             $('#logistica_fecha').val(hoy);
+        }
+
+        // ✨ UX: Inyectamos la fecha estimada si existe
+        if (fecha_est) {
+            $('#logistica_fecha_estimada').val(fecha_est);
         }
 
         // 4. Mostramos el modal
@@ -1442,41 +1457,9 @@ $(document).ready(function () {
     
     // >>>============================================== 
     // >>>  MOTOR DE EXPORTACIÓN INTELIGENTE
-    // >>>============================================== 
-    /* $(document).on('click', '.btn-exportar-filtrado', function (e) {
-        e.preventDefault();
+    // >>>==============================================
 
-        let tipo = $(this).data('tipo');
-        let scope = $(this).data('scope') || 'todas'; // ✨ Capturamos el alcance (Mis cotizaciones vs Todas)
-        let estatus = $('#filtro_estatus_tabla').val();
-        let categoria = window.pestanaActivaCotizaciones === 'TODOS' ? '' : window.pestanaActivaCotizaciones;
-        let busqueda = $('#tableMisCotizaciones').DataTable().search();
-
-        // Armamos la URL inyectando los filtros y el Scope
-        let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
-
-        // Abrimos la descarga en una nueva pestaña
-        window.open(url, '_blank');
-    });
-
-    $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
-        e.preventDefault();
-
-        let tipo = $(this).attr('data-tipo') || $(this).data('tipo');
-        let scope = $(this).attr('data-scope') || $(this).data('scope') || 'todas';
-        let estatus = $('#filtro_estatus_tabla').val() || '';
-        let fecha = $('#filtro_fecha_tabla').val() || ''; // ✨ Atrapamos la fecha seleccionada
-        let categoria = window.pestanaActivaCotizaciones === 'TODOS' ? '' : window.pestanaActivaCotizaciones;
-
-        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
-        let busqueda = $tablaDT.search() || '';
-
-        // Cambiamos el parámetro &mes= por &fecha=
-        let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&fecha=${encodeURIComponent(fecha)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
-        window.open(url, '_blank');
-    }); */
-
-    $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
+    /* $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
         e.preventDefault();
 
         let tipo = $(this).attr('data-tipo') || $(this).data('tipo');
@@ -1493,12 +1476,12 @@ $(document).ready(function () {
 
         let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&fecha=${encodeURIComponent(fecha)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
         window.open(url, '_blank');
-    });
+    }); */
 
     // >>>============================================== 
     // >>> ✨ MOTOR DE FILTRADO NATIVO POR FECHA Y ESTATUS
     // >>>============================================== 
-    $(document).off('change', '#filtro_fecha_tabla').on('change', '#filtro_fecha_tabla', function () {
+   /*  $(document).off('change', '#filtro_fecha_tabla').on('change', '#filtro_fecha_tabla', function () {
         let fecha = $(this).val(); // Devuelve formato "YYYY-MM-DD"
         let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
 
@@ -1535,6 +1518,158 @@ $(document).ready(function () {
         } else {
             $tablaDT.column(3).search('', true, false).draw();
         }
+    }); */
+
+    // >>>============================================== 
+    // >>> ✨ MOTOR AVANZADO DE RANGOS DE FECHA Y ESTATUS
+    // >>>============================================== 
+    
+    // 1. Variables globales para retener el filtro
+    window.filtroFechaInicio = '';
+    window.filtroFechaFin = '';
+
+    // 2. Lógica interactiva del Menú Dropdown
+    function toggleFechas() {
+        if ($('#radio_rango').is(':checked')) {
+            $('#fecha_inicio_filtro, #fecha_fin_filtro').prop('disabled', false).removeClass('bg-light border-0').css({'cursor': 'pointer', 'color': '#0d6efd', 'border': '1px solid #0d6efd'});
+            $('#input_mes_filtro').prop('disabled', true).removeClass('shadow-sm').addClass('bg-light border-0').css({'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none'});
+        } else {
+            $('#fecha_inicio_filtro, #fecha_fin_filtro').prop('disabled', true).removeClass('bg-white').addClass('bg-light border-0').css({'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none'});
+            $('#input_mes_filtro').prop('disabled', false).removeClass('bg-light border-0').addClass('shadow-sm').css({'cursor': 'pointer', 'color': '#495057', 'border': '1px solid #ced4da'});
+        }
+    }
+
+    $('input[name="tipo_filtro_fecha"]').on('change', toggleFechas);
+    toggleFechas();
+
+    let hoyDate = new Date();
+    let mesActualFormato = hoyDate.getFullYear() + '-' + String(hoyDate.getMonth() + 1).padStart(2, '0');
+    $('#input_mes_filtro').val(mesActualFormato);
+
+    $('#btn_cancelar_periodo').on('click', function() {
+        $('#btnFiltroPeriodo').dropdown('toggle'); // Cierra el menú
+    });
+
+    // ✨ NUEVA FUNCIÓN: LIMPIAR FILTRO
+    $('#btn_limpiar_periodo').on('click', function() {
+        window.filtroFechaInicio = '';
+        window.filtroFechaFin = '';
+        $('#texto_periodo').text('Periodo: Todos');
+        $('#btnFiltroPeriodo').dropdown('toggle');
+        
+        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+        $tablaDT.draw();
+    });
+
+    $('#btn_aceptar_periodo').on('click', function() {
+        let tipo = $('input[name="tipo_filtro_fecha"]:checked').val();
+        let textoFiltro = 'Periodo: Todos';
+        
+        if (tipo === 'mes') {
+            let valMes = $('#input_mes_filtro').val(); 
+            
+            if (valMes) {
+                let parts = valMes.split('-');
+                let y = parseInt(parts[0]);
+                let m = parseInt(parts[1]); 
+                
+                window.filtroFechaInicio = `${y}-${String(m).padStart(2, '0')}-01`;
+                
+                let ultimoDia = new Date(y, m, 0).getDate();
+                window.filtroFechaFin = `${y}-${String(m).padStart(2, '0')}-${ultimoDia}`;
+                
+                let dateObj = new Date(y, m - 1, 1);
+                let mesTexto = dateObj.toLocaleString('es-ES', {month:'short'}).toUpperCase();
+                textoFiltro = `MES: ${mesTexto} ${y}`;
+            } else {
+                window.filtroFechaInicio = '';
+                window.filtroFechaFin = '';
+            }
+        } else {
+            let inicio = $('#fecha_inicio_filtro').val();
+            let fin = $('#fecha_fin_filtro').val();
+            
+            if (inicio && fin) {
+                if(inicio > fin) { alert("La fecha de inicio no puede ser mayor a la fecha final."); return; }
+                window.filtroFechaInicio = inicio;
+                window.filtroFechaFin = fin;
+                
+                let iniArr = inicio.split('-');
+                let finArr = fin.split('-');
+                textoFiltro = `RANGO: ${iniArr[2]}/${iniArr[1]}/${iniArr[0].slice(2)} AL ${finArr[2]}/${finArr[1]}/${finArr[0].slice(2)}`;
+            } else {
+                alert("Por favor selecciona ambas fechas.");
+                return;
+            }
+        }
+        
+        $('#texto_periodo').text(textoFiltro);
+        $('#btnFiltroPeriodo').dropdown('toggle');
+        
+        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+        $tablaDT.draw();
+    });
+
+   // Extensión de Búsqueda Personalizada en DataTables
+    $.fn.dataTable.ext.search.push(
+        function( settings, data, dataIndex ) {
+            if (!window.filtroFechaInicio || !window.filtroFechaFin) return true; 
+            
+            let fechaFilaStr = data[5]; 
+            if(!fechaFilaStr) return true;
+            
+            return (fechaFilaStr >= window.filtroFechaInicio && fechaFilaStr <= window.filtroFechaFin);
+        }
+    );
+
+    // Estatus
+    $(document).off('change', '#filtro_estatus_tabla').on('change', '#filtro_estatus_tabla', function () {
+        let valor = $(this).val();
+        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+
+        if (window.pestanaActivaCotizaciones === 'CANCELADAS' && valor !== 'No autorizada') {
+            window.pestanaActivaCotizaciones = 'TODOS';
+            $('.tab-filtro-cat').removeClass('active').attr('aria-selected', 'false');
+            $(`.tab-filtro-cat[data-categoria="TODOS"]`).addClass('active').attr('aria-selected', 'true');
+            $tablaDT.column(4).search('');
+        }
+
+        if (valor) {
+            $tablaDT.column(3).search('^\\s*' + valor, true, false).draw();
+            if (valor === 'No autorizada' && window.pestanaActivaCotizaciones !== 'CANCELADAS') {
+                window.pestanaActivaCotizaciones = 'CANCELADAS';
+                $('.tab-filtro-cat').removeClass('active').attr('aria-selected', 'false');
+                $(`.tab-filtro-cat[data-categoria="CANCELADAS"]`).addClass('active').attr('aria-selected', 'true');
+                $tablaDT.column(4).search('');
+            }
+        } else {
+            $tablaDT.column(3).search('', true, false).draw();
+        }
+    });
+
+    // >>>============================================== 
+    // >>> ✨ MOTOR DE EXPORTACIÓN INTELIGENTE CON RANGOS
+    // >>>============================================== 
+    $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
+        e.preventDefault();
+        
+        if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL === true) {
+            alert("No tienes los privilegios necesarios para exportar reportes.");
+            return false;
+        }
+
+        let tipo = $(this).attr('data-tipo') || $(this).data('tipo');
+        let scope = $(this).attr('data-scope') || $(this).data('scope') || 'todas';
+        let estatus = $('#filtro_estatus_tabla').val() || '';
+        let f_inicio = window.filtroFechaInicio || ''; 
+        let f_fin = window.filtroFechaFin || ''; 
+        let categoria = (window.pestanaActivaCotizaciones === 'TODOS' || window.pestanaActivaCotizaciones === 'CANCELADAS') ? '' : window.pestanaActivaCotizaciones;
+
+        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+        let busqueda = $tablaDT.search() || '';
+
+        let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&fecha_inicio=${encodeURIComponent(f_inicio)}&fecha_fin=${encodeURIComponent(f_fin)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
+        window.open(url, '_blank');
     });
     
 });
