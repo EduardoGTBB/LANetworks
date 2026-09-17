@@ -230,9 +230,9 @@
                         <div class="card stretch stretch-full overflow-hidden m-0 border-0 shadow-sm rounded-4 position-relative" style="min-height: 480px; height: 100%;">
 
                             <div class="position-absolute top-0 start-0 w-100 p-4 d-flex justify-content-between align-items-center" style="z-index: 99; pointer-events: none;">
-                                <!-- Agregamos un fondo blanco translúcido para que resalte incluso en la foto negra -->
-                                <div style="background: rgba(255, 255, 255, 0.85); padding: 12px 20px; border-radius: 10px; backdrop-filter: blur(4px); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                                    <h5 class="fw-bolder text-primary mb-1" style="letter-spacing: 1px;">
+                                <div>
+                                    <!-- Le asignamos un ID y una transición suave de color -->
+                                    <h5 id="titulo_productos_carrusel" class="fw-bolder text-dark mb-1" style="letter-spacing: 1px; transition: color 0.4s ease;">
                                         <i class="feather-box me-2"></i>NUESTROS PRODUCTOS
                                     </h5>
                                 </div>
@@ -289,7 +289,7 @@
                                     </div>
 
                                     <!-- Foto oscura: Fondo oscuro para armonizar -->
-                                    <div class="carousel-item h-100" style="background-color: #0b0c10;">
+                                    <div class="carousel-item h-100" style="background-color: #ffff;">
                                         <a href="assets/pdf/VA-DT905.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de GSP 6Pro">
                                             <img src="assets/images/general/carrusel/VA-DT905.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1.5rem;" alt="VA-DT905">
                                         </a>
@@ -908,7 +908,7 @@
     <!--! END: Vendors JS !-->
     <!--! BEGIN: Apps Init  !-->
     <script src="assets/js/common-init.min.js"></script>
-    <script src="assets/js/dashboard-init.min.js"></script>
+    <!-- <script src="assets/js/dashboard-init.min.js"></script> -->
     <!--! END: Apps Init !-->
     <!--! BEGIN: Theme Customizer  !-->
     <!-- <script src="assets/js/theme-customizer-init.min.js"></script> -->

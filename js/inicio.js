@@ -377,7 +377,7 @@ $(document).ready(function () {
                         chart.render();
                     } */
 
-                    // --------------------------------------------------
+                    /* // --------------------------------------------------
                     // ✨ 6. GRÁFICA PRINCIPAL: BARRA TIPO DOMO
                     // --------------------------------------------------
                     let graficaDatos = res.grafica;
@@ -437,6 +437,74 @@ $(document).ready(function () {
                         };
                         var chart = new ApexCharts(document.querySelector("#payment-records-chart"), options);
                         chart.render();
+                    } */
+                    // --------------------------------------------------
+                    // ✨ 6. GRÁFICA PRINCIPAL: BARRA TIPO DOMO (RE-ESTRUCTURADA)
+                    // --------------------------------------------------
+                    let graficaDatos = res.grafica;
+                    let labels = [];
+                    let values = [];
+
+                    graficaDatos.forEach(item => {
+                        labels.push(item.mes_texto.toUpperCase()); 
+                        values.push(parseFloat(item.total));
+                    });
+
+                    // 🛡️ LIMPIEZA ABSOLUTA DE MEMORIA (Previene el parpadeo de datos fantasma)
+                    if (typeof window.graficaPrincipalDomo !== 'undefined') {
+                        window.graficaPrincipalDomo.destroy(); // Destruye el objeto previo
+                    }
+                    $('#payment-records-chart').empty(); // Limpia el DOM
+
+                    if (values.length === 0) {
+                        $('#payment-records-chart').html('<div class="text-center text-muted py-5 mt-5">No hay historial financiero reciente.</div>');
+                    } else {
+                        var options = {
+                            chart: { 
+                                type: 'bar', 
+                                height: 300, 
+                                width: '100%', 
+                                toolbar: { show: false },
+                                animations: { enabled: true, easing: 'easeinout', speed: 800 }
+                            },
+                            series: [{ name: 'Ingresos MXN', data: values }],
+                            xaxis: { 
+                                categories: labels,
+                                labels: { style: { colors: '#a1aab2' } },
+                                axisBorder: { show: false },
+                                axisTicks: { show: false }
+                            },
+                            colors: ['#28395a'], 
+                            plotOptions: {
+                                bar: {
+                                    horizontal: false,
+                                    columnWidth: '25%', 
+                                    borderRadius: 12,   
+                                    borderRadiusApplication: 'end', 
+                                    endingShape: 'rounded'
+                                }
+                            },
+                            dataLabels: { enabled: false },
+                            grid: { 
+                                borderColor: 'rgba(0,0,0,0.05)', 
+                                strokeDashArray: 4, 
+                                padding: { top: 0, right: 0, bottom: 0, left: 10 } 
+                            },
+                            yaxis: {
+                                labels: {
+                                    style: { colors: '#a1aab2' },
+                                    formatter: function (value) { return formatoMoneda.format(value).replace('.00', ''); }
+                                }
+                            },
+                            tooltip: {
+                                theme: 'light',
+                                y: { formatter: function (value) { return formatoMoneda.format(value); } }
+                            }
+                        };
+                        
+                        // Guardamos y renderizamos limpiamente
+                        window.graficaPrincipalDomo = new ApexCharts(document.querySelector("#payment-records-chart"), options);
+                        window.graficaPrincipalDomo.render();
                     }
 
                     // --------------------------------------------------

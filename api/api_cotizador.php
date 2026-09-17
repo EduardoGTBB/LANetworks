@@ -59,7 +59,7 @@ try {
 
         if ($es_cliente) {
             // Ignoramos completamente lo que mande el POST y forzamos por backend
-            $tipo_precio = 'Público';
+            $tipo_precio = 'Farmacia';
         } else {
             // Si es un ejecutivo (admin), sanitizamos la entrada
             $tipo_precio = trim(filter_input(INPUT_POST, 'tipo_precio', FILTER_SANITIZE_SPECIAL_CHARS) ?? '');

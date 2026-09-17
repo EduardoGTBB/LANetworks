@@ -268,7 +268,7 @@ try {
                     }
                     
                     // C. Inyectamos la capa de correos (Aislada por seguridad MVC)
-                    $ruta_mail = __DIR__ . '/../mails/mail_notificacion_logistica.php';
+                    $ruta_mail = __DIR__ . '/../mails/mail_notificacion_logistica_local.php';
                     
                     if (file_exists($ruta_mail)) {
                         require_once $ruta_mail;
@@ -350,7 +350,7 @@ try {
                     $fecha_est = $datosCliente['fecha_estimada_recepcion'] ?? '';
                     
                     // C. Inyectamos motor de correos de forma segura (MVC)
-                    $ruta_mail = __DIR__ . '/../mails/mail_solicitud_oc.php';
+                    $ruta_mail = __DIR__ . '/../mails/mail_solicitud_oc_local.php';
                     
                     if (file_exists($ruta_mail)) {
                         require_once $ruta_mail;
@@ -467,7 +467,7 @@ try {
                     $admins = obtenerCorreosAdministradoresLAN($pdo);
                     
                     if (!empty($admins)) {
-                        $ruta_mail = __DIR__ . '/../mails/mail_notificacion_admins_oc.php';
+                        $ruta_mail = __DIR__ . '/../mails/mail_notificacion_admins_oc_local.php';
                         if (file_exists($ruta_mail)) {
                             require_once $ruta_mail;
                             

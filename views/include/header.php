@@ -3,7 +3,7 @@
 <header class="nxl-header">
     <!-- ✨ Usamos d-flex, align-items-center y h-100 para forzar el centrado vertical perfecto -->
     <div class="header-wrapper d-flex align-items-center justify-content-between w-100 px-3" style="height: 100%;">
-        
+
         <!--! [Start] Header Left !-->
         <div class="header-left d-flex align-items-center gap-3">
             <!--! [Start] nxl-head-mobile-toggler !-->
@@ -14,7 +14,7 @@
                     </div>
                 </div>
             </a>
-            
+
             <!--! [Start] nxl-navigation-toggle !-->
             <div class="nxl-navigation-toggle border-end pe-3">
                 <a href="javascript:void(0);" id="menu-mini-button">
@@ -41,14 +41,14 @@
                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" data-bs-auto-close="outside" class="d-flex align-items-center gap-2 bg-light p-1 pe-3 shadow-sm border border-light-subtle" style="border-radius: 50px; text-decoration: none; transition: all 0.2s;">
                     <img src="assets/images/avatar/<?php echo htmlspecialchars($_SESSION['foto_perfil'] ?? 'user.png'); ?>" alt="user-image" class="rounded-circle border border-white shadow-sm" style="width: 35px; height: 35px; object-fit: cover;" />
                     <span class="text-dark fw-bolder fs-12 text-uppercase">
-                        <?php 
-                            $nombre_completo = $_SESSION['nombre_completo'] ?? 'Usuario';
-                            $primer_nombre = explode(' ', trim($nombre_completo))[0];
-                            echo htmlspecialchars($primer_nombre); 
+                        <?php
+                        $nombre_completo = $_SESSION['nombre_completo'] ?? 'Usuario';
+                        $primer_nombre = explode(' ', trim($nombre_completo))[0];
+                        echo htmlspecialchars($primer_nombre);
                         ?>
                     </span>
                 </a>
-                
+
                 <div class="dropdown-menu dropdown-menu-center nxl-h-dropdown nxl-user-dropdown mt-2 shadow-lg border-0" style="min-width: 260px;">
                     <div class="dropdown-header pb-3">
                         <div class="d-flex align-items-center">
@@ -58,12 +58,12 @@
                                     <?php echo htmlspecialchars($_SESSION['nombre_completo'] ?? 'Usuario'); ?>
                                 </h6>
                                 <span class="fs-12 fw-medium text-muted">
-                                    <?php 
-                                        if(isset($_SESSION['correo'])) {
-                                            echo htmlspecialchars($_SESSION['correo']);
-                                        } else {
-                                            echo htmlspecialchars($_SESSION['usuario_lan'] ?? 'admin');
-                                        }
+                                    <?php
+                                    if (isset($_SESSION['correo'])) {
+                                        echo htmlspecialchars($_SESSION['correo']);
+                                    } else {
+                                        echo htmlspecialchars($_SESSION['usuario_lan'] ?? 'admin');
+                                    }
                                     ?>
                                 </span>
                             </div>
@@ -90,7 +90,35 @@
         <!--! [End] Header Right !-->
 
     </div>
+
 </header>
 <!--! ================================================================ !-->
 <!--! [End] Header !-->
 <!--! ================================================================ !-->
+
+<!-- ✨ SISTEMA DE RESIZE INTELIGENTE PARA APEXCHARTS ✨ -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // Función maestra que fuerza a las gráficas a redibujarse usando el nuevo ancho del navegador
+        function redibujarGraficas() {
+            setTimeout(() => {
+                // Verificamos si la variable global de inicio.js existe antes de obligarla a ajustarse
+                if (typeof window.graficaPrincipalDomo !== 'undefined') {
+                    // resize() recalcula el tamaño interno sin tener que volver a consultar a la Base de Datos
+                    window.graficaPrincipalDomo.windowResize();
+                }
+            }, 300); // 300ms de gracia para dejar que la animación del Menú termine primero
+        }
+
+        // 1. Escuchar los clicks en los botones que abren/cierran el Menú Lateral
+        const btnCollapseMobile = document.getElementById('mobile-collapse');
+        const btnCollapseDesktop = document.getElementById('menu-mini-button');
+        const btnExpandDesktop = document.getElementById('menu-expend-button');
+
+        if (btnCollapseMobile) btnCollapseMobile.addEventListener('click', redibujarGraficas);
+        if (btnCollapseDesktop) btnCollapseDesktop.addEventListener('click', redibujarGraficas);
+        if (btnExpandDesktop) btnExpandDesktop.addEventListener('click', redibujarGraficas);
+
+    });
+</script>
