@@ -43,15 +43,20 @@ if ($es_cliente) {
 }
 ?>
 
-<nav class="nxl-navigation">
+<nav class="nxl-navigation custom-blue-sidebar">
     <div class="navbar-wrapper">
-        <div class="m-header">
-            <!-- <a href="inicio.php" class="b-brand">
+        <!--<div class="m-header">
+             <a href="inicio.php" class="b-brand">
                 <img src="assets/images/logo-head.png" alt="" class="logo logo-lg" />
                 <img src="assets/images/logo-head.png" alt="" class="logo logo-sm" />
-            </a> -->
+            </a> 
             <a href="inicio.php" class="b-brand">
-                <img src="assets/images/logo/Logo-LaNetworks.png" alt="" style="max-height: 70px; object-fit: contain;" />
+                <img src="assets/images/logo/Logo-LaNetworks.png" alt="" class="logo-sidebar-lan" style="max-height: 50px; object-fit: contain;" />
+            </a>
+        </div>-->
+        <div class="m-header d-flex align-items-center justify-content-center">
+            <a href="inicio.php" class="b-brand w-100 text-center">
+                <img src="assets/images/logo/Logo-LaNetworks.png" alt="LAN Networks" class="logo-sidebar-lan" />
             </a>
         </div>
         <div class="navbar-content">
@@ -162,10 +167,7 @@ if ($es_cliente) {
                 <!-- Se recomienda renombrar la imagen en tu carpeta a algo sin espacios como 'firma_contacto.jpeg' -->
                 <img src="assets/images/general/Firma.png"
                     alt="Contacto LAN Networks"
-                    class="img-fluid rounded shadow-sm"
-                    style="max-width: 100%; border: 1px solid #e0e0e0; transition: transform 0.3s;"
-                    onmouseover="this.style.transform='scale(1.02)'"
-                    onmouseout="this.style.transform='scale(1)'">
+                    class="img-fluid rounded shadow-sm">
             </div>
         </div>
     </div>

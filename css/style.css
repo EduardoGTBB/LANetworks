@@ -346,6 +346,17 @@ span.select2.select2-container.form-control {
     --lan-text-muted: #64748b;
     --lan-accent-rgb: 68, 180, 244;
 }
+/* 2. TEXTOS E ICONOS PRIMARIOS (Menú, links, iconos) */
+.text-primary,
+.feather-primary {
+    /* ✨ FIX: Cambiamos bg-body (fondo claro) por primary (Azul oscuro corporativo) */
+    color: var(--lan-primary) !important;
+}
+
+/* Opcional: Creamos una clase accent por si en el futuro quieres usar el azul celeste brillante de forma segura */
+.text-accent {
+    color: var(--lan-accent) !important;
+}
 
 /* =========================================================
    🚀 REGLAS DE ESTILO B2B (Se adaptan a la paleta activa)
@@ -384,10 +395,10 @@ h6,
 }
 
 /* 2. TEXTOS E ICONOS PRIMARIOS (Menú, links, iconos) */
-.text-primary,
+/* .text-primary,
 .feather-primary {
-    color: var(--lan-primary) !important;
-}
+    color: var(--lan-bg-body) !important;
+} */
 
 /* 3. MODALES Y TARJETAS (Cabeceras) */
 .modal-header.bg-primary,
@@ -521,4 +532,143 @@ input[type="number"] {
     box-shadow: none !important;
     border-color: #2b3d5b !important;
     outline: none !important;
+}
+
+/* >>> ============================================== */
+/* >>>           SIDEBAR CAMBIO DE COLOR              */
+/* >>> ============================================== */
+
+/* >>> ============================================== */
+/* >>>           SIDEBAR CAMBIO DE COLOR              */
+/* >>> ============================================== */
+
+/* 1. 🛡️ BLINDAJE DE FONDOS: Forzar color azul en todos los contenedores principales y modos (Incluyendo Colapsado) */
+.custom-blue-sidebar,
+.custom-blue-sidebar .navbar-wrapper,
+.custom-blue-sidebar .navbar-content,
+.custom-blue-sidebar .nxl-navbar,
+.nxl-sidebar-mini .custom-blue-sidebar,
+.nxl-sidebar-mini .custom-blue-sidebar .navbar-wrapper,
+.nxl-sidebar-mini .custom-blue-sidebar .navbar-content,
+.nxl-sidebar-mini .custom-blue-sidebar .nxl-navbar {
+    background-color: #199efb !important;
+    background-image: none !important;
+    border-right: none !important;
+}
+
+/* 2. PROTECCIÓN DEL LOGO (Más grande y rectangular) */
+.custom-blue-sidebar .m-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 10px !important;
+    height: auto !important; 
+    min-height: 85px !important;
+}
+.custom-blue-sidebar .logo-sidebar-lan {
+    background-color: #ffffff !important;
+    padding: 8px 12px !important; 
+    border-radius: 8px !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15) !important;
+    width: 100% !important; 
+    max-width: 160px !important; 
+    max-height: 60px !important; 
+    object-fit: contain !important;
+    transition: all 0.3s ease !important; 
+}
+
+/* 3. COMPORTAMIENTO: MENÚ COLAPSADO (Mini Sidebar) */
+.nxl-sidebar-mini .custom-blue-sidebar .m-header {
+    padding: 5px !important;
+}
+
+.nxl-sidebar-mini .custom-blue-sidebar .logo-sidebar-lan {
+    padding: 4px !important; 
+    max-height: 40px !important; 
+    max-width: 40px !important;
+    border-radius: 6px !important;
+}
+
+/* Ocultar la firma en modo colapsado para que no se desborde */
+.nxl-sidebar-mini .custom-blue-sidebar .sidebar-footer {
+    display: none !important;
+}
+
+/* ✨ 4. NUEVO: Evitar que el menú flotante se ponga blanco en modo mini */
+.nxl-sidebar-mini .custom-blue-sidebar .nxl-item {
+    background-color: #199efb !important;
+}
+.nxl-sidebar-mini .custom-blue-sidebar .nxl-item:hover,
+.nxl-sidebar-mini .custom-blue-sidebar .nxl-item:focus {
+    background-color: #0f639f !important;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important;
+}
+
+/* 5. Textos e Íconos Principales (Blancos, 100% estáticos) */
+.custom-blue-sidebar .nxl-link,
+.custom-blue-sidebar .nxl-micon i,
+.custom-blue-sidebar .nxl-arrow i,
+.custom-blue-sidebar .nxl-mtext {
+    color: #ffffff !important;
+    transition: none !important; 
+    transform: none !important;  
+}
+
+/* 6. Subtítulos ("MENÚ") usando el azul claro */
+.custom-blue-sidebar .nxl-caption label {
+    color: #60c0fd !important; 
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+}
+
+/* 7. 🛡️ BLINDAJE CONTRA EL GRIS DE BOOTSTRAP (Hover, Activo, Focus y Trigger) */
+.custom-blue-sidebar .nxl-item > .nxl-link:hover,
+.custom-blue-sidebar .nxl-item > .nxl-link:focus,
+.custom-blue-sidebar .nxl-item.active > .nxl-link,
+.custom-blue-sidebar .nxl-item.nxl-trigger > .nxl-link {
+    background-color: #0f639f !important; 
+    color: #ffffff !important;
+    border-radius: 0px !important; 
+    transition: none !important;
+    transform: none !important;
+}
+
+.custom-blue-sidebar .nxl-item > .nxl-link:hover .nxl-micon i,
+.custom-blue-sidebar .nxl-item > .nxl-link:focus .nxl-micon i,
+.custom-blue-sidebar .nxl-item.active > .nxl-link .nxl-micon i,
+.custom-blue-sidebar .nxl-item.nxl-trigger > .nxl-link .nxl-micon i,
+.custom-blue-sidebar .nxl-item > .nxl-link:hover .nxl-arrow i,
+.custom-blue-sidebar .nxl-item > .nxl-link:focus .nxl-arrow i,
+.custom-blue-sidebar .nxl-item.active > .nxl-link .nxl-arrow i,
+.custom-blue-sidebar .nxl-item.nxl-trigger > .nxl-link .nxl-arrow i {
+    color: #ffffff !important;
+}
+
+/* 8. Submenús (Contenedor azul oscuro) */
+.custom-blue-sidebar .nxl-item.nxl-hasmenu .nxl-submenu {
+    background-color: #0f639f !important; 
+    margin: 0 !important;
+    padding: 10px 0 !important;
+    border-radius: 0 !important;
+}
+
+.custom-blue-sidebar .nxl-submenu .nxl-link {
+    color: #e0f2fe !important; 
+    background-color: transparent !important;
+}
+
+.custom-blue-sidebar .nxl-submenu .nxl-item > .nxl-link:hover,
+.custom-blue-sidebar .nxl-submenu .nxl-item.active > .nxl-link {
+    color: #ffffff !important;
+    background-color: #199efb !important; 
+    transition: none !important;
+    transform: none !important;
+}
+
+/* 9. Elimina cualquier flecha rara o fondo extra nativo de Bootstrap/NXL */
+.custom-blue-sidebar .nxl-item.nxl-hasmenu.active > .nxl-link::after,
+.custom-blue-sidebar .nxl-item.nxl-hasmenu.nxl-trigger > .nxl-link::after {
+    display: none !important;
 }

@@ -40,7 +40,7 @@ $(document).ready(function () {
 
     if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
         let $tipoPrecio = $('#tipo_precio');
-        $tipoPrecio.val('Público').prop('disabled', true).trigger('change.select2').trigger('change');
+        $tipoPrecio.val('Farmacia').prop('disabled', true).trigger('change.select2').trigger('change');
 
         $tipoPrecio.next('.select2-container').css({
             'pointer-events': 'none',
@@ -48,7 +48,7 @@ $(document).ready(function () {
         });
 
         if ($('#hidden_tipo_precio').length === 0) {
-            $('#nueva_cotizacion').append('<input type="hidden" id="hidden_tipo_precio" name="tipo_precio" value="Público">');
+            $('#nueva_cotizacion').append('<input type="hidden" id="hidden_tipo_precio" name="tipo_precio" value="Farmacia">');
         }
     }
 

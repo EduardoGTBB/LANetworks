@@ -42,13 +42,14 @@ try {
     // BOM UTF-8 para que Excel lea acentos sin problemas
     fputs($salida, $bom = (chr(0xEF) . chr(0xBB) . chr(0xBF)));
 
+    // ✨ CABECERAS (Mantenemos ID EQUIPO como columna estructural)
     if ($tipo_reporte === 'laboratorio') {
-        fputcsv($salida, ['CANTIDAD', 'FOLIO', 'FECHA ELABORACION', 'RAZON SOCIAL', 'CANTIDAD', 'CLAVE', 'DESCRIPCION', 'SUCURSAL', 'DOM SUCURSAL', 'PLAZA']);
+        fputcsv($salida, ['CANTIDAD', 'FOLIO', 'FECHA ELABORACION', 'RAZON SOCIAL', 'CLAVE', 'DESCRIPCION', 'PTOS CALIBRACION', 'ID EQUIPO', 'SUCURSAL', 'DOM SUCURSAL', 'PLAZA']);
     } else {
-        fputcsv($salida, ['CANTIDAD', 'FOLIO', 'FECHA ELABORACION', 'RAZON SOCIAL', 'CANTIDAD', 'CLAVE', 'DESCRIPCION', 'PRECIO UNITARIO', 'SUBTOTAL', 'IVA', 'TOTAL', 'PLAZA']);
+        fputcsv($salida, ['CANTIDAD', 'FOLIO', 'FECHA ELABORACION', 'RAZON SOCIAL', 'CLAVE', 'DESCRIPCION', 'PRECIO UNITARIO', 'SUBTOTAL', 'IVA', 'TOTAL', 'PLAZA']);
     }
 
-    // ✨ 4. LÓGICA DE AGRUPACIÓN (Respeta los filtros porque $datos ya viene filtrado)
+    // ✨ 4. LÓGICA DE AGRUPACIÓN
     $cotizaciones_agrupadas = [];
     foreach ($datos as $row) {
         $id = $row['id_cotizacion'];
@@ -60,7 +61,6 @@ try {
 
     // ✨ 5. ITERACIÓN Y CÁLCULO DE TOTALES
     foreach ($cotizaciones_agrupadas as $id_cotizacion => $filas) {
-        // Optimizamos memoria: Ya solo necesitamos acumular el Gran Total
         $suma_total = 0;
         $folio_actual = '';
 
@@ -72,13 +72,23 @@ try {
             $clave = $row['clave_product'];
             $plaza = $row['nombre_plaza'] ?? 'N/A';
             
-            $descripcion = $row['descripcion_product'];
+            $descripcion = trim($row['descripcion_product']);
             $ptos_calib = trim($row['puntos_calibracion'] ?? '');
             $equipo_id = trim($row['equipo_id'] ?? '');
 
             if ($tipo_reporte === 'laboratorio') {
-                if (!empty($ptos_calib)) $descripcion .= " - PTOS CALIBRACION: " . str_replace("\n", " ", $ptos_calib);
-                if (!empty($equipo_id)) $descripcion .= " - ID: " . $equipo_id;
+                
+                // Formateamos los puntos de calibración
+                $ptos_calib_format = !empty($ptos_calib) ? str_replace("\n", " ", $ptos_calib) : 'N/A';
+                
+                // ✨ NUEVA LÓGICA: Validación Inteligente de ID (PHP 8+)
+                if (str_ends_with((string)$folio_actual, '-N')) {
+                    // Es un equipo NUEVO: La celda queda en blanco para limpieza visual
+                    $equipo_id_format = '';
+                } else {
+                    // Es USADO o CALIBRACIÓN: Evaluamos si hay ID, si no, ponemos N/A
+                    $equipo_id_format = !empty($equipo_id) ? $equipo_id : 'N/A';
+                }
 
                 $sucursal = $row['nombre_sucursal'] ?? 'N/A';
                 
@@ -104,7 +114,8 @@ try {
 
                 $domicilio = !empty($partes_domicilio) ? implode(', ', $partes_domicilio) : 'N/A';
 
-                fputcsv($salida, [$cantidad, $folio_actual, $fecha_cot, $empresa, $cantidad, $clave, $descripcion, $sucursal, $domicilio, $plaza]);
+                // Inyectamos las columnas estructuradas
+                fputcsv($salida, [$cantidad, $folio_actual, $fecha_cot, $empresa, $clave, $descripcion, $ptos_calib_format, $equipo_id_format, $sucursal, $domicilio, $plaza]);
 
             } else {
                 $p_unitario = (float)$row['precio_unitario'];
@@ -121,7 +132,7 @@ try {
                 $fmt_iva = '$' . number_format($iva, 2);
                 $fmt_total = '$' . number_format($total, 2);
 
-                fputcsv($salida, [$cantidad, $folio_actual, $fecha_cot, $empresa, $cantidad, $clave, $descripcion, $fmt_unitario, $fmt_subtotal, $fmt_iva, $fmt_total, $plaza]);
+                fputcsv($salida, [$cantidad, $folio_actual, $fecha_cot, $empresa, $clave, $descripcion, $fmt_unitario, $fmt_subtotal, $fmt_iva, $fmt_total, $plaza]);
             }
         } // Fin de filas internas del grupo
 
@@ -132,13 +143,12 @@ try {
                 '', // FOLIO
                 '', // FECHA
                 '', // RAZON SOCIAL
-                '', // CANTIDAD
                 '', // CLAVE
                 '', // DESCRIPCION
                 '', // PRECIO UNITARIO
-                '▶ TOTAL FOLIO ' . $folio_actual . ':', // Lo colocamos en la columna SUBTOTAL para acercarlo al resultado
-                '', // IVA (Se deja vacío)
-                '$' . number_format($suma_total, 2), // TOTAL (Solo mostramos esta suma)
+                '▶ TOTAL FOLIO ' . $folio_actual . ':', // SUBTOTAL
+                '', // IVA
+                '$' . number_format($suma_total, 2), // TOTAL
                 ''  // PLAZA
             ]);
             // Separador en blanco entre cotizaciones para limpieza visual
