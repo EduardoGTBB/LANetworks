@@ -422,28 +422,6 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
 
 
 // |------Inicio_Ver_todas_las_Cotizaciones_Users_Admin------
-
-/* // [fn] Obtener All cotizaciones Admin
-function obtenerTodasLasCotizaciones(PDO $pdo): array
-{
-    $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
-                   e.razon_social, u.nombre, u.apellido_pat, u.apellido_mat,
-                   ua.admin_nombre, ua.admin_apell_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio, 
-                   pz.nombre_plaza,
-                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
-                   (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
-            FROM cotizacion c
-            LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
-            LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
-            LEFT JOIN usuarios_admin ua ON c.Usuario_admin_id = ua.id_user_admin
-            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
-            ORDER BY c.id_cotizacion DESC";
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-} */
-
 // [fn] Obtener All cotizaciones Admin
 function obtenerTodasLasCotizaciones(PDO $pdo): array
 {
@@ -2084,9 +2062,19 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
         $params[':f_fin'] = $fecha_fin; 
     }
 
-    if (!empty($busqueda)) {
+    /* if (!empty($busqueda)) {
         $whereClause .= " AND (c.folio_especial LIKE :busqueda OR e.razon_social LIKE :busqueda OR pr.descripcion_product LIKE :busqueda OR pr.clave_product LIKE :busqueda)";
         $params[':busqueda'] = "%{$busqueda}%";
+    } */
+
+    // ✨ Filtro de Búsqueda de DataTables (Parámetros únicos para PDO Estricto)
+    if (!empty($busqueda)) {
+        $whereClause .= " AND (c.folio_especial LIKE :b1 OR e.razon_social LIKE :b2 OR pr.descripcion_product LIKE :b3 OR pr.clave_product LIKE :b4)";
+        $valor_busqueda = "%{$busqueda}%";
+        $params[':b1'] = $valor_busqueda;
+        $params[':b2'] = $valor_busqueda;
+        $params[':b3'] = $valor_busqueda;
+        $params[':b4'] = $valor_busqueda;
     }
 
     if ($scope === 'mis_cotizaciones') {

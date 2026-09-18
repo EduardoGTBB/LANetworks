@@ -1033,7 +1033,14 @@ $(document).ready(function () {
         let textoOriginal = btnSubmit.text();
         btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...');
 
+        // Habilitamos todos los campos bloqueados (como la plaza única) temporalmente
+        let $disabledFields = $(this).find(':disabled');
+        $disabledFields.prop('disabled', false);
+
         let formData = $(this).serializeArray();
+
+        // Volvemos a bloquearlos inmediatamente para mantener la interfaz segura
+        $disabledFields.prop('disabled', true);
 
         $.ajax({
             url: 'api/api_ver_cotizaciones.php',
