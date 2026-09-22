@@ -233,28 +233,6 @@
                                                         <p class="mt-2">Cargando cotizaciones...</p>
                                                     </div>
                                                 </td>
-                                                <!-- <td>01</td>
-                                                <td>
-                                                    <div class="avatar-image avatar-md">
-                                                        <img src="assets/images/avatar/user.png" alt="" class="img-fluid">
-                                                    </div>
-                                                </td>
-                                                <td>Juan José García</td>
-                                                <td class="fw-bold text-dark">jjosegarcia@farmaciacl.com</td>
-                                                <td>COMERCIALIZADORA FARMACEUTICA DE CHIAPAS</td>
-                                                <td>
-                                                    <div class="badge bg-soft-success text-success">Activo</div>
-                                                </td>
-                                                <td class="text-center">
-                                                    <div class="hstack gap-2 justify-content-center">
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Editar usuario" style="text-decoration:none;"><i class="feather-edit"></i></abbr>
-                                                        </a>
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Eliminar usuario" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr>
-                                                        </a>
-                                                    </div>
-                                                </td> -->
                                             </tr>
                                         </tbody>
                                     </table>
@@ -271,7 +249,7 @@
     </main>
 
     <div class="modal fade-scale" id="modalUsuario" tabindex="-1" aria-labelledby="modalUsuarioLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-scrollable">
             <form id="formUsuario" class="modal-content bg-white" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold text-primary" id="modalUsuarioLabel">Nuevo Usuario</h5>

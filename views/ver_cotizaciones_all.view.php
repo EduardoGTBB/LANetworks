@@ -154,18 +154,97 @@
                             <!-- ✨ CONTENEDOR MAESTRO DE CABECERA (Bloque estricto) -->
                             <div class="card-header p-0 border-bottom-0 w-100 d-block">
                                 
-                                <!-- ✨ FILA 1: Título y Buscador -->
+                                <!-- ✨ FILA 1: Título y Buscador 
                                 <div class="d-flex justify-content-between align-items-center w-100 px-4 py-3">
                                     <h5 class="card-title mb-0">Lista de cotizaciones</h5>
                                     <div id="contenedor-buscador-dt"></div>
+                                </div>-->
+
+                                <div class="d-flex flex-wrap justify-content-between align-items-center w-100 px-4 py-3 gap-3">
+                                    <h5 class="card-title mb-0">Lista de cotizaciones</h5>
+                                    <div id="contenedor-buscador-dt" style="max-width: 100%;"></div>
                                 </div>
 
-                                <!-- ✨ FILA 2: Botones y Filtros Expandidos (Sin fondo gris) -->
+                                <!-- ✨ FILA 2: Botones y Filtros Equilibrados -->
                                 <div class="px-4 pb-3 pt-3 border-bottom bg-light-subtle">
-                                    <!-- ✨ FIX: Usamos flex-wrap y quitamos overflow-x para que el Dropdown no se recorte -->
+                                    <!-- flex-column para celular (apilado), flex-md-row para PC (en línea) -->
+                                    <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-3 w-100">
+
+                                        <!-- 1. EXPORTAR (me-md-auto lo empuja a la izquierda SOLO en PC) -->
+                                        <div class="dropdown me-md-auto">
+                                            <button class="btn fw-bold d-flex align-items-center justify-content-center shadow-sm dropdown-toggle text-white px-3 w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
+                                                <i class="feather-download me-2"></i> EXPORTAR
+                                            </button>
+                                            <ul class="dropdown-menu shadow-lg border-0 w-100 w-md-auto">
+                                                <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6></li>
+                                                <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="todas"><i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial</a></li>
+                                                <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="todas"><i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio</a></li>
+                                            </ul>
+                                        </div>
+
+                                        <!-- 2. FILTRO DE FECHAS AVANZADO -->
+                                        <div class="dropdown">
+                                            <button class="btn btn-light bg-white border-primary fw-bold text-dark shadow-sm d-flex align-items-center justify-content-between px-3 w-100" type="button" id="btnFiltroPeriodo" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b;">
+                                                <span><i class="feather-calendar text-primary me-2"></i><span id="texto_periodo">Periodo: Todos</span></span>
+                                                <i class="feather-chevron-down ms-1 text-muted"></i>
+                                            </button>
+                                            
+                                            <!-- Menú desplegable ampliado (responsivo en móvil) -->
+                                            <div class="dropdown-menu shadow-lg border-0 p-3 p-md-4" style="width: 100%; min-width: 300px; max-width: 440px; border-radius: 12px; z-index: 1060; right: 0;">
+                                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                                    <h6 class="text-dark fw-bolder mb-0" style="font-size: 15px; letter-spacing: 0.5px;">Filtrar por:</h6>
+                                                    <button type="button" class="btn btn-sm fw-bold text-primary border px-2" id="btn_limpiar_periodo" style="font-size: 11px; background-color: #f8f9fa; transition: none !important; transform: none !important; box-shadow: none !important;">
+                                                        <i class="feather-refresh-cw me-1"></i>LIMPIAR
+                                                    </button>
+                                                </div>
+                                                
+                                                <div class="form-check mb-4 d-flex align-items-center ps-md-4">
+                                                    <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_mes" value="mes" checked style="cursor:pointer; width: 18px; height: 18px;">
+                                                    <label class="form-check-label text-dark fw-bold mb-0 flex-grow-1 fs-13" style="cursor:pointer;" for="radio_mes">Mes específico</label>
+                                                    <input type="month" class="form-control form-control-sm fw-bold shadow-sm" id="input_mes_filtro" style="width: 140px; cursor:pointer; color: #495057; border: 1px solid #ced4da; height: 38px;">
+                                                </div>
+                                                
+                                                <div class="form-check mb-3 d-flex align-items-center ps-md-4">
+                                                    <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_rango" value="rango" style="cursor:pointer; width: 18px; height: 18px;">
+                                                    <label class="form-check-label text-dark fw-bold mb-0 fs-13" style="cursor:pointer;" for="radio_rango">Rango de fechas</label>
+                                                </div>
+                                                
+                                                <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between mb-4 ps-md-4 pe-md-2 gap-2">
+                                                    <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 w-100" id="fecha_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;">
+                                                    <span class="text-muted fw-bold text-center d-none d-md-block">a</span>
+                                                    <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 w-100" id="fecha_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;">
+                                                </div>
+                                                
+                                                <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
+                                                    <button type="button" class="btn btn-sm btn-light fw-bold text-muted border px-3 py-2 w-100 w-md-auto" id="btn_cancelar_periodo" style="background-color: #f8f9fa; transition: none !important; transform: none !important; box-shadow: none !important;">CANCELAR</button>
+                                                    <button type="button" class="btn btn-sm fw-bold text-white px-3 py-2 w-100 w-md-auto" id="btn_aceptar_periodo" style="background-color: #0d6efd; border: 1px solid #0d6efd; transition: none !important; transform: none !important; box-shadow: none !important;">APLICAR</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 3. ESTATUS (min-width mantiene el tamaño original en PC) -->
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="feather-filter text-primary d-none d-md-block" style="font-size: 1rem;"></i>
+                                            <select id="filtro_estatus_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-3 w-100" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; min-width: 230px;">
+                                                <option value="">Mostrar todos los estatus</option>
+                                                <option value="Guardado para aprobación">Guardado para aprobación</option>
+                                                <option value="Autorizada">Autorizadas (Aprobadas)</option>
+                                                <option value="No autorizada">No autorizadas (Rechazadas)</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- 4. TOTAL -->
+                                        <div id="contenedor-badge-total" class="flex-shrink-0 d-flex justify-content-end justify-content-md-start mt-2 mt-md-0"></div>
+
+                                    </div>
+                                </div>
+
+                                <!-- FILA 2: Botones y Filtros Expandidos 
+                                <div class="px-4 pb-3 pt-3 border-bottom bg-light-subtle">
+                                    !-- ✨ FIX: Usamos flex-wrap y quitamos overflow-x para que el Dropdown no se recorte --
                                     <div class="d-flex flex-row align-items-center gap-3 flex-wrap w-100">
 
-                                        <!-- 1. EXPORTAR (me-auto lo empuja a la izquierda) -->
+                                        !-- 1. EXPORTAR (me-auto lo empuja a la izquierda) --
                                         <div class="dropdown me-auto">
                                             <button class="btn fw-bold d-flex align-items-center shadow-sm dropdown-toggle text-white px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
                                                 <i class="feather-download me-2"></i> EXPORTAR
@@ -177,7 +256,7 @@
                                             </ul>
                                         </div>
 
-                                        <!-- 2. MES 
+                                        !-- 2. MES 
                                         <div class="d-flex align-items-center gap-2">
                                             <i class="feather-calendar text-primary" style="font-size: 1rem;"></i>
                                             <select id="filtro_mes_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-2" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 160px;" title="Filtrar por mes">
@@ -195,55 +274,55 @@
                                                 <option value="-11-">Noviembre</option>
                                                 <option value="-12-">Diciembre</option>
                                             </select>
-                                        </div>-->
+                                        </div>--
 
-                                        <!-- 2. FECHA EXACTA 
+                                        !-- 2. FECHA EXACTA 
                                         <div class="d-flex align-items-center gap-2">
                                             <i class="feather-calendar text-primary" style="font-size: 1rem;"></i>
                                             <input type="date" id="filtro_fecha_tabla" class="form-control border-primary fw-bold text-dark shadow-sm px-2" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 140px;" title="Filtrar por fecha exacta">
-                                        </div>-->
+                                        </div>--
 
-                                        <!-- 2. FILTRO DE FECHAS AVANZADO (ESTÁTICO Y DIRECTO) -->
+                                        !-- 2. FILTRO DE FECHAS AVANZADO (ESTÁTICO Y DIRECTO) --
                                         <div class="dropdown">
-                                            <!-- Botón principal Estático -->
+                                            !-- Botón principal Estático --
                                             <button class="btn btn-light bg-white border-primary fw-bold text-dark shadow-sm d-flex align-items-center gap-2 px-3" type="button" id="btnFiltroPeriodo" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b;">
                                                 <i class="feather-calendar text-primary"></i> 
                                                 <span id="texto_periodo">Periodo: Todos</span>
                                                 <i class="feather-chevron-down ms-1 text-muted"></i>
                                             </button>
                                             
-                                            <!-- Menú desplegable ampliado (440px) -->
+                                            !-- Menú desplegable ampliado (440px) --
                                             <div class="dropdown-menu shadow-lg border-0 p-4" style="min-width: 440px; border-radius: 12px; z-index: 1060; right: auto;">
                                                 
                                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                                     <h6 class="text-dark fw-bolder mb-0" style="font-size: 15px; letter-spacing: 0.5px;">Filtrar por:</h6>
-                                                    <!-- ✨ Botón Limpiar (Nuclear CSS: Sin salto ni sombra) -->
+                                                    !-- ✨ Botón Limpiar (Nuclear CSS: Sin salto ni sombra) --
                                                     <button type="button" class="btn btn-sm fw-bold text-primary border px-2" id="btn_limpiar_periodo" style="font-size: 11px; background-color: #f8f9fa; transition: none !important; transform: none !important; box-shadow: none !important;">
                                                         <i class="feather-refresh-cw me-1"></i>LIMPIAR
                                                     </button>
                                                 </div>
                                                 
-                                                <!-- Opcion 1: Mes Específico (Sin animaciones) -->
+                                                !-- Opcion 1: Mes Específico (Sin animaciones) --
                                                 <div class="form-check mb-4 d-flex align-items-center ps-4">
                                                     <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_mes" value="mes" checked style="cursor:pointer; width: 18px; height: 18px; margin-left: -1.5rem;">
                                                     <label class="form-check-label text-dark fw-bold mb-0 flex-grow-1 fs-13" style="cursor:pointer;" for="radio_mes">Mes específico</label>
                                                     <input type="month" class="form-control form-control-sm fw-bold" id="input_mes_filtro" style="width: 160px; cursor:pointer; color: #495057; border: 1px solid #ced4da; height: 38px;">
                                                 </div>
                                                 
-                                                <!-- Opcion 2: Rango manual -->
+                                                !-- Opcion 2: Rango manual --
                                                 <div class="form-check mb-3 d-flex align-items-center ps-4">
                                                     <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_rango" value="rango" style="cursor:pointer; width: 18px; height: 18px; margin-left: -1.5rem;">
                                                     <label class="form-check-label text-dark fw-bold mb-0 fs-13" style="cursor:pointer;" for="radio_rango">Rango de fechas</label>
                                                 </div>
                                                 
-                                                <!-- Entradas de rango (Sin animaciones) -->
+                                                !-- Entradas de rango (Sin animaciones) --
                                                 <div class="d-flex align-items-center justify-content-between mb-4 ps-4 pe-2 gap-3">
                                                     <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2" id="fecha_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; width: 160px; height: 38px;">
                                                     <span class="text-muted fw-bold">a</span>
                                                     <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2" id="fecha_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; width: 160px; height: 38px;">
                                                 </div>
                                                 
-                                                <!-- Botones de Acción (Estáticos) -->
+                                                !-- Botones de Acción (Estáticos) --
                                                 <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
                                                     <button type="button" class="btn btn-sm btn-light fw-bold text-muted border px-4 py-2" id="btn_cancelar_periodo" style="background-color: #f8f9fa;">CANCELAR</button>
                                                     <button type="button" class="btn btn-sm fw-bold text-white px-4 py-2" id="btn_aceptar_periodo" style="background-color: #0d6efd; border: 1px solid #0d6efd;">APLICAR</button>
@@ -251,7 +330,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- 3. ESTATUS -->
+                                        !-- 3. ESTATUS --
                                         <div class="d-flex align-items-center gap-2">
                                             <i class="feather-filter text-primary" style="font-size: 1rem;"></i>
                                             <select id="filtro_estatus_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-3" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 230px;">
@@ -262,11 +341,11 @@
                                             </select>
                                         </div>
 
-                                        <!-- 4. TOTAL -->
+                                        !-- 4. TOTAL --
                                         <div id="contenedor-badge-total" class="flex-shrink-0"></div>
 
                                     </div>
-                                </div>
+                                </div>-->
                             </div>
 
                             <!-- TEMPLATE PESTAÑAS (Estilo Nav-Pills Corporativo Full-Width) -->
@@ -329,54 +408,6 @@
                                         </tr>
                                     </tbody>
                                 </table>
-                                <!-- <table class="table table-hover mb-0 w-100" id="tableAllCotizaciones">
-                                    <thead>
-                                        <tr>
-                                            <th>Folio #</th>
-                                            <th>Fecha</th>
-                                            <th>Cliente</th>
-                                            <th>Importe</th>
-                                            <th>Estatus</th>
-                                            <th class="text-center">Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tabla-cotizaciones">
-                                        <tr>
-                                            <td>
-                                                <div class="hstack gap-3">
-                                                    <div class="spinner-border text-primary mt-3" role="status">
-                                                        <span class="visually-hidden">Cargando...</span>
-                                                    </div>
-                                                    <p class="mt-2">Cargando cotizaciones...</p>
-                                                </div>
-                                            </td>
-                                            !--<td>
-                                                    03/02/2026
-                                                </td>
-                                                <td>
-                                                    COMERCIALIZADORA FARMACEUTICA DE CHIAPAS
-                                                </td>
-                                                <td class="text-dark fw-bold">$6,085.82</td>
-                                                <td>
-                                                    <span class="badge bg-soft-success text-success">Aprobado</span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <div class="hstack gap-2 justify-content-center">
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Imprimir cotización" style="text-decoration:none;"><i class="feather-printer"></i></abbr>
-                                                        </a>
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Editar cotización" style="text-decoration:none;"><i class="feather-edit"></i></abbr>
-                                                        </a>
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr>
-                                                        </a>
-                                                    </div>
-                                                </td> --
-                                        </tr>
-                                    </tbody>
-                                </table> -->
-
                             </div>
                         </div>
                     </div>
@@ -403,11 +434,11 @@
                     <input type="hidden" name="id_cotizacion" id="edit_id_cotizacion" value="">
                     <input type="hidden" name="is_multisucursal" id="edit_is_multisucursal" value="0">
 
-                    <!-- ✨ FIX CIBERSEGURIDAD: Input necesario para que no se borre el estatus al editar -->
+                    <!-- Input necesario para que no se borre el estatus al editar -->
                     <input type="hidden" name="estatus" id="edit_estatus" value="">
 
                     <div class="row mb-4">
-                        <!-- ✨ TARJETA 1: DATOS COMERCIALES (AZUL) -->
+                        <!-- TARJETA 1: DATOS COMERCIALES (AZUL) -->
                         <div class="col-lg-6 mb-4 mb-lg-0">
                             <div class="card border-primary h-100 shadow-sm">
                                 <div class="card-header bg-primary text-white py-3">
@@ -443,7 +474,7 @@
                             </div>
                         </div>
 
-                        <!-- ✨ TARJETA 2: PARÁMETROS DE COTIZACIÓN (VERDE) -->
+                        <!-- TARJETA 2: PARÁMETROS DE COTIZACIÓN (VERDE) -->
                         <div class="col-lg-6">
                             <div class="card border-success h-100 shadow-sm">
                                 <div class="card-header bg-success text-white py-3">
@@ -545,7 +576,7 @@
                                         <th class="fs-10 text-dark text-uppercase">IVA</th>
                                         <td class="w-50">
                                             <div class="input-group mb-2 mb-sm-0">
-                                                <!-- ✨ UX/SEGURIDAD: Bloqueamos la edición visualmente y forzamos el bg-light (gris) -->
+                                                <!-- Bloqueamos la edición visualmente y forzamos el bg-light (gris) -->
                                                 <input type="number" name="porcentaje_iva" id="edit_tax" class="form-control border-0 bg-light p-0 text-center" value="16" readonly style="pointer-events: none;">
                                                 <div class="input-group-addon border-0 bg-light text-muted fw-bold">%</div>
                                             </div>

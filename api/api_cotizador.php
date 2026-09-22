@@ -32,11 +32,42 @@ try {
                 $empresa_id = (int) ($_GET['empresa_id'] ?? 0);
                 echo json_encode(obtenerUsuariosPorEmpresa($pdo, $empresa_id));
                 break;
-            case 'get_sucursales_usuario': // <-- NUEVO ENDPOINT AGREGADO
+            case 'get_sucursales_usuario':
                 $usuario_id = (int) ($_GET['usuario_id'] ?? 0);
                 echo json_encode(obtenerSucursalesPorUsuario($pdo, $usuario_id));
                 break;
-            default:
+            
+            case 'preview_folio': //Predicción del Folio en tiempo real
+                $categoria_raw = $_GET['cat'] ?? 'TODOS';
+                $categoria_bd = 'Nuevo'; // Default
+                $sufijo = '-N';
+
+                if ($categoria_raw === 'USADO') {
+                    $categoria_bd = 'Usado';
+                    $sufijo = '-U';
+                } elseif ($categoria_raw === 'CALIBRACION') {
+                    $categoria_bd = 'Calibracion';
+                    $sufijo = '-CALIB';
+                }
+
+                // Buscamos el último folio de esa categoría
+                $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1";
+                $stmtMax = $pdo->prepare($sqlMax);
+                $stmtMax->execute([':cat' => $categoria_bd]);
+                $ultimoFolio = $stmtMax->fetchColumn();
+
+                if ($ultimoFolio) {
+                    $numeroExtraido = str_replace($sufijo, '', $ultimoFolio);
+                    $siguienteNumero = ((int)$numeroExtraido) + 1;
+                } else {
+                    $siguienteNumero = 1;
+                }
+
+                $folio_predictivo = str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;
+                
+                echo json_encode(['status' => 'success', 'folio' => $folio_predictivo]);
+                break;
+                default:
                 echo json_encode(['status' => 'error', 'message' => 'Acción GET no válida']);
         }
         exit;
@@ -84,12 +115,6 @@ try {
         } else {
             $sucursal_id = !empty($_POST['Sucursal_id']) ? (int)$_POST['Sucursal_id'] : null;
         }
-        /* //& Prueba */
-
-        /* //° if ($empresa_id === 0 || $usuario_id === 0 || $sucursal_id === 0) {
-            echo json_encode(['status' => 'error', 'message' => 'Debes seleccionar un Cliente, un Solicitante y la Sucursal de destino..']);
-            exit;
-        } */
 
         if ($empresa_id === 0 && $tipo_sucursal_flujo !== 'multisucursal') {
             echo json_encode(['status' => 'error', 'message' => 'Falta seleccionar el Cliente.']);
@@ -101,11 +126,6 @@ try {
             echo json_encode(['status' => 'error', 'message' => 'Falta seleccionar la Sucursal de destino.']);
             exit;
         }
-
-        /* //° if (empty($division) || empty($tipo_precio)) {
-            echo json_encode(['status' => 'error', 'message' => 'Debes seleccionar una División y un Tipo de Precio.']);
-            exit;
-        } */
 
         if (empty($division) || empty($tipo_precio)) {
             echo json_encode(['status' => 'error', 'message' => 'Debes seleccionar una División y un Tipo de Precio.']);
@@ -173,20 +193,27 @@ try {
             echo json_encode(['status' => 'error', 'message' => 'Debes agregar al menos un producto con cantidad válida.']);
             exit;
         }
-        /* 
-        $nuevo_folio = saveCotizacion($pdo, $datosCotizacion, $detalles);
-        echo json_encode(['status' => 'success', 'message' => "La cotización #$nuevo_folio se guardó correctamente.", 'id_cotizacion' => $nuevo_folio]); */
+
         // 1. Guardamos la cotización y obtenemos su ID interno (Modelo)
         $id_cotizacion = saveCotizacion($pdo, $datosCotizacion, $detalles);
 
-        // 2. ✨ REUTILIZAMOS la función existente para traer el folio generado
+        // 2. REUTILIZAMOS la función existente para traer el folio generado
         $cotizacionReciente = editarCotizacionporID($pdo, (int)$id_cotizacion);
         $folio_especial = $cotizacionReciente['folio_especial'] ?? null;
 
         // 3. Fallback de seguridad (por si el folio llegara vacío)
         $folio_mostrar = $folio_especial ? $folio_especial : str_pad((string)$id_cotizacion, 5, '0', STR_PAD_LEFT);
 
-        // 4. Retornamos el JSON manteniendo el ID numérico para la redirección de JS
+        // 4. LÓGICA DE TRANSPARENCIA UX (Condición de Carrera)
+        $folio_predictivo = trim($_POST['folio_predictivo'] ?? '');
+
+        if (!empty($folio_predictivo) && $folio_predictivo !== $folio_mostrar) {
+            $mensaje_final = "✅ ¡Cotización guardada exitosamente!\n\n⚠️ NOTA DEL SISTEMA:\nEl folio $folio_predictivo que estabas visualizando fue ocupado por otro usuario una fracción de segundo antes.\n\nPara evitar conflictos, tu nuevo folio asignado es el #$folio_mostrar.";
+        } else {
+            $mensaje_final = "La cotización #$folio_mostrar se guardó correctamente.";
+        }
+
+        // 5. Retornamos el JSON manteniendo el ID numérico para la redirección de JS
         echo json_encode([
             'status'        => 'success',
             'message'       => "La cotización #$folio_mostrar se guardó correctamente.",

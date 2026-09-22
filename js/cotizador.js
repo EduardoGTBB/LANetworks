@@ -1,6 +1,6 @@
 $(document).ready(function () {
     const formatoMXN = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
-    // ✨ NUEVO: Formateador estricto (fuerza punto decimal y coma de miles sin el signo de pesos)
+    // NUEVO: Formateador estricto (fuerza punto decimal y coma de miles sin el signo de pesos)
     const formatoInput = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     var uniqueIdCounter = 1;
@@ -88,7 +88,49 @@ $(document).ready(function () {
     });
 
     $(document).on('change', '#filtro_estado_producto', function () {
+
         let filtro = $(this).val();
+
+        //  1. LÓGICA DE FOLIO PREDICTIVO (CON PREVENCIÓN DE CONFUSIONES)
+        let $badgeFolio = $('#preview_folio');
+
+        if (filtro === 'TODOS') {
+            // Si está en "TODOS", mostramos un estado neutro y elegante
+            $badgeFolio.html('<i class="feather-info me-2" style="font-size: 1.2em; transform: translateY(-1px);"></i> Selecciona tipo de producto')
+                       .removeClass('bg-soft-primary text-primary')
+                       .addClass('bg-soft-secondary text-secondary')
+                       .fadeIn('fast');
+        } else {
+            // Si ya eligió Nuevo, Usado o Calibración, mostramos el loading y buscamos
+            $badgeFolio.html('<span class="spinner-border spinner-border-sm me-2" style="width: 1.2rem; height: 1.2rem;"></span> Calculando...').fadeIn('fast');
+
+            $.ajax({
+                url: 'api/api_cotizador.php?action=preview_folio&cat=' + filtro,
+                method: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    if(res.status === 'success') {
+                        // Ajustamos el tamaño del icono a 1.2em para que empate con el texto de 18px
+                        $badgeFolio.html('<i class="feather-hash me-1" style="font-size: 1.2em; transform: translateY(-1px);"></i> ' + res.folio)
+                                   .removeClass('bg-soft-secondary text-secondary')
+                                   .addClass('bg-soft-primary text-primary');
+                        
+                        // NUEVO: Guardamos el folio en un input oculto para enviarlo al backend
+                        if ($('#hidden_folio_predictivo').length === 0) {
+                            $('#nueva_cotizacion').append('<input type="hidden" id="hidden_folio_predictivo" name="folio_predictivo" value="' + res.folio + '">');
+                        } else {
+                            $('#hidden_folio_predictivo').val(res.folio);
+                        }
+                    }
+                },
+                error: function() {
+                    $badgeFolio.html('<i class="feather-alert-circle me-1" style="font-size: 1.2em;"></i> Folio Automático')
+                               .removeClass('bg-soft-primary text-primary')
+                               .addClass('bg-soft-secondary text-secondary');
+                }
+            });
+        }
+
         if (!windowProductos || windowProductos.length === 0) return;
 
         let $selects = $('.product-select');
@@ -178,7 +220,7 @@ $(document).ready(function () {
         });
     }
 
-    // ✨ EVENTO SOLICITANTE: CARGA PLAZAS Y SUCURSALES (CON ESCUDOS DE SEGURIDAD)
+    // EVENTO SOLICITANTE: CARGA PLAZAS Y SUCURSALES (CON ESCUDOS DE SEGURIDAD)
     $('#select_solicitante').on('change', function () {
         let usuarioId = $(this).val();
         let $selectSuc = $('#select_sucursal');
@@ -200,7 +242,7 @@ $(document).ready(function () {
 
                     // --- 1. LLENAR SUCURSALES ---
                     if ($selectSuc.hasClass('select2-hidden-accessible')) {
-                        $selectSuc.select2('destroy'); // 🧹 Limpiamos el plugin atorado
+                        $selectSuc.select2('destroy'); //  Limpiamos el plugin atorado
                     }
                     $selectSuc.empty();
                     window.windowSucursalesOpciones = '<option value="">Selecciona Sucursal...</option>';
@@ -240,26 +282,7 @@ $(document).ready(function () {
                             });
                         });
                     }
-                    
-                    // --- 2. LLENAR PLAZAS (Basado SOLAMENTE en el solicitante) ---
-                    /* let plazasUnicas = new Map();
 
-                    data.forEach(suc => {
-                        if (suc.id_sae == 1) return;
-
-                        if (suc.ids_plazas && suc.nombres_plazas) {
-                            let ids = suc.ids_plazas.toString().split('||'); // ✨ SEPARADOR CORRECTO
-                            let nombres = suc.nombres_plazas.split('||');
-
-                            for (let i = 0; i < ids.length; i++) {
-                                let idPlaza = ids[i].trim();
-                                let nomPlaza = nombres[i].trim();
-                                if (idPlaza && nomPlaza) {
-                                    plazasUnicas.set(idPlaza, nomPlaza);
-                                }
-                            }
-                        }
-                    }); */
                     let plazasUnicas = new Map();
                     data.forEach(suc => {
                         if (suc.ids_plazas && suc.nombres_plazas) {
@@ -273,7 +296,7 @@ $(document).ready(function () {
                         }
                     });
 
-                    // 🧹 Limpiamos Select2 previo y quitamos la clase form-select problemática
+                    // Limpiamos Select2 previo y quitamos la clase form-select problemática
                     if ($infoPlaza.hasClass('select2-hidden-accessible')) {
                         $infoPlaza.select2('destroy');
                     }
@@ -283,12 +306,12 @@ $(document).ready(function () {
                         $infoPlaza.append('<option value="">El usuario no tiene plazas ligadas</option>');
                         $infoPlaza.prop('disabled', true).removeClass('bg-white').addClass('bg-light').css('pointer-events', 'none');
                     } else if (plazasUnicas.size === 1) {
-                        // ✨ 1 Sola Plaza: Bloqueo visual, sin plugin
+                        // 1 Sola Plaza: Bloqueo visual, sin plugin
                         let plazaActiva = Array.from(plazasUnicas.entries())[0];
                         $infoPlaza.append(`<option value="${plazaActiva[0]}" selected>${plazaActiva[1]}</option>`);
                         $infoPlaza.prop('disabled', false).removeClass('bg-white').addClass('bg-light').css('pointer-events', 'none');
                     } else {
-                        // ✨ 2+ Plazas: Inicializamos Select2 sobre form-control para que se vea idéntico
+                        // 2+ Plazas: Inicializamos Select2 sobre form-control para que se vea idéntico
                         $infoPlaza.append('<option value="">Selecciona la plaza...</option>');
                         plazasUnicas.forEach((nombre, id) => {
                             $infoPlaza.append(`<option value="${id}">${nombre}</option>`);
@@ -401,7 +424,7 @@ $(document).ready(function () {
         }
     });
 
-    // ✨ CORRECCIÓN CLONACIÓN (1111)
+    //  CORRECCIÓN CLONACIÓN (1111)
     function recalcularNumeros() {
         $('#tab_logic tbody tr').each(function (index) {
             $(this).find('.num-fila-txt').text(index + 1);
@@ -460,25 +483,8 @@ $(document).ready(function () {
                 // Equipos USADOS: Siempre visible y obligatorio para empleados y portal B2B
                 $inputID.show().prop('readonly', false).removeClass('bg-light').prop('required', true).attr('placeholder', 'ID del equipo (Obligatorio)');
             } else {
-                // ✨ Equipos NUEVOS: Totalmente ocultos y sin valor (Petición del cliente)
+                //  Equipos NUEVOS: Totalmente ocultos y sin valor (Petición del cliente)
                 $inputID.hide().prop('required', false).val('');
-                
-                /*  // Equipos NUEVOS: Opcional por defecto
-                $inputID.prop('required', false).attr('placeholder', 'ID del equipo (Opcional)');
-                
-                // ✨ LÓGICA DE VISIBILIDAD PARA EL CLIENTE (PORTAL B2B)
-                if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-                    if ($inputID.val() && $inputID.val().trim() !== '') {
-                        // El empleado ya le asignó un ID, se muestra pero bloqueado (Solo lectura)
-                        $inputID.show().prop('readonly', true).addClass('bg-light');
-                    } else {
-                        // Está vacío (Nueva cotización o edición sin captura), se oculta al cliente
-                        $inputID.hide();
-                    }
-                } else {
-                    // Es un empleado LAN, siempre puede ver y editar
-                    $inputID.show().prop('readonly', false).removeClass('bg-light');
-                } */
             }
         }
 
@@ -496,18 +502,6 @@ $(document).ready(function () {
 
         let textoInformativo = "";
 
-        /* if (esServicio) {
-            row.find('.price').val(pEquipo.toFixed(2));
-            textoInformativo = `<small class="text-info d-block fw-bold mt-1">Servicio (${formatoMXN.format(pEquipo)})</small>`;
-        } else {
-            row.find('.price').val(pAntesIva.toFixed(2));
-            if (desglosar) {
-                // ✨ FORMATO MEXICANO FORZADO
-                textoInformativo = `<small class="text-primary d-block fw-bold mt-1">Equipo (${formatoMXN.format(pEquipo)}) + Calibración (${formatoMXN.format(pCalib)})</small>`;
-            } else {
-                textoInformativo = `<small class="text-muted d-block mt-1">Incluye equipo y calibración</small>`;
-            }
-        } */
         if (esServicio) {
             row.find('.price').val(pEquipo.toFixed(2));
             textoInformativo = `<small class="text-info d-block fw-bold mt-1">Servicio (${formatoMXN.format(pEquipo)})</small>`;
@@ -516,7 +510,7 @@ $(document).ready(function () {
             row.find('.price').val(pAntesIva.toFixed(2));
             
             if (desglosar) {
-                // ✨ MAGIA: Verificamos si es usado para invertir visualmente los valores
+                // Verificamos si es usado para invertir visualmente los valores
                 if (estadoBD === 'USADO') {
                     textoInformativo = `<small class="text-primary d-block fw-bold mt-1">Equipo (${formatoMXN.format(0)}) + Calibración (${formatoMXN.format(pAntesIva)})</small>`;
                 } else {
@@ -600,6 +594,13 @@ $(document).ready(function () {
             },
             error: function (xhr) {
                 alert("Ocurrió un error al guardar. Intenta nuevamente.");
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+
+                alert("ALERTA DEL SERVIDOR:\n\n" + errorMsg);
+
                 btnSubmit.prop('disabled', false).text(textoOriginal);
             }
         });

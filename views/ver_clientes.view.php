@@ -186,14 +186,14 @@
             </div>
             !-- [ page-header ] end -->
 
-            <?php 
-                $page_title = "Empresas";
-                $breadcrumb_items = [
-                    "Clientes",
-                    "Empresas"
-                ];
-                // $hide_new_quote_btn = true; // Descomenta esta línea en las páginas donde NO quieras el botón
-                include('views/include/page_header.php'); 
+            <?php
+            $page_title = "Empresas";
+            $breadcrumb_items = [
+                "Clientes",
+                "Empresas"
+            ];
+            // $hide_new_quote_btn = true; // Descomenta esta línea en las páginas donde NO quieras el botón
+            include('views/include/page_header.php');
             ?>
             <!-- [ Main Content ] start -->
             <div class="main-content">
@@ -233,25 +233,6 @@
                                                         <p class="mt-2">Cargando Empresas...</p>
                                                     </div>
                                                 </td>
-                                                <!-- <td>01</td>
-                                                <td>Farmacia</td>
-                                                <td class="fw-bold text-dark">COMERCIALIZADORA FARMACEUTICA DE CHIAPAS</td>
-                                                <td>CFC110121742</td>
-                                                <td>5611947196</td>
-                                                <td>prueba@gmail.com</td>
-                                                <td>
-                                                    <div class="badge bg-soft-success text-success">Activo</div>
-                                                </td>
-                                                <td class="text-center">
-                                                    <div class="hstack gap-2 justify-content-center">
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Editar cliente" style="text-decoration:none;"><i class="feather-edit"></i></abbr>
-                                                        </a>
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Eliminar cliente" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr>
-                                                        </a>
-                                                    </div>
-                                                </td> -->
                                             </tr>
                                         </tbody>
                                     </table>
@@ -265,101 +246,56 @@
         </div>
         <?php include('views/include/footer.php'); ?>
     </main>
-    <div class="modal fade-scale" id="modalEmpresa" tabindex="-1" aria-labelledby="modalEmpresaLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-white">
+    <div class="modal fade" id="modalEmpresa" tabindex="-1" aria-labelledby="modalEmpresaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <form id="formEmpresa" class="modal-content bg-white">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold text-primary" id="modalEmpresaLabel">Nuevo Cliente</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="formEmpresa" class="modal-content bg-white">
-                    <div class="modal-body">
-                        <input type="hidden" name="action" id="cliente_action" value="crear">
-                        <input type="hidden" name="id_empresa" id="cliente_id" value="">
+                <div class="modal-body">
+                    <input type="hidden" name="action" id="cliente_action" value="crear">
+                    <input type="hidden" name="id_empresa" id="cliente_id" value="">
 
-                        <div class="mb-3">
-                            <label class="form-label">Nombre Comercial <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="nombre_empresa" id="nombre_empresa" required>
+                    <div class="mb-3">
+                        <label class="form-label">Nombre Comercial <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="nombre_empresa" id="nombre_empresa" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Razón Social <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="razon_social" id="razon_social" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">RFC <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="rfc" id="rfc" required>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Razón Social <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="razon_social" id="razon_social" required>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Días de Crédito<span class="text-danger">*</span></label>
+                            <input type="number" min="0" value="30" class="form-control" name="dias_credito" id="dias_credito" required>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">RFC <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="rfc" id="rfc" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Días de Crédito<span class="text-danger">*</span></label>
-                                <input type="number" min="0" value="30" class="form-control" name="dias_credito" id="dias_credito" required>
-                            </div>
-                        </div>
-                        <!-- <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Teléfono <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="telefono" id="telefono" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Correo <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" name="correo" id="correo" required>
-                            </div>
-                        </div> -->
+                    </div>
 
-                        <!-- <hr class="my-4">
-                        <h6 class="fw-bold text-primary mb-3">Dirección</h6>
-                        <div class="mb-3">
-                            <label class="form-label">Calle y Numero<span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="calle_numero" id="calle_numero" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Colonia<span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="colonia" id="colonia" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Localidad<span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="localidad" id="localidad" required>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Codigo Postal <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="codigo_postal" id="codigo_postal" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Municipio <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="municipio" id="municipio" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Estado <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="estado" id="estado" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Pais <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="pais" id="pais" required>
-                            </div>
-                        </div> -->
-
-                        <div id="bloque_estatus_cli" class="row mt-3">
-                            <div class="col-md-12">
-                                <hr>
-                                <p class="fw-bold"><i class="feather-settings"></i> Configuración</p>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="estatus_cli" name="estatus" value="Y" checked>
-                                    <label class="form-check-label" for="estatus_cli">Empresa Activa</label>
-                                </div>
+                    <div id="bloque_estatus_cli" class="row mt-3">
+                        <div class="col-md-12">
+                            <hr>
+                            <p class="fw-bold"><i class="feather-settings"></i> Configuración</p>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="estatus_cli" name="estatus" value="Y" checked>
+                                <label class="form-check-label" for="estatus_cli">Empresa Activa</label>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Guardar Cliente</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cliente</button>
+                </div>
+            </form>
+
         </div>
     </div>
+
     <!--! ================================================================ !-->
     <!--! [End] Main Content !-->
     <!--! ================================================================ !-->

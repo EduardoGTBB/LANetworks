@@ -328,11 +328,14 @@ $(document).ready(function () {
 
                             $('#contenedor-buscador-dt').empty().append($search);
 
-                            $('.dataTables_filter').css({ 'margin': '0', 'padding': '0', 'text-align': 'right' });
-                            $('.dataTables_filter label').addClass('mb-0 d-flex align-items-center justify-content-end gap-2 fw-bold text-muted').css('font-size', '13px');
-                            $('.dataTables_filter input').addClass('form-control shadow-sm m-0').css({ 'border-radius': '6px', 'border': '1px solid #ced4da', 'height': '34px', 'width': '250px' });
+                            // Ajustes estéticos con límite de ancho para celulares
+                            $('.dataTables_filter').css({ 'margin': '0', 'padding': '0', 'text-align': 'right', 'max-width': '100%' });
+                            $('.dataTables_filter label').addClass('mb-0 d-flex align-items-center justify-content-end gap-2 fw-bold text-muted').css({ 'font-size': '13px', 'max-width': '100%' });
+                            
+                            // Mantenemos 250px en PC, pero encogemos al 100% en celulares
+                            $('.dataTables_filter input').addClass('form-control shadow-sm m-0').css({ 'border-radius': '6px', 'border': '1px solid #ced4da', 'height': '34px', 'width': '250px', 'max-width': '100%' });
 
-                            // ✨ FIX UX: Disparamos los filtros justo cuando DataTables está 100% indexado
+                            // FIX UX: Disparamos los filtros justo cuando DataTables está 100% indexado
                             setTimeout(() => {
                                 $('#filtro_estatus_tabla').trigger('change');
 
@@ -1548,6 +1551,11 @@ $(document).ready(function () {
 
     $('input[name="tipo_filtro_fecha"]').on('change', toggleFechas);
     toggleFechas();
+
+    // ✨ FIX UX MÓVIL: Prevenir que el clic en los inputs nativos cierre el Dropdown de Bootstrap
+    $('#fecha_inicio_filtro, #fecha_fin_filtro, #input_mes_filtro').on('click touchstart', function(e) {
+        e.stopPropagation();
+    });
 
     let hoyDate = new Date();
     let mesActualFormato = hoyDate.getFullYear() + '-' + String(hoyDate.getMonth() + 1).padStart(2, '0');

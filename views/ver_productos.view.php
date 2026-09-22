@@ -227,36 +227,15 @@
                                         </thead>
                                         <tbody id="table_productos">
                                             <tr class="single-item">
-                                                <!-- <td>01</td>
-                                                <td>[B-LITIO]</td> -->
                                                 <td>
                                                     <div class="hstack gap-3">
                                                         <div class="spinner-border text-primary mt-3" role="status">
                                                             <span class="visually-hidden">Cargando...</span>
                                                         </div>
                                                         <p class="mt-2">Cargando cotizaciones...</p>
-                                                        <!-- <div class="avatar-image avatar-lg rounded">
-                                                            <img class="img-fluid" src="assets/images/gallery/4.png" alt="">
-                                                        </div>
-                                                        <div>
-                                                            <span class="fs-12 text-muted">Batería Litio CR-2025</span>
-                                                        </div> -->
+
                                                     </div>
                                                 </td>
-                                                <!-- <td>$26.4</td>
-                                                <td>
-                                                    <div class="badge bg-soft-success text-success">Activo</div>
-                                                </td>
-                                                <td class="text-center">
-                                                    <div class="hstack gap-2 justify-content-center">
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Editar producto" style="text-decoration:none;"><i class="feather-edit"></i></abbr>
-                                                        </a>
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Eliminar producto" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr>
-                                                        </a>
-                                                    </div>
-                                                </td> -->
                                             </tr>
                                         </tbody>
                                     </table>
@@ -277,7 +256,7 @@
     <!-- & ====================================================== tabindex="-1"-->
 
     <div class="modal fade-scale" id="modalProductos" aria-labelledby="modalProductoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <form id="formProducto" class="modal-content bg-white" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold text-primary" id="modalProductoLabel">Nuevo producto</h5>
@@ -324,7 +303,7 @@
 
                         <div class="col-12 mb-3">
                             <label class="form-label small">Puntos de Calibración <i class="feather-info text-primary" title="Si no requiere, déjalo en blanco"></i></label>
-                            <!-- ✨ Input nativo con Datalist enlazado -->
+                            <!-- Input nativo con Datalist enlazado -->
                             <input type="text" class="form-control" name="puntos_calibracion" id="puntos_calibracion" list="lista_puntos" placeholder="Ej: (15, 20, 30) °C / (15, 35, 65) % HR" autocomplete="off">
                             <datalist id="lista_puntos">
                                 <!-- Se llenará dinámicamente desde JS -->

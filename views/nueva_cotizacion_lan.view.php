@@ -92,17 +92,17 @@
             !-- [ page-header ] end -->
             <!-- [ Main Content ] start -->
 
-            <?php 
-                $page_title = "Nueva cotización";
-                $breadcrumb_items = [
-                    "Cotizaciones",
-                    "Nueva cotización",
+            <?php
+            $page_title = "Nueva cotización";
+            $breadcrumb_items = [
+                "Cotizaciones",
+                "Nueva cotización",
 
-                ];
-                // Si no queremos el boton de acceso en una parte solo descomenten el codigo de abajo
-                //$hide_new_quote_btn = true; 
-                
-                include('views/include/page_header.php'); 
+            ];
+            // Si no queremos el boton de acceso en una parte solo descomenten el codigo de abajo
+            //$hide_new_quote_btn = true; 
+
+            include('views/include/page_header.php');
             ?>
 
             <div class="main-content">
@@ -110,16 +110,34 @@
                     <div class="col-lg-12">
                         <div class="card stretch stretch-full">
                             <div class="card-body lead-status">
-                                <div class="mb-5 d-flex align-items-center justify-content-between">
-                                    <h5 class="fw-bold mb-0 me-4">
-                                        <span class="d-block mb-2">Nueva cotización</span>
-                                        <span class="fs-12 fw-normal text-muted text-truncate-1-line">Completa los campos.</span>
+
+                                <!-- OPCIÓN Original: Estilo "Ticket" con borde punteado a la derecha 
+                                <div class="mb-5 d-flex flex-wrap align-items-center justify-content-between border-bottom pb-4">
+                                    <h5 class="fw-bold mb-0 mt-2">
+                                        <span class="d-block fs-18 mb-2">Nueva cotización</span>
+                                        <span class="fs-12 fw-normal text-muted">Completa los campos comerciales y logísticos.</span>
                                     </h5>
-                                    <!--  ?php if (!empty($mensaje_sistema)): ?>
-                                        <div class="mt-3 mb-3">
-                                            ?php echo $mensaje_sistema; ?>
-                                        </div>
-                                    ?php endif; ?> -->
+                                    
+                                    <div class="text-end mt-3 mt-md-0">
+                                        <span class="d-block fs-10 text-muted text-center fw-bold text-uppercase mb-2" style="letter-spacing: 0.5px;">Folio Asignado</span>
+                                        <span id="preview_folio" class="badge bg-soft-secondary text-secondary d-inline-flex align-items-center px-4 py-2" style="font-size: 16px; font-weight: 800; letter-spacing: 1px; border: 2px dashed rgba(0,0,0,0.15) !important; border-radius: 6px;">
+                                            <i class="feather-info me-2" style="font-size: 1.1em; transform: translateY(-1px);"></i> Selecciona tipo
+                                        </span>
+                                    </div>
+                                </div>-->
+
+                                <div class="mb-5 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between border-bottom pb-4 gap-3">
+                                    <h5 class="fw-bold mb-0 mt-2">
+                                        <span class="d-block fs-18 mb-2">Nueva cotización</span>
+                                        <span class="fs-12 fw-normal text-muted">Completa los campos comerciales y logísticos.</span>
+                                    </h5>
+
+                                    <div class="text-start text-md-end mt-2 mt-md-0">
+                                        <span class="d-block fs-10 text-muted fw-bold text-uppercase mb-2" style="letter-spacing: 0.5px;">Folio Asignado</span>
+                                        <span id="preview_folio" class="badge bg-soft-secondary text-secondary d-inline-flex justify-content-center align-items-center text-wrap px-4 py-2" style="font-size: 15px; font-weight: 800; letter-spacing: 0.5px; border: 2px dashed rgba(0,0,0,0.15) !important; border-radius: 6px; line-height: 1.4;">
+                                            <i class="feather-info me-2" style="font-size: 1.1em; transform: translateY(-1px);"></i> Selecciona tipo de producto
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <!-- <form enctype="multipart/form-data" id="nueva_cotizacion" action="?php echo trim(stripcslashes(strip_tags(htmlspecialchars($_SERVER['PHP_SELF'])))); ?>" method="POST" name="nueva_cotizacion"> -->
@@ -184,7 +202,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="col-lg-6">
                                             <div class="card border-success h-100 shadow-sm">
                                                 <div class="card-header bg-success text-white py-3">

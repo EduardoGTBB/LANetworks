@@ -217,7 +217,6 @@
                                             <th class="text-center">ID SAE</th>
                                             <th>Nombre Sucursal</th>
                                             <th>Ubicacion /(Ciudad y Estado)</th>
-                                            <!--  <th>Empresa</th> -->
                                             <th>Estatus</th>
                                             <th class="text-center">Acciones</th>
                                         </thead>
@@ -247,7 +246,7 @@
     </main>
 
     <div class="modal fade-scale" id="modalSucursal" tabindex="-1" aria-labelledby="modalSucursalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <form id="formSucursal" class="modal-content bg-white">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold text-primary" id="modalSucursalLabel">Nueva Sucursal</h5>
@@ -342,13 +341,6 @@
                     </div>
 
                     <hr class="my-3">
-
-                    <!-- <h6 class="fw-bold text-primary mb-3">Usuarios Permitidos</h6>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">Selecciona quién puede solicitar entregas a esta sucursal:</label>
-                        <select class="form-control select2" name="usuarios[]" id="usuarios_multi" multiple="multiple" style="width: 100%;">
-                        </select>
-                    </div> -->
 
                     <div id="bloque_estatus_suc" class="row mt-3">
                         <div class="col-md-12">
