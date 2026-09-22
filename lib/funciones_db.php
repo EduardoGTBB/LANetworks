@@ -113,7 +113,8 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
         elseif ($categoria === 'Calibracion') { $sufijo = '-CALIB'; }
 
         // Buscamos el último folio generado para esta categoría
-        $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1";
+        $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1 FOR UPDATE";
+        
         $stmtMax = $pdo->prepare($sqlMax);
         $stmtMax->execute([':cat' => $categoria]);
         $ultimoFolio = $stmtMax->fetchColumn();
@@ -129,6 +130,7 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
 
         // Formateamos para que siempre tenga 5 ceros (ej. 00001-N)
         $folio_especial = str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;
+
 
 
         // ✨ 2. GUARDADO EN BASE DE DATOS (Agregamos categoria y folio_especial)
@@ -182,7 +184,6 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
         throw new Exception($e->getMessage());
     }
 }
-
 
 // >>> ==============================================
 // >>>       FIN: FUNCIONES NUEVA COTIZACION

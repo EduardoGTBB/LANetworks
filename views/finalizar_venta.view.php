@@ -216,20 +216,20 @@
                         </div>
                     </div> -->
                     <div class="row border-top pt-4 mt-4">
-                        <!-- ✨ Botones de Navegación del Flujo -->
-                        <div class="d-flex justify-content-center align-items-center gap-4 mt-2 mb-5 w-100">
+                        <!-- Botones de Navegación del Flujo -->
+                        <div class="d-flex flex-column flex-md-row justify-content-center align-items-stretch align-items-md-center gap-3 gap-md-4 mt-2 mb-5 w-100 px-3 px-md-0">
                             <!-- 1. Vía de escape: Regresa a la tabla silenciosamente -->
-                            <a href="<?php echo htmlspecialchars($url_origen, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-lg btn-white shadow-sm border border-gray-300 px-4 text-uppercase fw-bold text-muted">
+                            <a href="<?php echo htmlspecialchars($url_origen, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-lg btn-white shadow-sm border border-gray-300 text-uppercase fw-bold text-muted w-100 w-md-auto">
                                 Dejar para después
                             </a>
 
                             <!-- 2. Corrección: Regresa y auto-abre el modal de edición de productos -->
-                            <a href="<?php echo htmlspecialchars($back_url, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-lg btn-light shadow-sm border border-secondary px-4 text-uppercase fw-bold text-dark">
+                            <a href="<?php echo htmlspecialchars($back_url, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-lg btn-light shadow-sm border border-secondary text-uppercase fw-bold text-dark w-100 w-md-auto">
                                 <i class="feather-edit me-2"></i> Editar Cotización
                             </a>
 
                             <!-- 3. Acción Principal: Guarda y regresa a la tabla para autorizar -->
-                            <button type="submit" class="btn btn-lg btn-primary shadow-sm px-5 text-uppercase fw-bold">
+                            <button type="submit" class="btn btn-lg btn-primary shadow-sm text-uppercase fw-bold w-100 w-md-auto">
                                 Guardar y Finalizar <i class="feather-check-circle ms-2"></i>
                             </button>
                         </div>

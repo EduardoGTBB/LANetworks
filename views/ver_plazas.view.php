@@ -440,7 +440,7 @@
 
                     <div class="accordion" id="contenedor_domicilios">
                     </div>
-                    <!-- ✨ NUEVA SECCIÓN: USUARIOS PERMITIDOS EN LA PLAZA -->
+                    <!-- NUEVA SECCIÓN: USUARIOS PERMITIDOS EN LA PLAZA -->
                     <hr class="my-3">
                     <h6 class="fw-bold text-primary mb-3"><i class="feather-users me-2"></i>Usuarios Permitidos</h6>
                     <div class="mb-3">

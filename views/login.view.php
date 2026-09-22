@@ -31,8 +31,18 @@
                         <div class="mb-4">
                             <input type="email" class="form-control" name="usuario" placeholder="Usuario" value="" required>
                         </div>
-                        <div class="mb-3">
+                        <!-- <div class="mb-3">
                             <input type="password" class="form-control" name="password" placeholder="Contraseña" value="" required>
+                        </div> -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <!-- Le quitamos el borde derecho al input -->
+                                <input type="password" class="form-control border-end-0" id="passwordInput" name="password" placeholder="Contraseña" required>
+                                <!-- Le quitamos el borde izquierdo al botón y forzamos el color oscuro -->
+                                <button class="btn border border-start-0 d-flex align-items-center bg-white" type="button" id="btnTogglePassword" style="border-color: #ced4da;">
+                                    <i class="feather-eye text-secondary" id="iconPassword" style="color: #495057 !important;"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
@@ -226,6 +236,33 @@
     <!--! END: Vendors JS !-->
     <!--! BEGIN: Apps Init  !-->
     <script src="assets/js/common-init.min.js"></script>
+
+    <!-- ✨ LÓGICA DE VISUALIZACIÓN DE CONTRASEÑA -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const togglePassword = document.querySelector('#btnTogglePassword');
+            const password = document.querySelector('#passwordInput');
+            const icon = document.querySelector('#iconPassword');
+
+            togglePassword.addEventListener('click', function (e) {
+                // Alternar el atributo type (de password a text y viceversa)
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                
+                // Alternar el ícono (Ojo abierto / Ojo cerrado cruzado)
+                if (type === 'password') {
+                    icon.classList.remove('feather-eye-off');
+                    icon.classList.add('feather-eye');
+                } else {
+                    icon.classList.remove('feather-eye');
+                    icon.classList.add('feather-eye-off');
+                }
+                
+                // Mantener el foco en el input para que el usuario pueda seguir escribiendo
+                password.focus();
+            });
+        });
+    </script>
     <!--! END: Apps Init !-->
     <!--! BEGIN: Theme Customizer  !-->
     <!-- <script src="assets/js/theme-customizer-init.min.js"></script> -->

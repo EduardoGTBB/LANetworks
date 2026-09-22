@@ -232,21 +232,6 @@
                                                     </div>
                                                     <p class="mt-2">Cargando cotizaciones...</p>
                                                 </td>
-                                                <!-- <td>Javier Olguin</td>
-                                                <td class="fw-bold text-dark">contacto@lupware.com</td>
-                                                <td>
-                                                    <div class="badge bg-soft-success text-success">Activo</div>
-                                                </td>
-                                                <td class="text-center">
-                                                    <div class="hstack gap-2 justify-content-center">
-                                                        <a href="editar_usuario.php" class="avatar-text avatar-md">
-                                                            <abbr title="Editar usuario" style="text-decoration:none;"><i class="feather-edit"></i></abbr>
-                                                        </a>
-                                                        <a href="#" class="avatar-text avatar-md">
-                                                            <abbr title="Eliminar usuario" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr>
-                                                        </a>
-                                                    </div>
-                                                </td> -->
                                             </tr>
                                         </tbody>
                                     </table>
@@ -263,7 +248,7 @@
     </main>
 
     <div class="modal fade-scale" id="modalUsersA" tabindex="-1" aria-labelledby="modalUserAdminLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centeredn modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content bg-white">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold text-primary" id="modalUserAdminLabel">Nuevo usuario</h5>

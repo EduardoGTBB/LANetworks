@@ -130,7 +130,7 @@ $(document).ready(function () {
                             btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-success text-success border border-success border-opacity-25 btn-logistica-modal" data-id="${cot.id_cotizacion}" data-paqueteria="${cot.paqueteria}" data-guia="${cot.numero_guia}" data-fecha="${cot.fecha_envio}"><abbr title="Ver/Actualizar Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
                         }
                     } */
-                    
+
 
                     // ✨ 2. MAPA (DIRECCIONES)
                     let btnCompletarVenta = '';
@@ -333,42 +333,6 @@ $(document).ready(function () {
                         ordering: false,
                         searching: true,
                         info: true,
-                        // ✨ UX: Agregamos 'm-0' a las filas (row) para eliminar márgenes negativos y evitar que la línea se desborde.
-                        // También añadimos 'border-bottom' a la primera fila para crear una línea separadora perfecta.
-                        // ✨ UX: Agregamos gap-3 y '#contenedor-filtro-mes'
-                        /* dom: "<'row m-0 px-4 pt-4 pb-3 border-bottom'<'col-12 d-flex justify-content-start align-items-center gap-3'f<'#contenedor-filtro-mes'>>>" +
-                             "<'row m-0'<'col-12 p-0'<'#contenedor-tabs-datatables'>>>" +
-                             "<'table-responsive'tr>" +
-                             "<'row m-0 align-items-center p-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-end'p>>",
-
-                        initComplete: function() {
-                            let tabsHtml = $('#template-tabs-cotizaciones').html();
-                            $('#contenedor-tabs-datatables').html(tabsHtml).css({'width': '100%', 'display': 'block'});
-
-                            // ✨ UX: Dropdown nativo (Evita problemas de compatibilidad del navegador)
-                            let mesHtml = `
-                                <div class="d-flex align-items-center gap-2">
-                                    <label class="mb-0 text-muted fw-bold" style="font-size: 13px;">Mes:</label>
-                                    <select id="filtro_mes_tabla" class="form-select form-select-sm text-dark shadow-sm px-2" style="border-radius: 6px; border: 1px solid #ced4da; cursor: pointer; height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; width: 140px;" title="Filtrar por mes">
-                                        <option value="">Todos</option>
-                                        <option value="-01-">Enero</option>
-                                        <option value="-02-">Febrero</option>
-                                        <option value="-03-">Marzo</option>
-                                        <option value="-04-">Abril</option>
-                                        <option value="-05-">Mayo</option>
-                                        <option value="-06-">Junio</option>
-                                        <option value="-07-">Julio</option>
-                                        <option value="-08-">Agosto</option>
-                                        <option value="-09-">Septiembre</option>
-                                        <option value="-10-">Octubre</option>
-                                        <option value="-11-">Noviembre</option>
-                                        <option value="-12-">Diciembre</option>
-                                    </select>
-                                </div>
-                            `;
-                            $('#contenedor-filtro-mes').html(mesHtml);
-                        }, */
-
                         // ✨ UX: DOM optimizado (Eliminamos por completo las etiquetas <row> vacías de arriba)
                         dom: "<'#temp-search-dt.d-none'f>" +
                             "<'row m-0'<'col-12 p-0'<'#contenedor-tabs-datatables'>>>" +
@@ -384,11 +348,14 @@ $(document).ready(function () {
 
                             $('#contenedor-buscador-dt').empty().append($search);
 
-                            $('.dataTables_filter').css({ 'margin': '0', 'padding': '0', 'text-align': 'right' });
-                            $('.dataTables_filter label').addClass('mb-0 d-flex align-items-center justify-content-end gap-2 fw-bold text-muted').css('font-size', '13px');
-                            $('.dataTables_filter input').addClass('form-control shadow-sm m-0').css({ 'border-radius': '6px', 'border': '1px solid #ced4da', 'height': '34px', 'width': '250px' });
+                            // ✨ FIX RESPONSIVO: max-width 300px permite que en móviles se adapte sin desbordarse
+                            $('.dataTables_filter').css({ 'margin': '0', 'padding': '0', 'text-align': 'right', 'max-width': '100%' });
+                            $('.dataTables_filter label').addClass('mb-0 d-flex align-items-center justify-content-end gap-2 fw-bold text-muted').css({ 'font-size': '13px', 'max-width': '100%' });
+                            
+                            // Mantenemos 250px en PC, pero encogemos al 100% en celulares
+                            $('.dataTables_filter input').addClass('form-control shadow-sm m-0').css({ 'border-radius': '6px', 'border': '1px solid #ced4da', 'height': '34px', 'width': '250px', 'max-width': '100%' });
 
-                            // ✨ FIX UX: Disparamos los filtros justo cuando DataTables está 100% indexado
+                            // FIX UX: Disparamos los filtros justo cuando DataTables está 100% indexado
                             setTimeout(() => {
                                 $('#filtro_estatus_tabla').trigger('change');
                                 $('#filtro_fecha_tabla').trigger('change');
@@ -1539,9 +1506,9 @@ $(document).ready(function () {
     // >>>============================================== 
     // >>> ✨ MOTOR DE EXPORTACIÓN INTELIGENTE CON RANGOS
     // >>>============================================== 
-    $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function(e) {
+    $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
         e.preventDefault();
-        
+
         // 🛡️ ZERO TRUST FRONTEND: Abortar si es un cliente B2B
         if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL === true) {
             alert("No tienes los privilegios necesarios para exportar reportes.");
@@ -1549,14 +1516,14 @@ $(document).ready(function () {
         }
 
         let tipo = $(this).attr('data-tipo') || $(this).data('tipo');
-        let scope = $(this).attr('data-scope') || $(this).data('scope') || 'todas'; 
+        let scope = $(this).attr('data-scope') || $(this).data('scope') || 'todas';
         let estatus = $('#filtro_estatus_tabla').val() || '';
-        let f_inicio = window.filtroFechaInicio || ''; 
-        let f_fin = window.filtroFechaFin || ''; 
-        
+        let f_inicio = window.filtroFechaInicio || '';
+        let f_fin = window.filtroFechaFin || '';
+
         // ✨ LÓGICA BI
         let categoria = (window.pestanaActivaCotizaciones === 'TODOS' || window.pestanaActivaCotizaciones === 'CANCELADAS') ? '' : window.pestanaActivaCotizaciones;
-        
+
         let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
         let busqueda = $tablaDT.search() || '';
 
@@ -1567,7 +1534,7 @@ $(document).ready(function () {
     // >>>============================================== 
     // >>> ✨ MOTOR AVANZADO DE RANGOS DE FECHA Y ESTATUS
     // >>>============================================== 
-    
+
     // 1. Variables globales para retener el filtro
     window.filtroFechaInicio = '';
     window.filtroFechaFin = '';
@@ -1575,55 +1542,60 @@ $(document).ready(function () {
     // 2. Lógica interactiva del Menú Dropdown
     function toggleFechas() {
         if ($('#radio_rango').is(':checked')) {
-            $('#fecha_inicio_filtro, #fecha_fin_filtro').prop('disabled', false).removeClass('bg-light border-0').css({'cursor': 'pointer', 'color': '#0d6efd', 'border': '1px solid #0d6efd'});
-            $('#input_mes_filtro').prop('disabled', true).removeClass('shadow-sm').addClass('bg-light border-0').css({'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none'});
+            $('#fecha_inicio_filtro, #fecha_fin_filtro').prop('disabled', false).removeClass('bg-light border-0').css({ 'cursor': 'pointer', 'color': '#0d6efd', 'border': '1px solid #0d6efd' });
+            $('#input_mes_filtro').prop('disabled', true).removeClass('shadow-sm').addClass('bg-light border-0').css({ 'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none' });
         } else {
-            $('#fecha_inicio_filtro, #fecha_fin_filtro').prop('disabled', true).removeClass('bg-white').addClass('bg-light border-0').css({'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none'});
-            $('#input_mes_filtro').prop('disabled', false).removeClass('bg-light border-0').addClass('shadow-sm').css({'cursor': 'pointer', 'color': '#495057', 'border': '1px solid #ced4da'});
+            $('#fecha_inicio_filtro, #fecha_fin_filtro').prop('disabled', true).removeClass('bg-white').addClass('bg-light border-0').css({ 'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none' });
+            $('#input_mes_filtro').prop('disabled', false).removeClass('bg-light border-0').addClass('shadow-sm').css({ 'cursor': 'pointer', 'color': '#495057', 'border': '1px solid #ced4da' });
         }
     }
 
     $('input[name="tipo_filtro_fecha"]').on('change', toggleFechas);
     toggleFechas();
 
+    // ✨ FIX UX MÓVIL: Prevenir que el clic en los inputs nativos cierre el Dropdown de Bootstrap
+    $('#fecha_inicio_filtro, #fecha_fin_filtro, #input_mes_filtro').on('click touchstart', function(e) {
+        e.stopPropagation();
+    });
+
     let hoyDate = new Date();
     let mesActualFormato = hoyDate.getFullYear() + '-' + String(hoyDate.getMonth() + 1).padStart(2, '0');
     $('#input_mes_filtro').val(mesActualFormato);
 
-    $('#btn_cancelar_periodo').on('click', function() {
+    $('#btn_cancelar_periodo').on('click', function () {
         $('#btnFiltroPeriodo').dropdown('toggle'); // Cierra el menú
     });
 
     // ✨ NUEVA FUNCIÓN: LIMPIAR FILTRO
-    $('#btn_limpiar_periodo').on('click', function() {
+    $('#btn_limpiar_periodo').on('click', function () {
         window.filtroFechaInicio = '';
         window.filtroFechaFin = '';
         $('#texto_periodo').text('Periodo: Todos');
         $('#btnFiltroPeriodo').dropdown('toggle');
-        
+
         let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
         $tablaDT.draw();
     });
 
-    $('#btn_aceptar_periodo').on('click', function() {
+    $('#btn_aceptar_periodo').on('click', function () {
         let tipo = $('input[name="tipo_filtro_fecha"]:checked').val();
         let textoFiltro = 'Periodo: Todos';
-        
+
         if (tipo === 'mes') {
-            let valMes = $('#input_mes_filtro').val(); 
-            
+            let valMes = $('#input_mes_filtro').val();
+
             if (valMes) {
                 let parts = valMes.split('-');
                 let y = parseInt(parts[0]);
-                let m = parseInt(parts[1]); 
-                
+                let m = parseInt(parts[1]);
+
                 window.filtroFechaInicio = `${y}-${String(m).padStart(2, '0')}-01`;
-                
+
                 let ultimoDia = new Date(y, m, 0).getDate();
                 window.filtroFechaFin = `${y}-${String(m).padStart(2, '0')}-${ultimoDia}`;
-                
+
                 let dateObj = new Date(y, m - 1, 1);
-                let mesTexto = dateObj.toLocaleString('es-ES', {month:'short'}).toUpperCase();
+                let mesTexto = dateObj.toLocaleString('es-ES', { month: 'short' }).toUpperCase();
                 textoFiltro = `MES: ${mesTexto} ${y}`;
             } else {
                 window.filtroFechaInicio = '';
@@ -1632,12 +1604,12 @@ $(document).ready(function () {
         } else {
             let inicio = $('#fecha_inicio_filtro').val();
             let fin = $('#fecha_fin_filtro').val();
-            
+
             if (inicio && fin) {
-                if(inicio > fin) { alert("La fecha de inicio no puede ser mayor a la fecha final."); return; }
+                if (inicio > fin) { alert("La fecha de inicio no puede ser mayor a la fecha final."); return; }
                 window.filtroFechaInicio = inicio;
                 window.filtroFechaFin = fin;
-                
+
                 let iniArr = inicio.split('-');
                 let finArr = fin.split('-');
                 textoFiltro = `RANGO: ${iniArr[2]}/${iniArr[1]}/${iniArr[0].slice(2)} AL ${finArr[2]}/${finArr[1]}/${finArr[0].slice(2)}`;
@@ -1646,22 +1618,22 @@ $(document).ready(function () {
                 return;
             }
         }
-        
+
         $('#texto_periodo').text(textoFiltro);
         $('#btnFiltroPeriodo').dropdown('toggle');
-        
+
         let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
         $tablaDT.draw();
     });
 
-   // Extensión de Búsqueda Personalizada en DataTables
+    // Extensión de Búsqueda Personalizada en DataTables
     $.fn.dataTable.ext.search.push(
-        function( settings, data, dataIndex ) {
-            if (!window.filtroFechaInicio || !window.filtroFechaFin) return true; 
-            
-            let fechaFilaStr = data[5]; 
-            if(!fechaFilaStr) return true;
-            
+        function (settings, data, dataIndex) {
+            if (!window.filtroFechaInicio || !window.filtroFechaFin) return true;
+
+            let fechaFilaStr = data[5];
+            if (!fechaFilaStr) return true;
+
             return (fechaFilaStr >= window.filtroFechaInicio && fechaFilaStr <= window.filtroFechaFin);
         }
     );
