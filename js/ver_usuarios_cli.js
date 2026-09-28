@@ -162,6 +162,10 @@ $(document).ready(function () {
 
         $('#modalUsuarioLabel').text('Nuevo Usuario');
         $('#modalUsuario').modal('show');
+
+        // Reset del indicador de fuerza
+        $('#pw_strength_container, #pw_strength_text').hide();
+        $('#pw_strength_bar').css('width', '0%');
     });
 
     // [fn] ==============================================
@@ -264,6 +268,114 @@ $(document).ready(function () {
                     }
                 }
             });
+        }
+    });
+
+    // [fn] ==============================================
+    // [fn]       8. MOSTRAR / OCULTAR CONTRASEÑAS
+    // [fn] ==============================================
+    $(document).on('click', '.toggle-password', function (e) {
+        e.preventDefault();
+        
+        // Leemos a qué input controla este botón
+        let targetId = $(this).data('target');
+        let $input = $(targetId);
+        let $icon = $(this).find('i');
+
+        if ($input.attr('type') === 'password') {
+            $input.attr('type', 'text');
+            $icon.removeClass('feather-eye-off').addClass('feather-eye'); // Ojo abierto
+        } else {
+            $input.attr('type', 'password');
+            $icon.removeClass('feather-eye').addClass('feather-eye-off'); // Ojo cerrado
+        }
+    });
+
+    // [fn] ==============================================
+    // [fn]   9. GENERADOR DE CONTRASEÑAS (CIBERSEGURO)
+    // [fn] ==============================================
+    $(document).on('click', '#btn_generar_password', function (e) {
+        e.preventDefault();
+        
+        // 🛡️ Motor criptográficamente seguro
+        let chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+?";
+        let length = 16;
+        let generatedPassword = "";
+        let array = new Uint32Array(length);
+        
+        window.crypto.getRandomValues(array);
+        for (let i = 0; i < length; i++) {
+            generatedPassword += chars[array[i] % chars.length];
+        }
+
+        // 1. Copiamos la contraseña en AMBOS campos
+        $('#usuario_password').val(generatedPassword);
+        $('#confirmar_password').val(generatedPassword);
+
+        // 2. Cambiamos el tipo a "text" para que el usuario pueda ver y copiar la contraseña generada
+        $('#usuario_password, #confirmar_password').attr('type', 'text');
+        
+        // 3. Sincronizamos los iconos visuales al estado de "Ojo abierto"
+        $('.toggle-password i').removeClass('feather-eye-off').addClass('feather-eye');
+
+        // 4. Disparamos la evaluación visual para que la barra se pinte de verde
+        $('#usuario_password').trigger('input');
+    });
+
+    // [fn] ==============================================
+    // [fn]  10. INDICADOR DE FUERZA DE CONTRASEÑA
+    // [fn] ==============================================
+    $(document).on('input', '#usuario_password', function () {
+        let val = $(this).val();
+        let $container = $('#pw_strength_container');
+        let $bar = $('#pw_strength_bar');
+        let $text = $('#pw_strength_text');
+
+        if (val === '') {
+            $container.hide();
+            $text.hide();
+            return;
+        }
+
+        $container.show();
+        $text.show();
+
+        // 1. Evaluación estricta de longitud mínima (Menos de 8 es inaceptable)
+        if (val.length < 8) {
+            $bar.removeClass('bg-warning bg-info bg-success').addClass('bg-danger');
+            $text.removeClass('text-warning text-info text-success').addClass('text-danger');
+            $bar.css('width', '25%');
+            $text.text('Muy corta (Mínimo 8 caracteres)');
+            return;
+        }
+
+        // 2. Algoritmo de evaluación por complejidad y longitud
+        let score = 0;
+        
+        // Complejidad (Hasta 75 puntos)
+        if (val.match(/[a-z]/) && val.match(/[A-Z]/)) score += 25; // Mayúsculas y minúsculas
+        if (val.match(/\d/)) score += 25; // Números
+        if (val.match(/[^a-zA-Z\d]/)) score += 25; // Símbolos
+
+        // Longitud óptima (25 puntos adicionales)
+        if (val.length >= 16) score += 25;
+
+        // Reset visual
+        $bar.removeClass('bg-danger bg-warning bg-info bg-success');
+        $text.removeClass('text-danger text-warning text-info text-success');
+        $bar.css('width', score + '%');
+
+        // Renderizado según puntuación
+        if (score <= 50) {
+            $bar.addClass('bg-warning');
+            $text.text('Regular (Añade símbolos o números)').addClass('text-warning');
+        } else if (score === 75) {
+            $bar.addClass('bg-info');
+            // ✨ UX: Le indicamos al administrador exactamente qué le falta
+            $text.text('Buena (Llega a 16 caracteres para hacerla Fuerte)').addClass('text-info');
+        } else if (score === 100) {
+            $bar.addClass('bg-success');
+            $text.text('Fuerte y Segura').addClass('text-success');
         }
     });
 });

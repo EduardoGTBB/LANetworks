@@ -185,15 +185,15 @@
             </div>
             !-- [ page-header ] end -->
 
-            <?php 
-                $page_title = "Configuración";
-                $breadcrumb_items = [
-                    "Usuarios LAN",
-                ];
-                // Si no queremos el boton de acceso en una parte solo descomenten el codigo de abajo
-                //$hide_new_quote_btn = true; 
-                
-                include('views/include/page_header.php'); 
+            <?php
+            $page_title = "Configuración";
+            $breadcrumb_items = [
+                "Usuarios LAN",
+            ];
+            // Si no queremos el boton de acceso en una parte solo descomenten el codigo de abajo
+            //$hide_new_quote_btn = true; 
+
+            include('views/include/page_header.php');
             ?>
             <!-- [ Main Content ] start -->
             <div class="main-content">
@@ -249,298 +249,295 @@
 
     <div class="modal fade-scale" id="modalUsersA" tabindex="-1" aria-labelledby="modalUserAdminLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-            <div class="modal-content bg-white">
+            <form id="formUserAdmin" enctype="multipart/form-data" class="modal-content bg-white">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold text-primary" id="modalUserAdminLabel">Nuevo usuario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="modal-body">
+                    <input type="hidden" name="action" id="admin_action" value="crear">
+                    <input type="hidden" name="id_user_admin" id="admin_id" value="">
 
-                <form id="formUserAdmin" enctype="multipart/form-data">
-                    <div class="modal-body custom-card-action">
-                        <input type="hidden" name="action" id="admin_action" value="crear">
-                        <input type="hidden" name="id_user_admin" id="admin_id" value="">
-
-                        <div class="row mb-4 align-items-center">
-                            <div class="col-lg-4">
-                                <label class="fw-semibold">Foto de perfil: </label>
-                            </div>
-                            <div class="col-lg-8">
-                                <div class="mb-4 mb-md-0 d-flex gap-4 your-brand">
-                                    <div class="wd-100 ht-100 position-relative overflow-hidden border border-gray-2 rounded">
-                                        <!-- <img src="assets/images/avatar/user.png" class="upload-pic img-fluid rounded h-100 w-100" alt="">
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-lg-4">
+                            <label class="fw-semibold">Foto de perfil: </label>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="mb-4 mb-md-0 d-flex gap-4 your-brand">
+                                <div class="wd-100 ht-100 position-relative overflow-hidden border border-gray-2 rounded">
+                                    <!-- <img src="assets/images/avatar/user.png" class="upload-pic img-fluid rounded h-100 w-100" alt="">
                                         <div class="position-absolute start-50 top-50 end-0 bottom-0 translate-middle h-100 w-100 hstack align-items-center justify-content-center c-pointer upload-button">
                                             <i class="feather feather-camera" aria-hidden="true"></i>
                                         </div>
                                         <input class="file-upload" type="file" name="foto_perfil" accept="image/*"> -->
-                                        <img src="assets/images/avatar/user.png" id="preview_foto" class="upload-pic img-fluid rounded h-100 w-100" alt="Perfil">
+                                    <img src="assets/images/avatar/user.png" id="preview_foto" class="upload-pic img-fluid rounded h-100 w-100" alt="Perfil">
 
-                                        <div class="position-absolute start-0 top-0  h-100 w-100 d-flex align-items-center justify-content-center c-pointer upload-button" onclick="document.getElementById('input_foto').click()">
-                                            <i class="feather feather-camera" aria-hidden="true"></i>
-                                        </div>
-
-                                        <input class="file-upload d-none" type="file" name="foto_perfil" id="input_foto" accept="image/*">
+                                    <div class="position-absolute start-0 top-0  h-100 w-100 d-flex align-items-center justify-content-center c-pointer upload-button" onclick="document.getElementById('input_foto').click()">
+                                        <i class="feather feather-camera" aria-hidden="true"></i>
                                     </div>
-                                    <div class="d-flex flex-column gap-1">
-                                        <div class="fs-11 text-gray-500 mt-2"># Sube una foto de perfil</div>
-                                        <div class="fs-11 text-gray-500"># Tamaño recomendado: 150x150</div>
-                                    </div>
+
+                                    <input class="file-upload d-none" type="file" name="foto_perfil" id="input_foto" accept="image/*">
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-4 align-items-center">
-                            <div class="col-lg-4"><label for="fullnameInput" class="fw-semibold">Nombre(s): <span class="text-danger">*</span></label></div>
-                            <div class="col-lg-8">
-                                <div class="input-group">
-                                    <div class="input-group-text"><i class="feather-user"></i></div>
-                                    <input type="text" class="form-control" id="admin_nombre" name="admin_nombre" placeholder="Nombre(s)" required>
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="fs-11 text-gray-500 mt-2"># Sube una foto de perfil</div>
+                                    <div class="fs-11 text-gray-500"># Tamaño recomendado: 150x150</div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-4 align-items-center">
-                            <div class="col-lg-4"><label for="fullnameInput" class="fw-semibold">Apellidos: <span class="text-danger">*</span></label></div>
-                            <div class="col-lg-8">
-                                <div class="input-group">
-                                    <div class="input-group-text"><i class="feather-user"></i></div>
-                                    <input type="text" class="form-control" id="admin_apellidos" name="admin_apell_pat" placeholder="Apellido(s)" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-4 align-items-center">
-                            <div class="col-lg-4"><label for="mailInput" class="fw-semibold">Usuario (email): <span class="text-danger">*</span></label></div>
-                            <div class="col-lg-8">
-                                <div class="input-group">
-                                    <div class="input-group-text"><i class="feather-mail"></i></div>
-                                    <input type="email" class="form-control" id="usuario_lan" name="usuario_lan" placeholder="Escribe un usuario" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-4 align-items-center">
-                            <div class="col-lg-4">
-                                <label for="Input" class="fw-semibold">Contraseña:</label>
-                            </div>
-                            <div class="col-lg-8 generate-pass">
-                                <div class="input-group field">
-                                    <div class="input-group-text"><i class="feather-key"></i></div>
-                                    <input type="password" class="form-control password" id="newPassword" name="password" placeholder="Escribe una contraseña" required>
-
-                                    <!-- <div class="input-group-text c-pointer gen-pass"><i class="feather-hash"></i></div> -->
-
-                                    <div class="input-group-text border-start bg-gray-2 c-pointer show-pass"><i class="feather-eye"></i></div>
-                                </div>
-                                <div class="progress-bar mt-2">
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                </div>
-                                <small class="text-muted" id="nota_pass" style="display:none;">Déjalo en blanco para no cambiarla</small>
-                            </div>
-                        </div>
-
-                        <div class="row mb-4 align-items-center">
-                            <div class="col-lg-4">
-                                <label for="Input" class="fw-semibold">Confirmar contraseña: </label>
-                            </div>
-                            <div class="col-lg-8 generate-pass">
-                                <div class="input-group field">
-                                    <div class="input-group-text"><i class="feather-key"></i></div>
-                                    <input type="password" class="form-control password" id="newPassword2" name="password2" placeholder="Confirma la contraseña" required>
-                                    <div class="input-group-text border-start bg-gray-2 c-pointer show-pass2"><i class="feather-eye"></i></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="pass-hint">
-                            <p class="fw-bold">Requisitos para la contraseña:</p>
-                            <ul class="fs-12 ps-1 ms-2 text-muted">
-                                <li class="mb-1">Minímo 8 carácteres</li>
-                                <li class="mb-1">Al menos un carácter en minúscula</li>
-                                <li>Al menos un número, símbolo o carácter de espacio en blanco</li>
-                            </ul>
-                        </div>
-
-
-                        <div id="bloque_estatus">
-                            <hr>
-                            <div class="col-lg-8">
-                                <p class="fw-bold"><i class="feather-user-check"></i>&nbsp;&nbsp; Configuración Extra</p>
-                            </div>
-                            <div class="col-lg-8">
-                                <div class="col-12">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="estatus" name="estatus" value="Y" checked>
-                                        <label class="form-check-label" for="estatus">Usuario Activo</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <hr>
-
-                        <div class="row mb-4 align-items-center">
-                            <div class="col-lg-4"><label for="designationInput" class="fw-semibold">Perfil: <span class="text-danger">*</span></label></div>
-                            <div class="col-lg-8">
-                                <select class="form-control" id="perfil" name="perfil" data-select2-selector="status" required>
-                                    <option value="">Selecciona un perfil...</option>
-                                    <option value="admin">Administrador</option>
-                                    <option value="oper">Operativo</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <div class="row mb-3 align-items-center">
-                            <p class="fw-bold"><i class="feather-user-check"></i>&nbsp;&nbsp; Permisos de usuario</p>
-                        </div>
-
-                        <div class="row mb-4 alig-items-center">
-                            <div class="table-responsive">
-                                <table class="table mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Descripción</th>
-                                            <th class="wd-250 text-end">Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold text-dark">Cotizador</div>
-                                                <small class="fs-12 text-muted">Crear cotizaciones.</small>
-                                            </td>
-                                            <td class="text-end">
-                                                <div class="form-group select-wd-lg">
-                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_cotizador" required>
-                                                        <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left" data-color="text-danger">Desactivado</option>
-                                                    </select>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2">
-                                                <div class="fw-bold text-dark">Ventas</div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold text-dark">Mis cotizaciones</div>
-                                                <small class="fs-12 text-muted">Ver la lista de cotizaciones creadas.</small>
-                                            </td>
-                                            <td class="text-end">
-                                                <div class="form-group select-wd-lg">
-                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_cotiz" required>
-                                                        <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left"
-                                                        data-color="text-danger">Desactivado</option>
-                                                    </select>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2">
-                                                <div class="fw-bold text-dark">Clientes</div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold text-dark">Directorio de clientes</div>
-                                                <small class="fs-12 text-muted">Ver los clientes registrados en el sistema.</small>
-                                            </td>
-                                            <td class="text-end">
-                                                <div class="form-group select-wd-lg">
-                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_clientes" required>
-                                                        <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left"
-                                                        data-color="text-danger">Desactivado</option>
-                                                    </select>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2">
-                                                <div class="fw-bold text-dark">Almacén</div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold text-dark">Productos</div>
-                                                <small class="fs-12 text-muted">Ver el catálogo de productos registrados.</small>
-                                            </td>
-                                            <td class="text-end">
-                                                <div class="form-group select-wd-lg">
-                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_productos" required>
-                                                        <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left"
-                                                        data-color="text-danger">Desactivado</option>
-                                                    </select>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2">
-                                                <div class="fw-bold text-dark">Reportes</div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold text-dark">Ver reportes</div>
-                                                <small class="fs-12 text-muted">Buscar reportes de cotizaciones, productos y más.</small>
-                                            </td>
-                                            <td class="text-end">
-                                                <div class="form-group select-wd-lg">
-                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_reportes" required>
-                                                        <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left"
-                                                        data-color="text-danger">Desactivado</option>
-                                                    </select>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2">
-                                                <div class="fw-bold text-dark">Configuración</div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold text-dark">Usuarios</div>
-                                                <small class="fs-12 text-muted">Ver lista de usuarios, editar y eliminar.</small>
-                                            </td>
-                                            <td class="text-end">
-                                                <div class="form-group select-wd-lg">
-                                                    <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_usuarios" required>
-                                                        <option value="">Elige una opción...</option>
-                                                        <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
-                                                        <option value="Desactivado" data-icon="feather-toggle-left"
-                                                        data-color="text-danger">Desactivado</option>
-                                                    </select>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
                     </div>
 
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Guardar Usuario</button>
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-lg-4"><label for="fullnameInput" class="fw-semibold">Nombre(s): <span class="text-danger">*</span></label></div>
+                        <div class="col-lg-8">
+                            <div class="input-group">
+                                <div class="input-group-text"><i class="feather-user"></i></div>
+                                <input type="text" class="form-control" id="admin_nombre" name="admin_nombre" placeholder="Nombre(s)" required>
+                            </div>
+                        </div>
                     </div>
-                </form>
-            </div>
+
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-lg-4"><label for="fullnameInput" class="fw-semibold">Apellidos: <span class="text-danger">*</span></label></div>
+                        <div class="col-lg-8">
+                            <div class="input-group">
+                                <div class="input-group-text"><i class="feather-user"></i></div>
+                                <input type="text" class="form-control" id="admin_apellidos" name="admin_apell_pat" placeholder="Apellido(s)" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-lg-4"><label for="mailInput" class="fw-semibold">Usuario (email): <span class="text-danger">*</span></label></div>
+                        <div class="col-lg-8">
+                            <div class="input-group">
+                                <div class="input-group-text"><i class="feather-mail"></i></div>
+                                <input type="email" class="form-control" id="usuario_lan" name="usuario_lan" placeholder="Escribe un usuario" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-lg-4">
+                            <label for="Input" class="fw-semibold">Contraseña:</label>
+                        </div>
+                        <div class="col-lg-8 generate-pass">
+                            <div class="input-group field">
+                                <div class="input-group-text"><i class="feather-key"></i></div>
+                                <input type="password" class="form-control password" id="newPassword" name="password" placeholder="Escribe una contraseña" required>
+
+                                <!-- <div class="input-group-text c-pointer gen-pass"><i class="feather-hash"></i></div> -->
+
+                                <div class="input-group-text border-start bg-gray-2 c-pointer show-pass"><i class="feather-eye"></i></div>
+                            </div>
+                            <div class="progress-bar mt-2">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                            <small class="text-muted" id="nota_pass" style="display:none;">Déjalo en blanco para no cambiarla</small>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-lg-4">
+                            <label for="Input" class="fw-semibold">Confirmar contraseña: </label>
+                        </div>
+                        <div class="col-lg-8 generate-pass">
+                            <div class="input-group field">
+                                <div class="input-group-text"><i class="feather-key"></i></div>
+                                <input type="password" class="form-control password" id="newPassword2" name="password2" placeholder="Confirma la contraseña" required>
+                                <div class="input-group-text border-start bg-gray-2 c-pointer show-pass2"><i class="feather-eye"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pass-hint">
+                        <p class="fw-bold">Requisitos para la contraseña:</p>
+                        <ul class="fs-12 ps-1 ms-2 text-muted">
+                            <li class="mb-1">Minímo 8 carácteres</li>
+                            <li class="mb-1">Al menos un carácter en minúscula</li>
+                            <li>Al menos un número, símbolo o carácter de espacio en blanco</li>
+                        </ul>
+                    </div>
+
+
+                    <div id="bloque_estatus">
+                        <hr>
+                        <div class="col-lg-8">
+                            <p class="fw-bold"><i class="feather-user-check"></i>&nbsp;&nbsp; Configuración Extra</p>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="estatus" name="estatus" value="Y" checked>
+                                    <label class="form-check-label" for="estatus">Usuario Activo</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <hr>
+
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-lg-4"><label for="designationInput" class="fw-semibold">Perfil: <span class="text-danger">*</span></label></div>
+                        <div class="col-lg-8">
+                            <select class="form-control" id="perfil" name="perfil" data-select2-selector="status" required>
+                                <option value="">Selecciona un perfil...</option>
+                                <option value="admin">Administrador</option>
+                                <option value="oper">Operativo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mb-3 align-items-center">
+                        <p class="fw-bold"><i class="feather-user-check"></i>&nbsp;&nbsp; Permisos de usuario</p>
+                    </div>
+
+                    <div class="row mb-4 alig-items-center">
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th class="wd-250 text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-dark">Cotizador</div>
+                                            <small class="fs-12 text-muted">Crear cotizaciones.</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="form-group select-wd-lg">
+                                                <select class="form-control select-permisos" data-select2-selector="icon" name="mp_cotizador" required>
+                                                    <option value="">Elige una opción...</option>
+                                                    <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                    <option value="Desactivado" data-icon="feather-toggle-left" data-color="text-danger">Desactivado</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div class="fw-bold text-dark">Ventas</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-dark">Mis cotizaciones</div>
+                                            <small class="fs-12 text-muted">Ver la lista de cotizaciones creadas.</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="form-group select-wd-lg">
+                                                <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_cotiz" required>
+                                                    <option value="">Elige una opción...</option>
+                                                    <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                    <option value="Desactivado" data-icon="feather-toggle-left"
+                                                        data-color="text-danger">Desactivado</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div class="fw-bold text-dark">Clientes</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-dark">Directorio de clientes</div>
+                                            <small class="fs-12 text-muted">Ver los clientes registrados en el sistema.</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="form-group select-wd-lg">
+                                                <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_clientes" required>
+                                                    <option value="">Elige una opción...</option>
+                                                    <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                    <option value="Desactivado" data-icon="feather-toggle-left"
+                                                        data-color="text-danger">Desactivado</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div class="fw-bold text-dark">Almacén</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-dark">Productos</div>
+                                            <small class="fs-12 text-muted">Ver el catálogo de productos registrados.</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="form-group select-wd-lg">
+                                                <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_productos" required>
+                                                    <option value="">Elige una opción...</option>
+                                                    <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                    <option value="Desactivado" data-icon="feather-toggle-left"
+                                                        data-color="text-danger">Desactivado</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div class="fw-bold text-dark">Reportes</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-dark">Ver reportes</div>
+                                            <small class="fs-12 text-muted">Buscar reportes de cotizaciones, productos y más.</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="form-group select-wd-lg">
+                                                <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_reportes" required>
+                                                    <option value="">Elige una opción...</option>
+                                                    <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                    <option value="Desactivado" data-icon="feather-toggle-left"
+                                                        data-color="text-danger">Desactivado</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div class="fw-bold text-dark">Configuración</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-dark">Usuarios</div>
+                                            <small class="fs-12 text-muted">Ver lista de usuarios, editar y eliminar.</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="form-group select-wd-lg">
+                                                <select class="form-control select-permisos" data-select2-selector="icon" name="mp_ver_usuarios" required>
+                                                    <option value="">Elige una opción...</option>
+                                                    <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                    <option value="Desactivado" data-icon="feather-toggle-left"
+                                                        data-color="text-danger">Desactivado</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Usuario</button>
+                </div>
+            </form>
         </div>
     </div>
     <!--! ================================================================ !-->
