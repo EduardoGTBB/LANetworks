@@ -565,12 +565,43 @@ $(document).ready(function () {
                         window.windowSucursalesOpcionesEdit = '<option value="" disabled>Sin sucursales asignadas</option>';
                     } else {
                         $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
+
+                        // 1.Contar únicamente los Nombre repetidos 
+                        let conteoNombres = {};
+
+                        data.forEach(suc => {
+                            let nombre = suc.nombre_listo_para_mostrar;
+                            conteoNombres[nombre] = (conteoNombres[nombre] || 0) + 1;
+                        });
+
                         let sucursalesAgregadas = new Set();
 
                         data.forEach(suc => {
                             if (!sucursalesAgregadas.has(suc.id_sucursal)) {
                                 sucursalesAgregadas.add(suc.id_sucursal);
-                                let nombreVisual = suc.nombre_listo_para_mostrar;
+                                let nombreBase = suc.nombre_listo_para_mostrar;
+                                let nombreVisual = nombreBase;
+
+                                // let nombreVisual = suc.nombre_listo_para_mostrar;
+
+                                if (conteoNombres[nombreBase] > 1) {
+                                    let calle = suc.calle ? suc.calle.trim() : '';
+                                    let numExt = suc.num_ext ? suc.num_ext.trim() : '';
+                                    let idSae = suc.id_sae ? suc.id_sae : '';
+                                    
+                                    let direccionCompleta = calle;
+                                    if (numExt !== '') {
+                                        direccionCompleta += (direccionCompleta !== '' ? ' No. ' + numExt : 'No. ' + numExt);
+                                    }
+                                    
+                                    if (direccionCompleta !== '') {
+                                        nombreVisual = `${nombreBase} - (${direccionCompleta})`;
+                                    } else if (idSae !== '') {
+                                        // Desempate de seguridad si la sucursal no tiene calle registrada
+                                        nombreVisual = `${nombreBase} - (SAE: ${idSae})`;
+                                    }
+                                }
+
                                 $selectSuc.append(`<option value="${suc.id_sucursal}">${nombreVisual}</option>`);
                                 window.windowSucursalesOpcionesEdit += `<option value="${suc.id_sucursal}">${nombreVisual}</option>`;
                             }

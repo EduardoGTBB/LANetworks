@@ -186,14 +186,14 @@
             </div>
             !-- [ page-header ] end -->
 
-            <?php 
-                $page_title = "Usuarios de Clientes";
-                $breadcrumb_items = [
-                    "Clientes",
-                    "Usuarios"
-                ];
-                // $hide_new_quote_btn = true; // Descomenta esta línea en las páginas donde NO quieras el botón
-                include('views/include/page_header.php'); 
+            <?php
+            $page_title = "Usuarios de Clientes";
+            $breadcrumb_items = [
+                "Clientes",
+                "Usuarios"
+            ];
+            // $hide_new_quote_btn = true; // Descomenta esta línea en las páginas donde NO quieras el botón
+            include('views/include/page_header.php');
             ?>
             <!-- [ Main Content ] start -->
             <div class="main-content">
@@ -313,7 +313,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-12 mb-3">
+                        <!-- <div class="col-md-12 mb-3">
                             <label class="form-label">Contraseña <span class="text-danger" id="req_pass">*</span></label>
                             <div class="generate-pass">
                                 <div class="input-group field">
@@ -333,19 +333,41 @@
                         <div class="col-md-12 mb-3">
                             <label class="form-label">Confirmar Contraseña <span class="text-danger" id="req_pass2">*</span></label>
                             <input type="password" class="form-control" id="confirmar_password" placeholder="***">
+                        </div> -->
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Contraseña <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" name="usuario_password" id="usuario_password" placeholder="Escribe o genera una contraseña">
+                                <button class="btn btn-light border" type="button" id="btn_generar_password" title="Generar Contraseña Segura">
+                                    <i class="feather-hash"></i>
+                                </button>
+                                <button class="btn btn-light border toggle-password" type="button" data-target="#usuario_password" title="Mostrar/Ocultar">
+                                    <i class="feather-eye-off"></i>
+                                </button>
+                            </div>
+
+                            <!-- ✨ NUEVO: Indicador de Seguridad (Oculto por defecto) -->
+                            <div class="progress mt-2" style="height: 4px; display: none;" id="pw_strength_container">
+                                <div id="pw_strength_bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small id="pw_strength_text" class="fw-bold fs-11 mt-1" style="display: none;"></small>
+
+                            <small id="nota_pass" class="text-muted d-block mt-2" style="display:none;">Déjalo en blanco para no cambiarla</small>
+                        </div>
+
+                        <!-- Campo: Confirmar Contraseña -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Confirmar Contraseña <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" name="confirmar_password" id="confirmar_password" placeholder="***">
+                                <button class="btn btn-light border toggle-password" type="button" data-target="#confirmar_password" title="Mostrar/Ocultar">
+                                    <i class="feather-eye-off"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <!-- <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Contraseña <span class="text-danger" id="req_pass">*</span></label>
-                            <input type="text" class="form-control" name="usuario_password" id="usuario_password" placeholder="***">
-                            <small class="text-muted" id="nota_pass" style="display:none;">Déjalo en blanco para no cambiarla</small>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Confirmar Contraseña <span class="text-danger" id="req_pass2">*</span></label>
-                            <input type="password" class="form-control" id="confirmar_password" placeholder="***">
-                        </div>
-                    </div> -->
+
                     <div id="bloque_estatus_usr" class="row mt-3">
                         <div class="col-md-12">
                             <hr>

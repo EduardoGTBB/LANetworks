@@ -1,6 +1,8 @@
 #Carpeta de pruebas
 Pruebas/
 uploads/
+avatar/
+productos/
 
 #Importadores
 importar_plazas.php
