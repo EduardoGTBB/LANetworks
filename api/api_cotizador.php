@@ -36,10 +36,13 @@ try {
                 $usuario_id = (int) ($_GET['usuario_id'] ?? 0);
                 echo json_encode(obtenerSucursalesPorUsuario($pdo, $usuario_id));
                 break;
-            
-            case 'preview_folio': //Predicción del Folio en tiempo real
+
+            case 'preview_folio': 
                 $categoria_raw = $_GET['cat'] ?? 'TODOS';
-                $categoria_bd = 'Nuevo'; // Default
+                // 🛡️ Validación Zero Trust: Obliga a 'N' si es cliente B2B
+                $es_temporal   = (defined('HABILITAR_COTS_TEMPORALES') && HABILITAR_COTS_TEMPORALES && !isset($_SESSION['id_usuario_cliente'])) ? ($_GET['es_temp'] ?? 'N') : 'N';
+                
+                $categoria_bd  = 'Nuevo';
                 $sufijo = '-N';
 
                 if ($categoria_raw === 'USADO') {
@@ -50,24 +53,27 @@ try {
                     $sufijo = '-CALIB';
                 }
 
-                // Buscamos el último folio de esa categoría
-                $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1";
+                $prefijo = ($es_temporal === 'Y') ? 'TEMP-' : '';
+
+                // Contamos con la bandera de temporal
+                $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND es_temporal = :temp AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1";
                 $stmtMax = $pdo->prepare($sqlMax);
-                $stmtMax->execute([':cat' => $categoria_bd]);
+                $stmtMax->execute([':cat' => $categoria_bd, ':temp' => $es_temporal]);
                 $ultimoFolio = $stmtMax->fetchColumn();
 
                 if ($ultimoFolio) {
-                    $numeroExtraido = str_replace($sufijo, '', $ultimoFolio);
+                    $numeroExtraido = str_replace([$prefijo, $sufijo], '', $ultimoFolio);
                     $siguienteNumero = ((int)$numeroExtraido) + 1;
                 } else {
                     $siguienteNumero = 1;
                 }
 
-                $folio_predictivo = str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;
+                $folio_predictivo = $prefijo . str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;
                 
                 echo json_encode(['status' => 'success', 'folio' => $folio_predictivo]);
                 break;
-                default:
+            
+            default:
                 echo json_encode(['status' => 'error', 'message' => 'Acción GET no válida']);
         }
         exit;
@@ -116,13 +122,15 @@ try {
             $sucursal_id = !empty($_POST['Sucursal_id']) ? (int)$_POST['Sucursal_id'] : null;
         }
 
+        $es_temporal = (defined('HABILITAR_COTS_TEMPORALES') && HABILITAR_COTS_TEMPORALES && !$es_cliente) ? ($_POST['es_temporal'] ?? 'N') : 'N';
+
         if ($empresa_id === 0 && $tipo_sucursal_flujo !== 'multisucursal') {
             echo json_encode(['status' => 'error', 'message' => 'Falta seleccionar el Cliente.']);
             exit;
         }
 
-        // Exigimos sucursal SOLO si el flujo es 'unica'
-        if (empty($sucursal_id) && $tipo_sucursal_flujo !== 'multisucursal') {
+        // ✨ Exigimos sucursal SOLO si el flujo es 'unica' y NO es 'Temporal'
+        if (empty($sucursal_id) && $tipo_sucursal_flujo !== 'multisucursal' && $es_temporal === 'N') {
             echo json_encode(['status' => 'error', 'message' => 'Falta seleccionar la Sucursal de destino.']);
             exit;
         }
@@ -150,11 +158,12 @@ try {
 
             'porcentaje_iva' => 16.00,
             // 'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 0),
-            
+
             'categoria'     => $categoria_limpia,
             'tipo_precio'   => $tipo_precio,
             'division'      => $division,
-            'estatus'        => $es_cliente ? 'Guardado' : 'Guardado'
+            'estatus'        => $es_cliente ? 'Guardado' : 'Guardado',
+            'es_temporal' => $es_temporal
 
         ];
 
