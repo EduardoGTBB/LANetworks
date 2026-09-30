@@ -11,6 +11,11 @@ define('DB_PASS','@13jNzj27');
 define('DB_CHARSET','utf8mb4');
 define('SUCURSAL_MATRIZ_NOMBRE', 'SIN SUCURSAL');
 
+// *INICIO: Módulo de Cotizaciones Temporales
+define('HABILITAR_COTS_TEMPORALES', true); // Cambiar a false para apagar toda la función
+// *FIN: Módulo de Cotizaciones Temporales
+
+
 // 🛡️ Datos Servidor SMTP (Correos B2B y Empleados)
 // Credenciales validadas del servidor Lykos - Lupware
 define('SMTP_HOST', 'mail.avisos.lupware.com');
