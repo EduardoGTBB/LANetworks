@@ -34,7 +34,9 @@ try {
             }
         } elseif ($action === 'leer_todas') {
             if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin') {
+                // echo json_encode(obtenerTodasLasCotizaciones($pdo));
                 echo json_encode(obtenerTodasLasCotizaciones($pdo));
+
             } else {
                 echo json_encode([]);
             }
@@ -44,6 +46,24 @@ try {
             $detalles = obtenerdetallesCotizacionID($pdo, $id);
 
             echo json_encode(['status' => 'success', 'cotizacion' => $cotizacion, 'detalles' => $detalles]);
+        } elseif ($action === 'leer_temporales') {
+            // ✨ SOLO trae las cotizaciones que tienen la bandera es_temporal = 'Y'
+            if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin') {
+                $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
+                               e.razon_social, u.nombre, u.apellido_pat, ua.admin_nombre, ua.admin_apell_pat, c.estatus 
+                        FROM cotizacion c
+                        LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
+                        LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
+                        LEFT JOIN usuarios_admin ua ON c.Usuario_admin_id = ua.id_user_admin
+                        WHERE c.es_temporal = 'Y'
+                        ORDER BY c.id_cotizacion DESC";
+                
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute();
+                echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+            } else {
+                echo json_encode([]);
+            }
         }
         exit;
     }
@@ -181,7 +201,8 @@ try {
                 'tipo_precio'   => trim($_POST['tipo_precio'] ?? ''),
                 'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 16),
                 'estatus'       => $estatus_nuevo,
-                'comentarios'   => trim($_POST['comentarios'] ?? '')
+                'comentarios'   => trim($_POST['comentarios'] ?? ''),
+                'es_temporal'   => $_POST['es_temporal'] ?? 'Y'
             ];
 
             updateCotizacion($pdo, $id_cotizacion, $datosCotizacion, $detalles);

@@ -99,43 +99,30 @@ function obtenerProductPorId(PDO $pdo, int $id_product)
 }
 
 // [fn] Guardar la nueva cotización
-function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): string|false
+function saveCotizacion(PDO $pdo, array $datosCotizacion, array$detalles): string|false
 {
     try {
         $pdo->beginTransaction();
 
-        // ✨ 1. LÓGICA DE FOLIO ESPECIAL INTELIGENTE
-        $categoria = $datosCotizacion['categoria'] ?? 'Nuevo'; // Por defecto Nuevo si no viene
-        $sufijo = '';
-        
-        if ($categoria === 'Nuevo') { $sufijo = '-N'; } 
-        elseif ($categoria === 'Usado') { $sufijo = '-U'; } 
-        elseif ($categoria === 'Calibracion') { $sufijo = '-CALIB'; }
+        $categoria = $datosCotizacion['categoria'] ?? 'Nuevo';$es_temporal = $datosCotizacion['es_temporal'] ?? 'N';$sufijo = '';
+        if ($categoria === 'Nuevo') {$sufijo = '-N'; } 
+        elseif ($categoria === 'Usado') {$sufijo = '-U'; } 
+        elseif ($categoria === 'Calibracion') {$sufijo = '-CALIB'; }
 
-        // Buscamos el último folio generado para esta categoría
-        $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1 FOR UPDATE";
-        
-        $stmtMax = $pdo->prepare($sqlMax);
-        $stmtMax->execute([':cat' => $categoria]);
-        $ultimoFolio = $stmtMax->fetchColumn();
+        $prefijo = ($es_temporal === 'Y') ? 'TEMP-' : '';
 
-        if ($ultimoFolio) {
-            // Extraemos el número (ej. de "00005-N" le quitamos el "-N", sacamos el "5") y le sumamos 1
-            $numeroExtraido = str_replace($sufijo, '', $ultimoFolio);
-            $siguienteNumero = ((int)$numeroExtraido) + 1;
-        } else {
-            // Si es la primera, empezamos en 1
-            $siguienteNumero = 1;
+        // Buscamos el último folio según su categoría y naturaleza
+        $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND es_temporal = :temp AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1 FOR UPDATE";
+        $stmtMax =$pdo->prepare($sqlMax);$stmtMax->execute([':cat' => $categoria, ':temp' =>$es_temporal]);
+        $ultimoFolio =$stmtMax->fetchColumn();
+
+        if ($ultimoFolio) {$folioLimpio = str_replace([$prefijo,$sufijo], '', $ultimoFolio);$siguienteNumero = ((int)$folioLimpio) + 1;         } else {$siguienteNumero = 1;
         }
 
-        // Formateamos para que siempre tenga 5 ceros (ej. 00001-N)
-        $folio_especial = str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;
+        $folio_especial =$prefijo . str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) .$sufijo;
 
-
-
-        // ✨ 2. GUARDADO EN BASE DE DATOS (Agregamos categoria y folio_especial)
-        $sqlCotizacion = "INSERT INTO cotizacion (categoria, folio_especial, Empresa_id, Sucursal_id, Plaza_id, Usuario_admin_id, Usuario_empresa_id , fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division)
-                        VALUES (:categoria, :folio_especial, :empresa_id, :sucursal_id, :plaza_id, :id_user_admin, :usuario_id, :fecha_cot, :importe_total, :comentarios, :precio_iva, :pcte_iva , :tprecio, :division)";
+        $sqlCotizacion = "INSERT INTO cotizacion (categoria, folio_especial, Empresa_id, Sucursal_id, Plaza_id, Usuario_admin_id, Usuario_empresa_id , fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, es_temporal)
+                        VALUES (:categoria, :folio_especial, :empresa_id, :sucursal_id, :plaza_id, :id_user_admin, :usuario_id, :fecha_cot, :importe_total, :comentarios, :precio_iva, :pcte_iva , :tprecio, :division, :es_temporal)";
 
         $stmtCot = $pdo->prepare($sqlCotizacion);
 
@@ -153,18 +140,16 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
             ':precio_iva'     => $datosCotizacion['precio_iva'],
             ':pcte_iva'       => $datosCotizacion['porcentaje_iva'],
             ':tprecio'        => $datosCotizacion['tipo_precio'],
-            ':division'       => $datosCotizacion['division']
+            ':division'       => $datosCotizacion['division'],
+            ':es_temporal'    => $es_temporal
         ]);
 
-        $id_cotizacion = $pdo->lastInsertId();
+        $id_cotizacion =$pdo->lastInsertId();
 
-        // 3. GUARDADO DE DETALLES (Equipos)
         $sqlDetalle = "INSERT INTO `detalle_cotizacion` (`Cotizacion_id`, `Product_id`, `cantidad`, `precio_unitario`, `precio_extendido`, `desglosar`, `sucursal_destino_id`, `equipo_id`) VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar, :suc_dest, :eq_id)";
-
         $stmtDet = $pdo->prepare($sqlDetalle);
 
-        foreach ($detalles as $item) {
-            $stmtDet->execute([
+        foreach ($detalles as $item) {$stmtDet->execute([
                 ':cot_id'     => $id_cotizacion,
                 ':prod_id'    => $item['producto_id'],
                 ':cantidad'   => $item['cantidad'],
@@ -178,8 +163,7 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array $detalles): stri
 
         $pdo->commit();
         return $id_cotizacion;
-    } catch (Exception $e) {
-        $pdo->rollBack();
+    } catch (Exception $e) {$pdo->rollBack();
         error_log("Error al guardar cotización: " . $e->getMessage());
         throw new Exception($e->getMessage());
     }
@@ -209,7 +193,7 @@ function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
             LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
-            WHERE c.Usuario_admin_id = :admin_id
+            WHERE c.Usuario_admin_id = :admin_id AND c.es_temporal = 'N'
             ORDER BY c.id_cotizacion DESC";
 
     $stmt = $pdo->prepare($sql);
@@ -226,11 +210,11 @@ function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
                    pz.nombre_plaza,
                    (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
-            FROM cotizacion c
+            FROM cotizacion c 
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
             LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
-            WHERE c.Usuario_empresa_id = :cliente_id
+            WHERE c.Usuario_empresa_id = :cliente_id AND c.es_temporal = 'N'
             ORDER BY c.id_cotizacion DESC";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':cliente_id' => $id_usuario_cliente]);
@@ -270,7 +254,7 @@ function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
 // &Obtenemos la cotizacion especifica ID (Padre)
 function editarCotizacionporID(PDO $pdo, int $id_cotizacion)
 {
-    $sql = "SELECT id_cotizacion,folio_especial, categoria, Empresa_id, Sucursal_id, Plaza_id, Usuario_admin_id, Usuario_empresa_id, fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, estatus,
+    $sql = "SELECT id_cotizacion,folio_especial, categoria, Empresa_id, Sucursal_id, Plaza_id, Usuario_admin_id, Usuario_empresa_id, fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, estatus, es_temporal,
             (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = cotizacion.id_cotizacion) as tiene_dir
             FROM cotizacion
             WHERE id_cotizacion = :id";
@@ -284,9 +268,6 @@ function editarCotizacionporID(PDO $pdo, int $id_cotizacion)
 // &Obtenemos los detalles de la cotizzacion(hijos)
 function obtenerdetallesCotizacionID(PDO $pdo, int $id_cotizacion)
 {
-    /* $sql = "SELECT id_detalle_cot, Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar, sucursal_destino_id
-            FROM detalle_cotizacion
-            WHERE Cotizacion_id = :id"; */
     $sql = "SELECT id_detalle_cot, Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar, sucursal_destino_id, equipo_id
             FROM detalle_cotizacion
             WHERE Cotizacion_id = :id";
@@ -314,6 +295,40 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
             $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
             $pdo->prepare("DELETE FROM domicilio_envio WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
         }
+
+        // ✨ LÓGICA DE CONVERSIÓN DE TEMPORAL A NORMAL
+        $stmtVerificar = $pdo->prepare("SELECT es_temporal, categoria FROM cotizacion WHERE id_cotizacion = ?");
+        $stmtVerificar->execute([$id_cotizacion]);
+        $cotActual = $stmtVerificar->fetch(PDO::FETCH_ASSOC);
+
+        $es_temporal_nuevo = isset($_SESSION['id_usuario_cliente']) ? $cotActual['es_temporal'] : ($datosCotizacion['es_temporal'] ?? $cotActual['es_temporal']);
+        $folio_query = "";
+
+        if ($cotActual['es_temporal'] === 'Y' && $es_temporal_nuevo === 'N') {
+            
+            $categoria = $cotActual['categoria'];
+            $sufijo = '';
+            if ($categoria === 'Nuevo') { $sufijo = '-N'; } 
+            elseif ($categoria === 'Usado') { $sufijo = '-U'; } 
+            elseif ($categoria === 'Calibracion') { $sufijo = '-CALIB'; }
+
+            // Buscamos el último folio normal
+            $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND es_temporal = 'N' AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1 FOR UPDATE";
+            $stmtMax = $pdo->prepare($sqlMax);
+            $stmtMax->execute([':cat' => $categoria]);
+            $ultimoFolioNormal = $stmtMax->fetchColumn();
+
+            if ($ultimoFolioNormal) {
+                $numeroExtraido = str_replace($sufijo, '', $ultimoFolioNormal);
+                $siguienteNumero = ((int)$numeroExtraido) + 1;
+            } else {
+                $siguienteNumero = 1;
+            }
+
+            // Generamos su nuevo folio oficial definitivo
+            $nuevo_folio = str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;
+            $folio_query = ", folio_especial = '$nuevo_folio'";
+        }
  
         // 1. Actualizamos el padre (La cotización)
         $sqlCot = "UPDATE cotizacion 
@@ -327,11 +342,14 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
                        tipo_precio = :tipo_precio,
                        porcentaje_iva = :porcentaje_iva,
                        estatus = :estatus,
+                       es_temporal = :es_temporal,
                        comentarios = :comentarios
+                       $folio_query
                    WHERE id_cotizacion = :id_cot";
 
         $stmtCot = $pdo->prepare($sqlCot);
         $stmtCot->execute([
+            ':es_temporal'    => $es_temporal_nuevo,
             ':empresa_id'     => $datosCotizacion['empresa_id'],
             ':sucursal_id'    => $datosCotizacion['sucursal_id'],
             ':plaza_id'       => $datosCotizacion['plaza_id'],
@@ -433,11 +451,12 @@ function obtenerTodasLasCotizaciones(PDO $pdo): array
                    pz.nombre_plaza,
                    (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
-            FROM cotizacion c
+            FROM cotizacion c 
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
             LEFT JOIN usuarios u ON c.Usuario_empresa_id = u.id_usuario
             LEFT JOIN usuarios_admin ua ON c.Usuario_admin_id = ua.id_user_admin
             LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
+            WHERE c.es_temporal = 'N'
             ORDER BY c.id_cotizacion DESC";
 
     $stmt = $pdo->prepare($sql);

@@ -126,7 +126,7 @@
                                     </div>
                                 </div>-->
 
-                                <div class="mb-5 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between border-bottom pb-4 gap-3">
+                                <div class="mb-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between border-bottom pb-4 gap-3">
                                     <h5 class="fw-bold mb-0 mt-2">
                                         <span class="d-block fs-18 mb-2">Nueva cotización</span>
                                         <span class="fs-12 fw-normal text-muted">Completa los campos comerciales y logísticos.</span>
@@ -160,6 +160,26 @@
                                             </select>
                                         </div>
                                     </div> -->
+
+                                    <!-- ✨ LÓGICA MOVIDA AFUERA DE LA TARJETA -->
+                                    <?php if (defined('HABILITAR_COTS_TEMPORALES') && HABILITAR_COTS_TEMPORALES && !isset($_SESSION['id_usuario_cliente'])): ?>
+                                        <div class="mb-4 p-3 rounded shadow-sm" style="background-color: #fff3cd; border: 1px solid #ffe69c;">
+                                            <label class="form-label text-dark fw-bold mb-2"><i class="feather-clock me-1 text-warning"></i>Importante: Aún no determinas la sucursal a la que va dirigida la cotización</label>
+                                            <div class="d-flex flex-column flex-md-row gap-3 mt-1">
+                                                <div class="form-check">
+                                                    <input class="form-check-input border-warning" type="radio" name="es_temporal" id="rad_normal" value="N" checked style="cursor: pointer;">
+                                                    <label class="form-check-label fw-bold text-dark" for="rad_normal" style="cursor: pointer;">Normal (Con destino)</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input border-warning" type="radio" name="es_temporal" id="rad_temporal" value="Y" style="cursor: pointer;">
+                                                    <label class="form-check-label fw-bold text-muted" for="rad_temporal" style="cursor: pointer;">Temporal (Sin destino)</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php else: ?>
+                                        <!-- Si el Feature Flag está apagado o es Cliente B2B, enviamos 'N' (Normal) por defecto -->
+                                        <input type="hidden" name="es_temporal" value="N">
+                                    <?php endif; ?>
 
                                     <div class="row mb-4">
                                         <div class="col-lg-6 mb-4 mb-lg-0">

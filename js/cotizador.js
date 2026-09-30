@@ -6,23 +6,23 @@ $(document).ready(function () {
     var uniqueIdCounter = 1;
     var preciosProductos = {};
     var windowProductos = [];
-    var sucursalesCache = []; 
+    var sucursalesCache = [];
 
-    $(document).on('blur', '.precio-mask', function() {
+    $(document).on('blur', '.precio-mask', function () {
         let valor = String($(this).val()).replace(/,/g, '');
-        if(valor !== '' && !isNaN(valor)) {
+        if (valor !== '' && !isNaN(valor)) {
             $(this).val(formatoInput.format(valor));
         } else {
             $(this).val('');
         }
     });
 
-    $(document).on('focus', '.precio-mask', function() {
+    $(document).on('focus', '.precio-mask', function () {
         let valor = String($(this).val()).replace(/,/g, '');
         $(this).val(valor); // Quita comas para editar facil
     });
-    
-    $(document).on('input', '.precio-mask', function() {
+
+    $(document).on('input', '.precio-mask', function () {
         this.value = this.value.replace(/[^0-9.,]/g, ''); // Bloquea letras
     });
 
@@ -30,7 +30,7 @@ $(document).ready(function () {
     if ($.fn.select2) {
         $('#filtro_estado_producto').select2({
             theme: 'bootstrap-5',
-            minimumResultsForSearch: Infinity 
+            minimumResultsForSearch: Infinity
         });
     }
 
@@ -79,7 +79,7 @@ $(document).ready(function () {
         url: 'api/api_cotizador.php?action=get_productos',
         method: 'GET', dataType: 'json',
         success: function (data) {
-            windowProductos = data; 
+            windowProductos = data;
             data.forEach(prod => {
                 preciosProductos[prod.id_product] = prod;
             });
@@ -97,24 +97,24 @@ $(document).ready(function () {
         if (filtro === 'TODOS') {
             // Si está en "TODOS", mostramos un estado neutro y elegante
             $badgeFolio.html('<i class="feather-info me-2" style="font-size: 1.2em; transform: translateY(-1px);"></i> Selecciona tipo de producto')
-                       .removeClass('bg-soft-primary text-primary')
-                       .addClass('bg-soft-secondary text-secondary')
-                       .fadeIn('fast');
+                .removeClass('bg-soft-primary text-primary')
+                .addClass('bg-soft-secondary text-secondary')
+                .fadeIn('fast');
         } else {
             // Si ya eligió Nuevo, Usado o Calibración, mostramos el loading y buscamos
             $badgeFolio.html('<span class="spinner-border spinner-border-sm me-2" style="width: 1.2rem; height: 1.2rem;"></span> Calculando...').fadeIn('fast');
 
             $.ajax({
-                url: 'api/api_cotizador.php?action=preview_folio&cat=' + filtro,
+                url: 'api/api_cotizador.php?action=preview_folio&cat=' + filtro + '&es_temp=' + $('input[name="es_temporal"]:checked').val(),
                 method: 'GET',
                 dataType: 'json',
-                success: function(res) {
-                    if(res.status === 'success') {
+                success: function (res) {
+                    if (res.status === 'success') {
                         // Ajustamos el tamaño del icono a 1.2em para que empate con el texto de 18px
                         $badgeFolio.html('<i class="feather-hash me-1" style="font-size: 1.2em; transform: translateY(-1px);"></i> ' + res.folio)
-                                   .removeClass('bg-soft-secondary text-secondary')
-                                   .addClass('bg-soft-primary text-primary');
-                        
+                            .removeClass('bg-soft-secondary text-secondary')
+                            .addClass('bg-soft-primary text-primary');
+
                         // NUEVO: Guardamos el folio en un input oculto para enviarlo al backend
                         if ($('#hidden_folio_predictivo').length === 0) {
                             $('#nueva_cotizacion').append('<input type="hidden" id="hidden_folio_predictivo" name="folio_predictivo" value="' + res.folio + '">');
@@ -123,10 +123,10 @@ $(document).ready(function () {
                         }
                     }
                 },
-                error: function() {
+                error: function () {
                     $badgeFolio.html('<i class="feather-alert-circle me-1" style="font-size: 1.2em;"></i> Folio Automático')
-                               .removeClass('bg-soft-primary text-primary')
-                               .addClass('bg-soft-secondary text-secondary');
+                        .removeClass('bg-soft-primary text-primary')
+                        .addClass('bg-soft-secondary text-secondary');
                 }
             });
         }
@@ -174,20 +174,55 @@ $(document).ready(function () {
         });
     });
 
+    // >>> LÓGICA DE TIPO DE SUCURSAL (Única / Múltiple)
     $(document).on('change', 'input[name="tipo_sucursal_flujo"]', function () {
         let tipo = $(this).val();
         let $selectSuc = $('#select_sucursal');
+        let esTemporal = $('input[name="es_temporal"]:checked').val() || 'N';
 
         if (tipo === 'multisucursal') {
-            $('#wrapper_selector_sucursal').fadeOut('fast');
-            $selectSuc.val('').trigger('change.select2').prop('required', false);
-            $('.col-multisucursal').fadeIn('fast');
+            $('#wrapper_selector_sucursal').hide();
+            $selectSuc.val('').trigger('change.select2').prop('required', false); $('.col-multisucursal').fadeIn('fast');
         } else {
-            $('#wrapper_selector_sucursal').fadeIn('fast');
-            $selectSuc.prop('required', true);
-            $('.col-multisucursal').fadeOut('fast');
-            $('.select-sucursal-fila').val('').trigger('change.select2');
+            if (esTemporal === 'N') {
+                $('#wrapper_selector_sucursal').fadeIn('fast');
+                $selectSuc.prop('required', true);
+            }
+            $('.col-multisucursal').hide(); $('.select-sucursal-fila').val('').trigger('change.select2');
         }
+    });
+
+    // ✨ LÓGICA DE COTIZACIÓN TEMPORAL
+    $(document).on('change', 'input[name="es_temporal"]', function () {
+        if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) return;
+
+        let esTemporal = $(this).val();
+        let $selectSuc = $('#select_sucursal');
+        let $radMulti = $('#rad_multi');
+        let $radUnica = $('#rad_unica');
+
+        if (esTemporal === 'Y') {
+            // 🛡️ Ocultamos SOLO la sucursal (La Plaza se mantiene activa)
+            $('#wrapper_selector_sucursal').hide();
+            $selectSuc.prop('required', false);
+            
+            $radUnica.prop('checked', true).trigger('change');
+            $radMulti.prop('disabled', true);
+        } else {
+            // Restauramos flujo de la sucursal
+            $radMulti.prop('disabled', false);
+            if ($radUnica.is(':checked')) {
+                $('#wrapper_selector_sucursal').show();
+                $selectSuc.prop('required', true);
+            }
+        }
+
+        // 🛡️ Recargamos el solicitante para refrescar los selectores
+        if ($('#select_solicitante').val() !== '') {
+            $('#select_solicitante').trigger('change');
+        }
+
+        $('#filtro_estado_producto').trigger('change');
     });
 
     // >>> 2. EVENTOS DE DROPDOWNS (SOLICITANTE Y SUCURSALES)
@@ -208,8 +243,7 @@ $(document).ready(function () {
                     });
 
                     if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-                        $selectSol.val(PORTAL_USUARIO_ID).trigger('change.select2').trigger('change');
-                        $selectSol.prop('disabled', true);
+                        $selectSol.val(PORTAL_USUARIO_ID).trigger('change.select2').trigger('change'); $selectSol.prop('disabled', true);
 
                         if ($('#hidden_usuario').length === 0) {
                             $('#nueva_cotizacion').append(`<input type="hidden" id="hidden_usuario" name="Usuario_id" value="${PORTAL_USUARIO_ID}">`);
@@ -220,18 +254,20 @@ $(document).ready(function () {
         });
     }
 
-    // EVENTO SOLICITANTE: CARGA PLAZAS Y SUCURSALES (CON ESCUDOS DE SEGURIDAD)
+   // EVENTO SOLICITANTE: CARGA PLAZAS Y SUCURSALES
     $('#select_solicitante').on('change', function () {
         let usuarioId = $(this).val();
         let $selectSuc = $('#select_sucursal');
-
         let $infoPlaza = $('#info_plaza');
         let $wrapperPlaza = $('#wrapper_info_plaza');
+        // Quitamos la dependencia de esTemporal para la plaza
 
         if (usuarioId) {
             $selectSuc.empty().append('<option value="">Cargando...</option>');
             $infoPlaza.empty().append('<option value="">Cargando plazas...</option>');
-            $wrapperPlaza.slideDown('fast');
+            
+            // ✨ AHORA LA PLAZA SIEMPRE SE MUESTRA, SEA NORMAL O TEMPORAL
+            $wrapperPlaza.show();
 
             $.ajax({
                 url: 'api/api_cotizador.php?action=get_sucursales_usuario&usuario_id=' + usuarioId,
@@ -242,7 +278,7 @@ $(document).ready(function () {
 
                     // --- 1. LLENAR SUCURSALES ---
                     if ($selectSuc.hasClass('select2-hidden-accessible')) {
-                        $selectSuc.select2('destroy'); //  Limpiamos el plugin atorado
+                        $selectSuc.select2('destroy');
                     }
                     $selectSuc.empty();
                     window.windowSucursalesOpciones = '<option value="">Selecciona Sucursal...</option>';
@@ -251,21 +287,16 @@ $(document).ready(function () {
                         $selectSuc.append('<option value="" disabled>Sin sucursales asignadas</option>');
                     } else {
                         $selectSuc.append('<option value="">Selecciona la sucursal...</option>');
-                        
-                        // ✨ 1. Pre-procesamiento: Contar únicamente las repeticiones de Nombre
                         let conteoNombres = {};
-                        
                         data.forEach(suc => {
                             let nombre = suc.nombre_listo_para_mostrar;
                             conteoNombres[nombre] = (conteoNombres[nombre] || 0) + 1;
                         });
 
-                        let sucursalesAgregadas = new Set(); 
-                        
+                        let sucursalesAgregadas = new Set();
                         data.forEach(suc => {
                             if (!sucursalesAgregadas.has(suc.id_sucursal)) {
                                 sucursalesAgregadas.add(suc.id_sucursal);
-
                                 let nombreBase = suc.nombre_listo_para_mostrar;
                                 let nombreVisual = nombreBase;
 
@@ -273,47 +304,31 @@ $(document).ready(function () {
                                     let calle = suc.calle ? suc.calle.trim() : '';
                                     let numExt = suc.num_ext ? suc.num_ext.trim() : '';
                                     let idSae = suc.id_sae ? suc.id_sae : '';
-                                    
                                     let direccionCompleta = calle;
-                                    if (numExt !== '') {
-                                        direccionCompleta += (direccionCompleta !== '' ? ' No. ' + numExt : 'No. ' + numExt);
-                                    }
-                                    
+                                    if (numExt !== '') direccionCompleta += ' No. ' + numExt;
+
                                     if (direccionCompleta !== '') {
                                         nombreVisual = `${nombreBase} - (${direccionCompleta})`;
                                     } else if (idSae !== '') {
-                                        // Desempate de seguridad si la sucursal no tiene calle registrada
                                         nombreVisual = `${nombreBase} - (SAE: ${idSae})`;
                                     }
                                 }
-
-                                // let nombreVisual = suc.nombre_listo_para_mostrar;
-                                
                                 $selectSuc.append(`<option value="${suc.id_sucursal}">${nombreVisual}</option>`);
                                 window.windowSucursalesOpciones += `<option value="${suc.id_sucursal}">${nombreVisual}</option>`;
                             }
                         });
                     }
 
-                    $selectSuc.select2({
-                        theme: 'bootstrap-5',
-                        width: '100%'
-                    });
+                    $selectSuc.select2({ theme: 'bootstrap-5', width: '100%' });
 
                     $('.select-sucursal-fila').html(window.windowSucursalesOpciones);
                     if ($.fn.select2) {
-                        $('.select-sucursal-fila').each(function() {
-                            if ($(this).hasClass('select2-hidden-accessible')) {
-                                $(this).select2('destroy');
-                            }
-                            $(this).select2({
-                                theme: 'bootstrap-5',
-                                width: '100%',
-                                placeholder: "Selecciona Sucursal..."
-                            });
+                        $('.select-sucursal-fila').each(function () {
+                            if ($(this).hasClass('select2-hidden-accessible')) { $(this).select2('destroy'); } $(this).select2({ theme: 'bootstrap-5', width: '100%', placeholder: "Selecciona Sucursal..." });
                         });
                     }
 
+                    // --- 2. LLENAR PLAZAS ---
                     let plazasUnicas = new Map();
                     data.forEach(suc => {
                         if (suc.ids_plazas && suc.nombres_plazas) {
@@ -327,40 +342,24 @@ $(document).ready(function () {
                         }
                     });
 
-                    // Limpiamos Select2 previo y quitamos la clase form-select problemática
-                    if ($infoPlaza.hasClass('select2-hidden-accessible')) {
-                        $infoPlaza.select2('destroy');
+                    if ($infoPlaza.hasClass('select2-hidden-accessible')) {$infoPlaza.select2('destroy');
                     }
-                    $infoPlaza.empty().removeClass('form-select').addClass('form-control').css({'pointer-events': '', 'background-image': '', 'appearance': ''});
+                    $infoPlaza.siblings('.select2-container').remove();$infoPlaza.empty().removeClass('form-select').addClass('form-control').css({'pointer-events': '', 'background-image': '', 'appearance': ''});
 
                     if (plazasUnicas.size === 0) {
                         $infoPlaza.append('<option value="">El usuario no tiene plazas ligadas</option>');
                         $infoPlaza.prop('disabled', true).removeClass('bg-white').addClass('bg-light').css('pointer-events', 'none');
                     } else if (plazasUnicas.size === 1) {
-                        // 1 Sola Plaza: Bloqueo visual, sin plugin
                         let plazaActiva = Array.from(plazasUnicas.entries())[0];
+                        // ✨ FORZAMOS LA SELECCIÓN DIRECTA
                         $infoPlaza.append(`<option value="${plazaActiva[0]}" selected>${plazaActiva[1]}</option>`);
-                        $infoPlaza.prop('disabled', false).removeClass('bg-white').addClass('bg-light').css('pointer-events', 'none');
+                        $infoPlaza.val(plazaActiva[0]); // Lo seteamos en jQuery$infoPlaza.prop('disabled', false).removeClass('bg-white').addClass('bg-light').css('pointer-events', 'none');
                     } else {
-                        // 2+ Plazas: Inicializamos Select2 sobre form-control para que se vea idéntico
                         $infoPlaza.append('<option value="">Selecciona la plaza...</option>');
                         plazasUnicas.forEach((nombre, id) => {
                             $infoPlaza.append(`<option value="${id}">${nombre}</option>`);
                         });
-                        $infoPlaza.prop('disabled', false).removeClass('bg-light').addClass('bg-white').css('pointer-events', 'auto');
-                        
-                        // Solo aplica para las vistas de edición (no rompe el cotizador nuevo)
-                        if (typeof preseleccion_plaza !== 'undefined' && preseleccion_plaza) {
-                            $infoPlaza.val(preseleccion_plaza.toString());
-                        }
-
-                        if ($.fn.select2) {
-                            $infoPlaza.select2({
-                                theme: 'bootstrap-5',
-                                width: '100%',
-                                minimumResultsForSearch: Infinity // Evita que salga la caja de búsqueda interna
-                            });
-                        }
+                        $infoPlaza.prop('disabled', false).removeClass('bg-light').addClass('bg-white').css('pointer-events', 'auto');$infoPlaza.select2({ theme: 'bootstrap-5', width: '100%', minimumResultsForSearch: Infinity });
                     }
                 },
                 error: function () {
@@ -372,7 +371,7 @@ $(document).ready(function () {
             sucursalesCache = [];
             $selectSuc.empty().append('<option value="">Esperando al solicitante...</option>');
             $('.select-sucursal-fila').html('<option value="">Selecciona Sucursal...</option>');
-            $wrapperPlaza.slideUp('fast');
+            $wrapperPlaza.hide();
         }
     });
 
@@ -440,7 +439,7 @@ $(document).ready(function () {
 
         uniqueIdCounter++;
         recalcularNumeros();
-        verificarBotonFondo(); 
+        verificarBotonFondo();
     });
 
     $(document).on('click', '.btn-eliminar-fila', function (e) {
@@ -449,7 +448,7 @@ $(document).ready(function () {
             $(this).closest('tr').remove();
             recalcularNumeros();
             calc_total();
-            verificarBotonFondo(); 
+            verificarBotonFondo();
         } else {
             alert("La cotización debe tener al menos un producto.");
         }
@@ -539,7 +538,7 @@ $(document).ready(function () {
         } else {
             // El precio unitario general siempre será la suma total (precio antes de IVA)
             row.find('.price').val(pAntesIva.toFixed(2));
-            
+
             if (desglosar) {
                 // Verificamos si es usado para invertir visualmente los valores
                 if (estadoBD === 'USADO') {
@@ -566,16 +565,16 @@ $(document).ready(function () {
 
     function calc_total() {
         var sub_total = 0;
-        $(".total-hidden").each(function () { 
-            sub_total += parseFloat($(this).val()) || 0; 
+        $(".total-hidden").each(function () {
+            sub_total += parseFloat($(this).val()) || 0;
         });
-        
+
         $("#sub_total_hidden").val(sub_total.toFixed(2));
         $("#sub_total_visual").val(formatoMXN.format(sub_total));
 
         var tax_percent = parseFloat($("#tax").val()) || 0;
         var tax_sum = (sub_total / 100) * tax_percent;
-        
+
         $("#total_amount_hidden").val((sub_total + tax_sum).toFixed(2));
         $("#total_amount_visual").val(formatoMXN.format(sub_total + tax_sum));
     }
@@ -584,10 +583,19 @@ $(document).ready(function () {
     $('#nueva_cotizacion').on('submit', function (e) {
         e.preventDefault();
 
+        // Extraemos las variables actuales del DOM
         let $plaza = $('#info_plaza');
+        
+        // ✨ VALIDACIÓN INTELIGENTE: Exigimos la Plaza SIEMPRE (Normal y Temporal)
         if (!$plaza.prop('disabled') && !$plaza.val()) {
             alert("⚠️ Por favor, selecciona una Plaza Asignada antes de guardar.");
-            $plaza.focus();
+            
+            // Intentamos enfocar el select de forma segura
+            if($plaza.hasClass('select2-hidden-accessible')) {
+                $plaza.select2('open');
+            } else {
+                $plaza.focus();
+            }
             return; // Detenemos el proceso
         }
 
@@ -597,12 +605,13 @@ $(document).ready(function () {
         let textoOriginal = btnSubmit.text();
         btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...');
 
+        // Habilitamos TODO temporalmente para que jQuery.serialize() extraiga los valores bloqueados
         let $disabledFields = $(this).find(':disabled');
         $disabledFields.prop('disabled', false);
 
         let formData = $(this).serialize();
 
-        // Volvemos a bloquearlos inmediatamente para que el usuario no note nada
+        // Volvemos a bloquearlos inmediatamente para no romper la UI
         $disabledFields.prop('disabled', true);
         
         if (formData.indexOf('Empresa_id=') === -1) {
@@ -617,21 +626,38 @@ $(document).ready(function () {
             success: function (response) {
                 if (response.status === 'success') {
                     alert(response.message);
-                    window.location.href = 'finalizar_venta.php?id=' + response.id_cotizacion;
+                    
+                    // ✨ LÓGICA DE REDIRECCIÓN INTELIGENTE
+                    let esTemporal = $('input[name="es_temporal"]:checked').val() || 'N';
+                    
+                    if (esTemporal === 'Y') {
+                        // Si es temporal, nos saltamos finalizar_venta y vamos a la lista de temporales
+                        window.location.href = 'ver_cotizaciones_temporales.php'; 
+                    } else {
+                        // Si es normal, lo mandamos a asignar direcciones de certificado/envío
+                        window.location.href = 'finalizar_venta.php?id=' + response.id_cotizacion;
+                    }
+                    
                 } else {
                     alert("Error: " + response.message);
                     btnSubmit.prop('disabled', false).text(textoOriginal);
                 }
             },
+            /* success: function (response) {
+                if (response.status === 'success') {
+                    alert(response.message);
+                    window.location.href = 'finalizar_venta.php?id=' + response.id_cotizacion;
+                } else {
+                    alert("Error: " + response.message);
+                    btnSubmit.prop('disabled', false).text(textoOriginal);
+                }
+            }, */
             error: function (xhr) {
-                alert("Ocurrió un error al guardar. Intenta nuevamente.");
-
+                let errorMsg = "Ocurrió un error al guardar. Intenta nuevamente.";
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMsg = xhr.responseJSON.message;
                 }
-
                 alert("ALERTA DEL SERVIDOR:\n\n" + errorMsg);
-
                 btnSubmit.prop('disabled', false).text(textoOriginal);
             }
         });

@@ -241,60 +241,163 @@
                             <div id="carouselEquipos" class="carousel slide carousel-fade w-100 h-100" data-bs-ride="carousel" data-bs-interval="4000">
 
                                 <!-- Indicadores Inferiores -->
-                                <div class="carousel-indicators" style="background-color: rgba(0, 0, 0, 0.4); border-radius: 20px; padding: 6px 15px; width: fit-content; margin-left: auto; margin-right: auto; margin-bottom: 15px; backdrop-filter: blur(2px);">
+                                <div class="carousel-indicators custom-carousel-indicators"> 
+                                    <!-- style="background-color: rgba(0, 0, 0, 0.4); border-radius: 20px; padding: 6px 15px; width: fit-content; margin-left: auto; margin-right: auto; margin-bottom: 15px; backdrop-filter: blur(2px);" -->
                                     <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="0" class="active" aria-current="true"></button>
                                     <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="1"></button>
                                     <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="2"></button>
                                     <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="3"></button>
                                     <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="4"></button>
                                     <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="5"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="6"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="7"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="8"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="9"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="10"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="11"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="12"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="13"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="14"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="15"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="16"></button>
+                                    <!-- <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="17"></button> -->
                                 </div>
+
+                                <!-- // >>>=======================
+                                // >>>   EQUIPOS TAYLOR
+                                // >>>======================= -->
 
                                 <!-- Contenido del Carrusel -->
                                 <div class="carousel-inner h-100 bg-white" style="border-radius: 1rem;">
 
-                                    <!-- Banner: Usamos 'contain' para que la imagen se vea completa sin hacer zoom -->
+                                    <div class="carousel-item active h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de GSP 6Pro">
+                                            <img src="assets/images/general/carrusel/Taylor1.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#1">
+                                        </a>
+                                    </div>
+
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor2.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#2">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor3.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#3">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor4.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#4">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor5.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#5">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor6.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#6">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor7.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#7">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor8.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#8">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor9.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#9">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor10.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#10">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor11.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#11">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Taylor12.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#12">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/VA-INF151.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="VA-INF151">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/VA-INF200.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="VA-INF200">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Avaly1.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Avaly#1">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Avaly2.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Avaly#2">
+                                        </a>
+                                    </div>
+                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                        <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
+                                            <img src="assets/images/general/carrusel/Avaly3.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Avaly#3">
+                                        </a>
+                                    </div>
+
+                                    <!-- Banner: Usamos 'contain' para que la imagen se vea completa sin hacer zoom --
                                     <div class="carousel-item active h-100" style="background-color: #ffffff;">
                                         <a href="assets/pdf/elitech.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de GSP 6Pro">
                                             <img src="assets/images/general/carrusel/gsp6pro.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="GSP 6Pro">
                                         </a>
                                     </div>
 
-                                    <!-- Foto de producto (fondo blanco) -->
+                                    !-- Foto de producto (fondo blanco) --
                                     <div class="carousel-item h-100" style="background-color: #ffffff;">
                                         <a href="assets/pdf/VA-INF151.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de VA-INF151">
                                             <img src="assets/images/general/carrusel/VA-INF151.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 2rem;" alt="Equipo VA-INF151">
                                         </a>
                                     </div>
 
-                                    <!-- Banner RC 17 -->
+                                    !-- Banner RC 17 --
                                     <div class="carousel-item h-100" style="background-color: #ffffff;">
                                         <a href="assets/pdf/elitech.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de RC17">
                                             <img src="assets/images/general/carrusel/rc17.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="RC 17">
                                         </a>
                                     </div>
 
-                                    <!-- Foto de producto RC4 PRO -->
+                                    !-- Foto de producto RC4 PRO --
                                     <div class="carousel-item h-100" style="background-color: #ffffff;">
                                         <a href="assets/pdf/RC4PRO.jpeg" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de RC4-PRO">
                                             <img src="assets/images/general/carrusel/RC4PRO.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 2rem;" alt="RC4 PRO">
                                         </a>
                                     </div>
 
-                                    <!-- Banner Tlog 100 -->
+                                    !-- Banner Tlog 100 --
                                     <div class="carousel-item h-100" style="background-color: #ffffff;">
                                         <a href="assets/pdf/elitech.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de tlog100">
                                             <img src="assets/images/general/carrusel/tlog100.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Tlog 100">
                                         </a>
                                     </div>
 
-                                    <!-- Foto oscura: Fondo oscuro para armonizar -->
+                                    !-- Foto oscura: Fondo oscuro para armonizar --
                                     <div class="carousel-item h-100" style="background-color: #ffff;">
                                         <a href="assets/pdf/VA-DT905.pdf" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de GSP 6Pro">
                                             <img src="assets/images/general/carrusel/VA-DT905.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1.5rem;" alt="VA-DT905">
                                         </a>
-                                    </div>
-
+                                    </div>-->
                                 </div>
 
                                 <!-- Controles Laterales -->

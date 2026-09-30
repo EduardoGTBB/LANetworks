@@ -311,14 +311,16 @@ span.select2.select2-container.form-control {
 }
 
 /* 13. Forzar borde gris en el cuadro de búsqueda EXCLUSIVAMENTE dentro del modal de edición */
-#modalEditarCotizacion .select2-search--dropdown .select2-search__field {
+#modalEditarCotizacion .select2-search--dropdown .select2-search__field,
+#modalEditarCotizacionTemp .select2-search--dropdown .select2-search__field {
     border: 1px solid #ced4da !important;
     border-radius: 5px !important;
     padding: 6px 12px !important;
     background-color: #ffffff !important;
 }
 
-#modalEditarCotizacion .select2-search--dropdown .select2-search__field:focus {
+#modalEditarCotizacion .select2-search--dropdown .select2-search__field:focus,
+#modalEditarCotizacionTemp .select2-search--dropdown .select2-search__field:focus {
     border-color: #86b7fe !important;
     outline: 0 !important;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
@@ -671,4 +673,64 @@ input[type="number"] {
 .custom-blue-sidebar .nxl-item.nxl-hasmenu.active > .nxl-link::after,
 .custom-blue-sidebar .nxl-item.nxl-hasmenu.nxl-trigger > .nxl-link::after {
     display: none !important;
+}
+
+.custom-temp-tab {
+    background-color: #ffffff !important;
+    color: #6c757d !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.custom-temp-tab:hover {
+    border-color: #ffc107 !important;
+    color: #ffb800 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.custom-temp-tab.active {
+    background-color: #ffc107 !important;
+    color: #212529 !important; /* Texto oscuro para buen contraste */
+    border-color: #ffc107 !important;
+    box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3) !important;
+}
+
+/* >>> ============================================== */
+/* >>>        CARRUSEL INICIO (INDICADORES DOTS)      */
+/* >>> ============================================== */
+
+.custom-carousel-indicators {
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    border-radius: 20px !important;
+    padding: 8px 15px !important;
+    width: max-content !important;
+    max-width: 90% !important; /* 🛡️ UX: Evita que desborde en celulares */
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-bottom: 15px !important;
+    backdrop-filter: blur(2px) !important;
+    flex-wrap: wrap !important; /* 🛡️ UX: Permite que bajen de línea si hay muchas imágenes */
+    gap: 8px !important; /* Separación limpia entre puntos */
+    justify-content: center !important;
+}
+
+/* Transformar las líneas feas a puntos circulares elegantes */
+.custom-carousel-indicators button {
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 50% !important; 
+    margin: 0 !important; /* Quitamos márgenes nativos que rompen el diseño */
+    background-color: #ffffff !important;
+    opacity: 0.5 !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Punto activo con color y ligero zoom */
+.custom-carousel-indicators button.active {
+    opacity: 1 !important;
+    background-color: var(--lan-accent) !important; /* Usa tu color azul vibrante */
+    transform: scale(1.4) !important;
 }
