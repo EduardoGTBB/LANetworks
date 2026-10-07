@@ -202,7 +202,7 @@ try {
                 'porcentaje_iva' => (float)($_POST['porcentaje_iva'] ?? 16),
                 'estatus'       => $estatus_nuevo,
                 'comentarios'   => trim($_POST['comentarios'] ?? ''),
-                'es_temporal'   => $_POST['es_temporal'] ?? 'Y'
+                'es_temporal'   => $_POST['es_temporal'] ?? 'N'
             ];
 
             updateCotizacion($pdo, $id_cotizacion, $datosCotizacion, $detalles);

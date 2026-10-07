@@ -829,7 +829,7 @@ $(document).ready(function () {
                     $('.col-edit-multisucursal').hide();
                 }
 
-                if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
+                /* if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
                     $wrapPrecio.hide();
                     $wrapEstatus.hide();
                     $selEmp.prop('disabled', true);
@@ -842,6 +842,18 @@ $(document).ready(function () {
                         $('#hidden_edit_empresa').val(cot.Empresa_id);
                         $('#hidden_edit_precio').val(cot.tipo_precio);
                         $('#hidden_edit_estatus').val(cot.estatus ? cot.estatus : 'Guardado para aprobación');
+                    }
+                } */
+                if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
+                    $wrapPrecio.hide();
+                    $wrapEstatus.hide();$selEmp.prop('disabled', true);
+
+                    if ($('#hidden_edit_empresa').length === 0) {
+                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
+                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
+                    } else {
+                        $('#hidden_edit_empresa').val(cot.Empresa_id);
+                        $('#hidden_edit_precio').val(cot.tipo_precio);
                     }
                 }
 

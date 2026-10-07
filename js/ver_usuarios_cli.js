@@ -378,4 +378,31 @@ $(document).ready(function () {
             $text.text('Fuerte y Segura').addClass('text-success');
         }
     });
+    
+    // [fn] ==============================================
+    // [fn]  11. LIMPIEZA TOTAL AL CERRAR EL MODAL
+    // [fn] ==============================================
+    $('#modalUsuario').on('hidden.bs.modal', function () {
+        // Restablecemos el formulario
+        $('#formUsuario')[0].reset();
+        
+        // Regresamos la foto a la por defecto
+        $('#preview_foto_cli').attr('src', 'assets/images/avatar/user.png');
+        $('#input_foto_cli').val('');
+
+        // Limpiamos los selects
+        $('#Empresa_id').val('').trigger('change.select2');
+
+        // ✨ AQUÍ ESTÁ LA SOLUCIÓN AL PROBLEMA DE LA BARRA ✨
+        // Ocultamos el contenedor de la barra de fuerza y el texto
+        $('#pw_strength_container, #pw_strength_text').hide();
+        // Le quitamos todos los colores a la barra y al texto
+        $('#pw_strength_bar').removeClass('bg-danger bg-warning bg-info bg-success').css('width', '0%');
+        $('#pw_strength_text').removeClass('text-danger text-warning text-info text-success').text('');
+
+        // Volvemos a convertir los inputs a tipo password (por si los dejaron como texto)
+        $('#usuario_password, #confirmar_password').attr('type', 'password');
+        // Y restauramos el ícono del ojo
+        $('.toggle-password i').removeClass('feather-eye').addClass('feather-eye-off');
+    });
 });
