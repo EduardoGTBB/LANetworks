@@ -52,8 +52,8 @@
                                 <div class="px-4 pb-3 pt-3 border-bottom">
                                     <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-3 w-100">
                                         
-                                        <!-- 1. EXPORTAR (Protegido B2B) -->
-                                        <?php if (!isset($_SESSION['id_usuario_cliente'])): ?>
+                                        <!-- 1. EXPORTAR (Protegido B2B) 
+                                        ?php if (!isset($_SESSION['id_usuario_cliente'])): ?>
                                             <div class="dropdown me-md-auto">
                                                 <button class="btn fw-bold d-flex align-items-center justify-content-center shadow-sm dropdown-toggle text-white px-3 w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
                                                     <i class="feather-download me-2"></i> EXPORTAR
@@ -64,16 +64,31 @@
                                                     <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="mis_cotizaciones"><i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio</a></li>
                                                 </ul>
                                             </div>
+                                        ?php endif; ?>-->
+
+                                        <!-- 1. EXPORTAR (Protegido B2B) -->
+                                        <?php if (!isset($_SESSION['id_usuario_cliente'])): ?>
+                                            <div class="dropdown me-md-auto">
+                                                <button class="btn fw-bold d-flex align-items-center justify-content-center shadow-sm dropdown-toggle text-white px-3 w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
+                                                    <i class="feather-download me-2"></i> EXPORTAR
+                                                </button>
+                                                <!-- ✨ FIX: Se quitó w-100 y se agregó un min-width de 220px -->
+                                                <ul class="dropdown-menu shadow-lg border-0" style="min-width: 220px; border-radius: 10px;">
+                                                    <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6></li>
+                                                    <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="mis_cotizaciones"><i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial</a></li>
+                                                    <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="mis_cotizaciones"><i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio</a></li>
+                                                </ul>
+                                            </div>
                                         <?php endif; ?>
 
-                                        <!-- 2. FILTRO DE FECHAS AVANZADO -->
-                                        <div class="dropdown <?php echo isset($_SESSION['id_usuario_cliente']) ? 'ms-md-auto' : ''; ?>">
+                                        <!-- 2. FILTRO DE FECHAS AVANZADO 
+                                        <div class="dropdown ?php echo isset($_SESSION['id_usuario_cliente']) ? 'ms-md-auto' : ''; ?>">
                                             <button class="btn btn-light bg-white border-primary fw-bold text-dark shadow-sm d-flex align-items-center justify-content-between px-3 w-100" type="button" id="btnFiltroPeriodo" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b;">
                                                 <span><i class="feather-calendar text-primary me-2"></i><span id="texto_periodo">Periodo: Todos</span></span>
                                                 <i class="feather-chevron-down ms-1 text-muted"></i>
                                             </button>
                                             
-                                            <!-- Menú desplegable ampliado -->
+                                            <-- Menú desplegable ampliado --
                                             <div class="dropdown-menu shadow-lg border-0 p-3 p-md-4" style="width: 100%; min-width: 300px; max-width: 440px; border-radius: 12px; z-index: 1060; right: 0;">
                                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                                     <h6 class="text-dark fw-bolder mb-0" style="font-size: 15px; letter-spacing: 0.5px;">Filtrar por:</h6>
@@ -97,6 +112,47 @@
                                                     <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 w-100" id="fecha_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;">
                                                     <span class="text-muted fw-bold text-center d-none d-md-block">a</span>
                                                     <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 w-100" id="fecha_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;">
+                                                </div>
+                                                
+                                                <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
+                                                    <button type="button" class="btn btn-sm btn-light fw-bold text-muted border px-3 py-2 w-100 w-md-auto" id="btn_cancelar_periodo" style="background-color: #f8f9fa; transition: none !important; transform: none !important; box-shadow: none !important;">CANCELAR</button>
+                                                    <button type="button" class="btn btn-sm fw-bold text-white px-3 py-2 w-100 w-md-auto" id="btn_aceptar_periodo" style="background-color: #0d6efd; border: 1px solid #0d6efd; transition: none !important; transform: none !important; box-shadow: none !important;">APLICAR</button>
+                                                </div>
+                                            </div>
+                                        </div>-->
+
+                                        <!-- 2. FILTRO DE FECHAS AVANZADO -->
+                                        <div class="dropdown <?php echo isset($_SESSION['id_usuario_cliente']) ? 'ms-md-auto' : ''; ?>">
+                                            <button class="btn btn-light bg-white border-primary fw-bold text-dark shadow-sm d-flex align-items-center justify-content-between px-3 w-100" type="button" id="btnFiltroPeriodo" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b;">
+                                                <span><i class="feather-calendar text-primary me-2"></i><span id="texto_periodo">Periodo: Todos</span></span>
+                                                <i class="feather-chevron-down ms-1 text-muted"></i>
+                                            </button>
+                                            
+                                            <!-- Menú desplegable anclado a la derecha -->
+                                            <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-3 p-md-4" style="width: 100%; min-width: 360px; max-width: 440px; border-radius: 12px; z-index: 1060;">
+                                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                                    <h6 class="text-dark fw-bolder mb-0" style="font-size: 15px; letter-spacing: 0.5px;">Filtrar por:</h6>
+                                                    <button type="button" class="btn btn-sm fw-bold text-primary border px-2" id="btn_limpiar_periodo" style="font-size: 11px; background-color: #f8f9fa; transition: none !important; transform: none !important; box-shadow: none !important;">
+                                                        <i class="feather-refresh-cw me-1"></i>LIMPIAR
+                                                    </button>
+                                                </div>
+                                                
+                                                <div class="form-check mb-4 d-flex align-items-center ps-md-4">
+                                                    <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_mes" value="mes" checked style="cursor:pointer; width: 18px; height: 18px;">
+                                                    <label class="form-check-label text-dark fw-bold mb-0 flex-grow-1 fs-13" style="cursor:pointer;" for="radio_mes">Mes específico</label>
+                                                    <input type="month" class="form-control form-control-sm fw-bold shadow-sm ms-auto" id="input_mes_filtro" style="width: 140px; cursor:pointer; color: #495057; border: 1px solid #ced4da; height: 38px;">
+                                                </div>
+                                                
+                                                <div class="form-check mb-3 d-flex align-items-center ps-md-4">
+                                                    <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_rango" value="rango" style="cursor:pointer; width: 18px; height: 18px;">
+                                                    <label class="form-check-label text-dark fw-bold mb-0 fs-13" style="cursor:pointer;" for="radio_rango">Rango de fechas</label>
+                                                </div>
+                                                
+                                                <!-- ✨ FIX: flex-fill y min-width ajustado para evitar el desbordamiento -->
+                                                <div class="d-flex align-items-center justify-content-between mb-4 pe-md-2 gap-2">
+                                                    <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="fecha_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;">
+                                                    <span class="text-muted fw-bold text-center">a</span>
+                                                    <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="fecha_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;">
                                                 </div>
                                                 
                                                 <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
@@ -133,7 +189,7 @@
                                     <div class="d-flex flex-row align-items-center gap-3 flex-wrap w-100">
                                         
                                         !-- 1. EXPORTAR --
-                                        <?php if (!isset($_SESSION['id_usuario_cliente'])): ?>
+                                        ?php if (!isset($_SESSION['id_usuario_cliente'])): ?>
                                             <div class="dropdown me-auto">
                                                 <button class="btn fw-bold d-flex align-items-center shadow-sm dropdown-toggle text-white px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
                                                     <i class="feather-download me-2"></i> EXPORTAR
@@ -144,7 +200,7 @@
                                                     <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="mis_cotizaciones"><i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio</a></li>
                                                 </ul>
                                             </div>
-                                        <?php endif; ?>
+                                        ?php endif; ?>
 
                                         !-- 2. MES (Ancho fijo controlado) 
                                         <div class="d-flex align-items-center gap-2">
@@ -319,6 +375,7 @@
                     <input type="hidden" name="is_multisucursal" id="edit_is_multisucursal" value="0">
                     <!-- ✨ UX: Mantenemos el estatus oculto para proteger la edición -->
                     <input type="hidden" name="estatus" id="edit_estatus" value="">
+                    <input type="hidden" name="es_temporal" value="N">
 
                     <div class="row mb-4">
                         <div class="col-lg-6 mb-4 mb-lg-0">
