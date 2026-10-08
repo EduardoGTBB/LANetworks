@@ -1,6 +1,20 @@
 $(document).ready(function () {
+    // ✨ FIX UX: Inicialización segura de Select2 solo cuando el modal se abre
+    $('#modalEditarCotizacion').on('shown.bs.modal', function () {
+        $('#tipo_precio, #edit_filtro_tipo_producto').each(function () {
+            if ($(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2('destroy');
+            }
+            $(this).select2({
+                theme: 'bootstrap-5',
+                dropdownParent: $('#modalEditarCotizacion'),
+                width: '100%'
+            });
+        });
+    });
+
     // Inicialización de Select2 en Modal
-    $('#tipo_precio, #edit_filtro_tipo_producto').each(function () {
+    /* $('#tipo_precio, #edit_filtro_tipo_producto').each(function () {
         if ($(this).hasClass('select2-hidden-accessible')) {
             $(this).select2('destroy');
         }
@@ -9,7 +23,7 @@ $(document).ready(function () {
             dropdownParent: $('#modalEditarCotizacion'),
             width: '100%'
         });
-    });
+    }); */
 
     const formatoMoneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
     const formatoInput = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -123,15 +137,6 @@ $(document).ready(function () {
                         }
                     }
 
-                    /*  if (estatusTexto === 'Autorizada (información completa)') {
-                        if (!cot.numero_guia || cot.numero_guia.trim() === '') {
-                            btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-danger text-danger border border-danger btn-logistica-modal" style="animation: pulse 1.5s infinite;" data-id="${cot.id_cotizacion}" data-paqueteria="" data-guia="" data-fecha=""><abbr title="¡URGENTE! Añadir Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
-                        } else {
-                            btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-success text-success border border-success border-opacity-25 btn-logistica-modal" data-id="${cot.id_cotizacion}" data-paqueteria="${cot.paqueteria}" data-guia="${cot.numero_guia}" data-fecha="${cot.fecha_envio}"><abbr title="Ver/Actualizar Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
-                        }
-                    } */
-
-
                     // ✨ 2. MAPA (DIRECCIONES)
                     let btnCompletarVenta = '';
                     let yaTieneDirecciones = parseInt(cot.tiene_dir) || 0;
@@ -187,7 +192,6 @@ $(document).ready(function () {
                     }
 
                     // 4. EDITAR, ELIMINAR Y PDFs
-                    /* let btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Ver Detalles / Editar" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`; */
 
                     // Cambiamos el icono a un "Ojo" si está rechazada
                     let tooltipEdicion = (estatusTexto === 'No autorizada' || estatusTexto === 'Autorizada (información completa)') ? 'Ver detalles' : 'Editar información';
@@ -203,15 +207,6 @@ $(document).ready(function () {
                     if (perfilActual === 'admin' || sePuedeModificar) {
                         btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-danger text-danger btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr></a>`;
                     }
-
-                    /* // ✨ UX: Si es administrador O el estatus lo permite, mostramos el botón
-                    if (USER_PERFIL === 'admin' || sePuedeModificar) {
-                        btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-danger text-danger btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr></a>`;
-                    } */
-
-                    /* if (!estatusTexto.includes('Autorizada') && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
-                        btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-danger text-danger btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr></a>`;
-                    } */
 
                     // Ocultamos el PDF de Laboratorio si es Cliente
                     let btnPdfLab = (!ES_CLIENTE_PORTAL) ? `<a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}&tipo=lab" target="_blank" class="avatar-text avatar-md bg-soft-info text-info"><abbr title="PDF Laboratorio" style="text-decoration:none;"><i class="feather-thermometer"></i></abbr></a>` : '';
@@ -756,11 +751,6 @@ $(document).ready(function () {
                 isEditMultiSucursal = !cot.Sucursal_id || cot.Sucursal_id == 0;
                 $('#edit_is_multisucursal').val(isEditMultiSucursal ? '1' : '0');
 
-                // let isReadOnly = (cot.estatus === 'Autorizada (información completa)' || cot.estatus === 'No autorizada');
-                // ✨ UX: Solo será "Solo Lectura" si NO es admin y el estatus está bloqueado
-
-                /* let isReadOnly = (USER_PERFIL !== 'admin') && (cot.estatus === 'Autorizada (información completa)' || cot.estatus === 'No autorizada'); */
-
                 // ✨ UX/Seguridad: Determinamos si el modal se bloquea
                 let isReadOnly = false;
                 let perfilActual = (typeof USER_PERFIL !== 'undefined') ? USER_PERFIL : 'cliente';
@@ -784,10 +774,19 @@ $(document).ready(function () {
                 $('#tipo_precio').val(cot.tipo_precio).trigger('change');
                 $('#edit_tax').val(cot.porcentaje_iva);
 
-                let $selEmp = $('#edit_select_empresa');
+                /* let $selEmp = $('#edit_select_empresa');
                 $selEmp.empty().append('<option value="">Selecciona un cliente...</option>');
                 windowEmpresas.forEach(emp => { $selEmp.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`); });
-                $selEmp.val(cot.Empresa_id).select2({ dropdownParent: $('#modalEditarCotizacion') });
+                $selEmp.val(cot.Empresa_id).select2({ dropdownParent: $('#modalEditarCotizacion') }); */
+                let $selEmp =$('#edit_select_empresa');
+                if ($selEmp.hasClass('select2-hidden-accessible')) {$selEmp.select2('destroy');
+                }
+                $selEmp.empty().append('<option value="">Selecciona un cliente...</option>');
+                windowEmpresas.forEach(emp => { $selEmp.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`); });
+                
+                $selEmp.data('old', cot.Empresa_id.toString()).val(cot.Empresa_id);
+                // Inicializamos de forma segura sin forzar el dropdownParent si da conflicto visual
+                $selEmp.select2({ theme: 'bootstrap-5', dropdownParent:$('#modalEditarCotizacion'), width: '100%' });
 
                 let estatusBD = cot.estatus ? cot.estatus : 'Guardado para aprobación';
                 if (estatusBD === 'Autorizada (sin dirección)') estatusBD = 'Autorizada (información completa)';
@@ -819,9 +818,9 @@ $(document).ready(function () {
                     }
                 } */
 
+               // ✨ FIX: Eliminamos $wrapEstatus que no existe y causaba el bloqueo del modal
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-                    $wrapPrecio.hide();
-                    $wrapEstatus.hide();$selEmp.prop('disabled', true);
+                    $wrapPrecio.hide();$selEmp.prop('disabled', true);
 
                     if ($('#hidden_edit_empresa').length === 0) {
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
@@ -1476,76 +1475,6 @@ $(document).ready(function () {
             $tablaDT.draw();
         }
     }
-
-    // >>>============================================== 
-    // >>>  MOTOR DE EXPORTACIÓN INTELIGENTE
-    // >>>============================================== 
-    /* $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function(e) {
-        e.preventDefault();
-        
-        // 🛡️ ZERO TRUST FRONTEND: Abortar si es un cliente B2B
-        if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL === true) {
-            alert("No tienes los privilegios necesarios para exportar reportes.");
-            return false;
-        }
-
-        let tipo = $(this).attr('data-tipo') || $(this).data('tipo');
-        let scope = $(this).attr('data-scope') || $(this).data('scope') || 'todas'; 
-        let estatus = $('#filtro_estatus_tabla').val() || '';
-        let fecha = $('#filtro_fecha_tabla').val() || ''; 
-        
-        // ✨ LÓGICA BI
-        let categoria = (window.pestanaActivaCotizaciones === 'TODOS' || window.pestanaActivaCotizaciones === 'CANCELADAS') ? '' : window.pestanaActivaCotizaciones;
-        
-        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
-        let busqueda = $tablaDT.search() || '';
-
-        let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&fecha=${encodeURIComponent(fecha)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
-        window.open(url, '_blank');
-    }); */
-
-    // >>>============================================== 
-    // >>> ✨ MOTOR DE FILTRADO NATIVO POR FECHA Y ESTATUS
-    // >>>============================================== 
-    /* $(document).off('change', '#filtro_fecha_tabla').on('change', '#filtro_fecha_tabla', function () {
-        let fecha = $(this).val(); // Devuelve formato "YYYY-MM-DD"
-        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
-
-        if (fecha) {
-            // Buscamos coincidencia exacta de la fecha en la Columna 5
-            $tablaDT.column(5).search('^' + fecha + '$', true, false).draw();
-        } else {
-            $tablaDT.column(5).search('', true, false).draw();
-        }
-    });
-
-    $(document).off('change', '#filtro_estatus_tabla').on('change', '#filtro_estatus_tabla', function () {
-        let valor = $(this).val();
-        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
-
-        // ✨ Si el usuario cambia el estatus manual, lo sacamos de la pestaña "Canceladas" 
-        // para que no se confundan los filtros (a menos que haya elegido "No autorizada")
-        if (window.pestanaActivaCotizaciones === 'CANCELADAS' && valor !== 'No autorizada') {
-            window.pestanaActivaCotizaciones = 'TODOS';
-            $('.tab-filtro-cat').removeClass('active').attr('aria-selected', 'false');
-            $(`.tab-filtro-cat[data-categoria="TODOS"]`).addClass('active').attr('aria-selected', 'true');
-            $tablaDT.column(4).search(''); // Limpiamos categoría
-        }
-
-        if (valor) {
-            // $tablaDT.column(3).search('^\\s*' + valor, true, false).draw();
-            // Si seleccionó manualmente "No autorizada", activamos la pestaña de Canceladas por él
-            if (valor === 'No autorizada' && window.pestanaActivaCotizaciones !== 'CANCELADAS') {
-                window.pestanaActivaCotizaciones = 'CANCELADAS';
-                $('.tab-filtro-cat').removeClass('active').attr('aria-selected', 'false');
-                $(`.tab-filtro-cat[data-categoria="CANCELADAS"]`).addClass('active').attr('aria-selected', 'true');
-                $tablaDT.column(4).search('');
-            }
-            $tablaDT.column(3).search('^\\s*' + valor, true, false).draw();
-        } else {
-            $tablaDT.column(3).search('', true, false).draw();
-        }
-    }); */
 
     // >>>============================================== 
     // >>> ✨ MOTOR DE EXPORTACIÓN INTELIGENTE CON RANGOS
