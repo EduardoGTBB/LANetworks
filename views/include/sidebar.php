@@ -161,6 +161,13 @@ if ($es_cliente) {
                     </li>
                 <?php endif; ?>
 
+                <li class="nxl-item">
+                    <a href="videos_soporte.php" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-video"></i></span>
+                        <span class="nxl-mtext">Videos de Apoyo</span>
+                    </a>
+                </li>
+
                 <li class="nxl-item nxl-hasmenu">
                     <a href="logout.php" class="nxl-link">
                         <span class="nxl-micon"><i class="feather-log-out"></i></span>

@@ -56,19 +56,35 @@ try {
                 $prefijo = ($es_temporal === 'Y') ? 'TEMP-' : '';
 
                 // Contamos con la bandera de temporal
-                $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND es_temporal = :temp AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1";
+                /* $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND es_temporal = :temp AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1"; */
+                $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND es_temporal = :temp AND folio_especial IS NOT NULL";
                 $stmtMax = $pdo->prepare($sqlMax);
                 $stmtMax->execute([':cat' => $categoria_bd, ':temp' => $es_temporal]);
-                $ultimoFolio = $stmtMax->fetchColumn();
+                // $ultimoFolio = $stmtMax->fetchColumn();
+                $folios = $stmtMax->fetchAll(PDO::FETCH_COLUMN);
 
-                if ($ultimoFolio) {
+                $maxNumero = 0;
+                foreach ($folios as $folioStr) {
+                    // Extraer solo los números con RegEx
+                    $numeroLimpio = preg_replace('/[^0-9]/', '', (string)$folioStr);
+                    $numeroEntero = (int)$numeroLimpio;
+                    
+                    if ($numeroEntero > $maxNumero) {
+                        $maxNumero = $numeroEntero;
+                    }
+                }
+
+                $siguienteNumero = $maxNumero + 1;
+                $folio_predictivo = $prefijo . str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;
+
+                /* if ($ultimoFolio) {
                     $numeroExtraido = str_replace([$prefijo, $sufijo], '', $ultimoFolio);
                     $siguienteNumero = ((int)$numeroExtraido) + 1;
                 } else {
                     $siguienteNumero = 1;
-                }
+                } 
 
-                $folio_predictivo = $prefijo . str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;
+                $folio_predictivo = $prefijo . str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;*/
                 
                 echo json_encode(['status' => 'success', 'folio' => $folio_predictivo]);
                 break;

@@ -99,12 +99,13 @@ function obtenerProductPorId(PDO $pdo, int $id_product)
 }
 
 // [fn] Guardar la nueva cotización
-function saveCotizacion(PDO $pdo, array $datosCotizacion, array$detalles): string|false
+/* function saveCotizacion(PDO $pdo, array $datosCotizacion, array$detalles): string|false
 {
     try {
         $pdo->beginTransaction();
 
-        $categoria = $datosCotizacion['categoria'] ?? 'Nuevo';$es_temporal = $datosCotizacion['es_temporal'] ?? 'N';$sufijo = '';
+        $categoria = $datosCotizacion['categoria'] ?? 'Nuevo';
+        $es_temporal = $datosCotizacion['es_temporal'] ?? 'N';$sufijo = '';
         if ($categoria === 'Nuevo') {$sufijo = '-N'; } 
         elseif ($categoria === 'Usado') {$sufijo = '-U'; } 
         elseif ($categoria === 'Calibracion') {$sufijo = '-CALIB'; }
@@ -163,6 +164,88 @@ function saveCotizacion(PDO $pdo, array $datosCotizacion, array$detalles): strin
 
         $pdo->commit();
         return $id_cotizacion;
+    } catch (Exception $e) {$pdo->rollBack();
+        error_log("Error al guardar cotización: " . $e->getMessage());
+        throw new Exception($e->getMessage());
+    }
+} */
+// [fn] Guardar la nueva cotización
+function saveCotizacion(PDO $pdo, array $datosCotizacion, array$detalles): string|false
+{
+    try {
+        $pdo->beginTransaction();
+
+        $categoria = $datosCotizacion['categoria'] ?? 'Nuevo';$es_temporal = $datosCotizacion['es_temporal'] ?? 'N';$sufijo = '';
+        if ($categoria === 'Nuevo') {$sufijo = '-N'; } 
+        elseif ($categoria === 'Usado') {$sufijo = '-U'; } 
+        elseif ($categoria === 'Calibracion') {$sufijo = '-CALIB'; }
+
+        $prefijo = ($es_temporal === 'Y') ? 'TEMP-' : '';
+
+        // ✨ CIBERSEGURIDAD Y LÓGICA: Extraemos todos los folios y procesamos matemáticamente en PHP
+        $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND es_temporal = :temp AND folio_especial IS NOT NULL FOR UPDATE";
+        $stmtMax =$pdo->prepare($sqlMax);$stmtMax->execute([':cat' => $categoria, ':temp' =>$es_temporal]);
+        $folios =$stmtMax->fetchAll(PDO::FETCH_COLUMN);
+
+        $maxNumero = 0;
+        foreach ($folios as$folioStr) {
+            // Extraer solo los dígitos ignorando letras y guiones (ej. "TEMP-00033-U" -> 33)
+            $numeroLimpio = preg_replace('/[^0-9]/', '', (string)$folioStr);
+            $numeroEntero = (int)$numeroLimpio;
+            
+            if ($numeroEntero >$maxNumero) {
+                $maxNumero =$numeroEntero;
+            }
+        }
+
+        // Le sumamos 1 al número mayor encontrado
+        $siguienteNumero =$maxNumero + 1;
+
+        // Construimos el folio final
+        $folio_especial =$prefijo . str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) .$sufijo;
+
+        $sqlCotizacion = "INSERT INTO cotizacion (categoria, folio_especial, Empresa_id, Sucursal_id, Plaza_id, Usuario_admin_id, Usuario_empresa_id , fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, es_temporal)
+                        VALUES (:categoria, :folio_especial, :empresa_id, :sucursal_id, :plaza_id, :id_user_admin, :usuario_id, :fecha_cot, :importe_total, :comentarios, :precio_iva, :pcte_iva , :tprecio, :division, :es_temporal)";
+
+        $stmtCot = $pdo->prepare($sqlCotizacion);
+
+        $stmtCot->execute([
+            ':categoria'      => $categoria,
+            ':folio_especial' => $folio_especial,
+            ':empresa_id'     => $datosCotizacion['empresa_id'],
+            ':sucursal_id'    => $datosCotizacion['sucursal_id'],
+            ':plaza_id'       => $datosCotizacion['plaza_id'],
+            ':id_user_admin'  => $datosCotizacion['id_user_admin'],
+            ':usuario_id'     => $datosCotizacion['usuario_id'],
+            ':fecha_cot'      => $datosCotizacion['fecha_cot'],
+            ':importe_total'  => $datosCotizacion['importe_total'],
+            ':comentarios'    => $datosCotizacion['comentarios'],
+            ':precio_iva'     => $datosCotizacion['precio_iva'],
+            ':pcte_iva'       => $datosCotizacion['porcentaje_iva'],
+            ':tprecio'        => $datosCotizacion['tipo_precio'],
+            ':division'       => $datosCotizacion['division'],
+            ':es_temporal'    => $es_temporal
+        ]);
+
+        $id_cotizacion =$pdo->lastInsertId();
+
+        $sqlDetalle = "INSERT INTO `detalle_cotizacion` (`Cotizacion_id`, `Product_id`, `cantidad`, `precio_unitario`, `precio_extendido`, `desglosar`, `sucursal_destino_id`, `equipo_id`) VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar, :suc_dest, :eq_id)";
+        $stmtDet = $pdo->prepare($sqlDetalle);
+
+        foreach ($detalles as $item) {$stmtDet->execute([
+                ':cot_id'     => $id_cotizacion,
+                ':prod_id'    => $item['producto_id'],
+                ':cantidad'   => $item['cantidad'],
+                ':precio_u'   => $item['precio_unitario'],
+                ':precio_ext' => $item['precio_extendido'],
+                ':desglosar'  => $item['desglosar'] ?? 'N',
+                ':suc_dest'   => $item['sucursal_destino_id'],
+                ':eq_id'      => $item['equipo_id']
+            ]);
+        }
+
+        $pdo->commit();
+        return (string)$id_cotizacion;
     } catch (Exception $e) {$pdo->rollBack();
         error_log("Error al guardar cotización: " . $e->getMessage());
         throw new Exception($e->getMessage());
@@ -278,7 +361,7 @@ function obtenerdetallesCotizacionID(PDO $pdo, int $id_cotizacion)
 }
 
 // [fn] Actualizar la Cotizacion
-function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, array $detalles): bool
+/* function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, array $detalles): bool
 {
     try {
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -419,6 +502,171 @@ function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, 
         }
 
         // 3. Limpiar los excedentes de forma segura (Si borró algo, lo sacamos de la BD)
+        if (!empty($ids_que_quedan)) {
+            $inQuery = implode(',', array_fill(0, count($ids_que_quedan), '?'));
+            $sqlDel = "DELETE FROM detalle_cotizacion WHERE Cotizacion_id = ? AND id_detalle_cot NOT IN ($inQuery)";
+            $paramsDel = array_merge([$id_cotizacion], $ids_que_quedan);
+            $pdo->prepare($sqlDel)->execute($paramsDel);
+        } else {
+            $pdo->prepare("DELETE FROM detalle_cotizacion WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
+        }
+
+        $pdo->commit();
+        return true;
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw new Exception("Error al actualizar: " . $e->getMessage());
+    }
+} */
+// [fn] Actualizar la Cotizacion
+function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, array $detalles): bool
+{
+    try {
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->beginTransaction();
+
+        // 1. OBTENEMOS LA SUCURSAL ANTERIOR PARA SABER SI HUBO CAMBIO
+        $stmtOldCot = $pdo->prepare("SELECT Sucursal_id FROM cotizacion WHERE id_cotizacion = ?");
+        $stmtOldCot->execute([$id_cotizacion]);
+        $oldCotSuc = $stmtOldCot->fetchColumn();
+
+        if ($oldCotSuc != $datosCotizacion['sucursal_id']) {
+            $pdo->prepare("UPDATE detalle_cotizacion SET id_dom_cert = NULL, id_dom_envio = NULL WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
+            $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
+            $pdo->prepare("DELETE FROM domicilio_envio WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
+        }
+
+        $stmtVerificar = $pdo->prepare("SELECT es_temporal, categoria FROM cotizacion WHERE id_cotizacion = ?");
+        $stmtVerificar->execute([$id_cotizacion]);
+        $cotActual = $stmtVerificar->fetch(PDO::FETCH_ASSOC);
+
+        $es_temporal_nuevo = isset($_SESSION['id_usuario_cliente']) ? $cotActual['es_temporal'] : ($datosCotizacion['es_temporal'] ?? $cotActual['es_temporal']);
+        $folio_query = "";
+        $nuevo_folio = "";
+
+        // ✨ LÓGICA DE CONVERSIÓN DE TEMPORAL A NORMAL
+        if ($cotActual['es_temporal'] === 'Y' && $es_temporal_nuevo === 'N') {
+            
+            $categoria = $cotActual['categoria'];
+            $sufijo = '';
+            if ($categoria === 'Nuevo') { $sufijo = '-N'; } 
+            elseif ($categoria === 'Usado') { $sufijo = '-U'; } 
+            elseif ($categoria === 'Calibracion') { $sufijo = '-CALIB'; }
+
+            // ✨ FIX: Buscamos el último folio normal usando PHP
+            $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND es_temporal = 'N' AND folio_especial IS NOT NULL FOR UPDATE";
+            $stmtMax = $pdo->prepare($sqlMax);
+            $stmtMax->execute([':cat' => $categoria]);
+            $foliosNormales = $stmtMax->fetchAll(PDO::FETCH_COLUMN);
+
+            $maxNumeroNormal = 0;
+            foreach ($foliosNormales as $folioStr) {
+                // Extraer solo los números de la cadena usando RegEx (Ej: "00033-U" -> 33)
+                $numeroLimpio = preg_replace('/[^0-9]/', '', (string)$folioStr);
+                $numeroEntero = (int)$numeroLimpio;
+                
+                if ($numeroEntero > $maxNumeroNormal) {
+                    $maxNumeroNormal = $numeroEntero;
+                }
+            }
+
+            $siguienteNumero = $maxNumeroNormal + 1;
+
+            // Generamos su nuevo folio oficial definitivo
+            $nuevo_folio = str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;
+            $folio_query = ", folio_especial = :nuevo_folio";
+        }
+ 
+        // 1. Actualizamos el padre (La cotización)
+        $sqlCot = "UPDATE cotizacion 
+                   SET Empresa_id = :empresa_id, 
+                       Sucursal_id = :sucursal_id,
+                       Plaza_id = :plaza_id,
+                       Usuario_empresa_id = :usuario_id, 
+                       importe_total = :importe_total, 
+                       precio_iva = :precio_iva, 
+                       division = :division,
+                       tipo_precio = :tipo_precio,
+                       porcentaje_iva = :porcentaje_iva,
+                       estatus = :estatus,
+                       es_temporal = :es_temporal,
+                       comentarios = :comentarios
+                       $folio_query
+                   WHERE id_cotizacion = :id_cot";
+
+        $stmtCot = $pdo->prepare($sqlCot);
+        
+        $paramsUpdate = [
+            ':es_temporal'    => $es_temporal_nuevo,
+            ':empresa_id'     => $datosCotizacion['empresa_id'],
+            ':sucursal_id'    => $datosCotizacion['sucursal_id'],
+            ':plaza_id'       => $datosCotizacion['plaza_id'],
+            ':usuario_id'     => $datosCotizacion['usuario_id'],
+            ':importe_total'  => $datosCotizacion['importe_total'],
+            ':precio_iva'     => $datosCotizacion['precio_iva'],
+            ':porcentaje_iva' => $datosCotizacion['porcentaje_iva'],
+            ':tipo_precio'    => $datosCotizacion['tipo_precio'],
+            ':division'       => $datosCotizacion['division'],
+            ':estatus'        => $datosCotizacion['estatus'],
+            ':comentarios'    => $datosCotizacion['comentarios'],
+            ':id_cot'         => $id_cotizacion
+        ];
+
+        // Inyección parametrizada si se generó un nuevo folio
+        if ($folio_query !== "") {
+            $paramsUpdate[':nuevo_folio'] = $nuevo_folio;
+        }
+
+        $stmtCot->execute($paramsUpdate);
+
+        // 2. ACTUALIZACIÓN DE DETALLES POR ID EXACTO
+        $stmtUpdateDetalle = $pdo->prepare("UPDATE detalle_cotizacion SET Product_id = :prod_id, cantidad = :cantidad, precio_unitario = :precio_u, precio_extendido = :precio_ext, desglosar = :desglosar, Sucursal_destino_id = :suc_dest, equipo_id = :eq_id WHERE id_detalle_cot = :id_detalle AND Cotizacion_id = :cot_id");
+        $stmtInsertDetalle = $pdo->prepare("INSERT INTO detalle_cotizacion (Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar, Sucursal_destino_id, equipo_id) VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar, :suc_dest, :eq_id)");
+        $stmtOldDet = $pdo->prepare("SELECT Sucursal_destino_id, id_dom_cert, id_dom_envio FROM detalle_cotizacion WHERE id_detalle_cot = ?");
+
+        $ids_que_quedan = [];
+
+        foreach ($detalles as $item) {
+            if (!empty($item['id_detalle']) && $item['id_detalle'] > 0) {
+                $stmtOldDet->execute([$item['id_detalle']]);
+                $oldDet = $stmtOldDet->fetch(PDO::FETCH_ASSOC);
+
+                if ($oldDet && $oldDet['Sucursal_destino_id'] != $item['sucursal_destino_id']) {
+                    $pdo->prepare("UPDATE detalle_cotizacion SET id_dom_cert = NULL, id_dom_envio = NULL WHERE id_detalle_cot = ?")->execute([$item['id_detalle']]);
+                    if ($oldDet['id_dom_cert']) $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE id_domicilio_cert = ?")->execute([$oldDet['id_dom_cert']]);
+                    if ($oldDet['id_dom_envio']) $pdo->prepare("DELETE FROM domicilio_envio WHERE id_domicilio_envio = ?")->execute([$oldDet['id_dom_envio']]);
+                }
+
+                $stmtUpdateDetalle->execute([
+                    ':prod_id'    => $item['producto_id'],
+                    ':cantidad'   => $item['cantidad'],
+                    ':precio_u'   => $item['precio_unitario'],
+                    ':precio_ext' => $item['precio_extendido'],
+                    ':desglosar'  => $item['desglosar'] ?? 'N',
+                    ':suc_dest'   => $item['sucursal_destino_id'],
+                    ':eq_id'      => $item['equipo_id'],
+                    ':id_detalle' => $item['id_detalle'],
+                    ':cot_id'     => $id_cotizacion
+                ]);
+                $ids_que_quedan[] = $item['id_detalle'];
+            } else {
+                $stmtInsertDetalle->execute([
+                    ':cot_id'     => $id_cotizacion,
+                    ':prod_id'    => $item['producto_id'],
+                    ':cantidad'   => $item['cantidad'],
+                    ':precio_u'   => $item['precio_unitario'],
+                    ':precio_ext' => $item['precio_extendido'],
+                    ':desglosar'  => $item['desglosar'] ?? 'N',
+                    ':suc_dest'   => $item['sucursal_destino_id'],
+                    ':eq_id'      => $item['equipo_id'],
+                ]);
+                $ids_que_quedan[] = $pdo->lastInsertId();
+            }
+        }
+
+        // 3. Limpiar excedentes
         if (!empty($ids_que_quedan)) {
             $inQuery = implode(',', array_fill(0, count($ids_que_quedan), '?'));
             $sqlDel = "DELETE FROM detalle_cotizacion WHERE Cotizacion_id = ? AND id_detalle_cot NOT IN ($inQuery)";

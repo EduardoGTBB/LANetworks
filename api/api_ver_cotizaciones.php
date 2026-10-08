@@ -48,7 +48,7 @@ try {
             echo json_encode(['status' => 'success', 'cotizacion' => $cotizacion, 'detalles' => $detalles]);
         } elseif ($action === 'leer_temporales') {
             // ✨ SOLO trae las cotizaciones que tienen la bandera es_temporal = 'Y'
-            if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin') {
+            if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin' || $_SESSION['perfil'] === 'oper') {
                 $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
                                e.razon_social, u.nombre, u.apellido_pat, ua.admin_nombre, ua.admin_apell_pat, c.estatus 
                         FROM cotizacion c
