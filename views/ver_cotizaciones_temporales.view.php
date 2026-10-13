@@ -160,7 +160,7 @@
                     <input type="hidden" name="is_multisucursal" id="edit_is_multisucursal" value="0">
                     <input type="hidden" name="estatus" id="edit_estatus" value="">
 
-                    <!-- ✨ NUEVO: Selector de Naturaleza (Mantener Temporal Primero) -->
+                    <!--  NUEVO: Selector de Naturaleza (Mantener Temporal Primero) -->
                     <div class="mb-4 p-3 rounded shadow-sm mx-3 mt-3" style="background-color: #fff3cd; border: 1px solid #ffe69c;">
                         <label class="form-label text-dark fw-bold mb-2"><i class="feather-clock me-1 text-warning"></i>Importante: Aún no determinas la sucursal a la que va dirigida la cotización</label>
                         <div class="d-flex flex-column flex-md-row gap-3 mt-1">
@@ -211,17 +211,17 @@
                                         </select>
                                     </div>
 
-                                    <!-- ✨ NUEVO: Determinar tipo de sucursal (Oculto por defecto, se muestra al convertir a Normal) -->
+                                    <!--  NUEVO: Determinar tipo de sucursal (Oculto por defecto, se muestra al convertir a Normal) -->
                                     <div class="mt-4 pt-3 border-top" id="fila_tipo_sucursal_edit" style="display: none;">
                                         <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-primary"></i>Determinar tipo de sucursal</label>
                                         <div class="d-flex flex-column flex-md-row gap-4 mt-2">
                                             <div class="form-check">
                                                 <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo_edit" id="edit_rad_unica" value="unica" checked style="cursor: pointer;">
-                                                <label class="form-check-label fw-bold text-dark" for="edit_rad_unica" style="cursor: pointer;"><i class="feather-file-text me-1 text-primary"></i>🏢 Sucursal Única</label>
+                                                <label class="form-check-label fw-bold text-dark" for="edit_rad_unica" style="cursor: pointer;">🏢 Sucursal Única</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo_edit" id="edit_rad_multi" value="multisucursal" style="cursor: pointer;">
-                                                <label class="form-check-label fw-bold text-dark" for="edit_rad_multi" style="cursor: pointer;"><i class="feather-package me-1 text-primary"></i>📦 Multi-sucursal (Masivo)</label>
+                                                <label class="form-check-label fw-bold text-dark" for="edit_rad_multi" style="cursor: pointer;">📦 Multi-sucursal (Masivo)</label>
                                             </div>
                                         </div>
                                     </div>
@@ -240,7 +240,7 @@
                                         <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
                                         <select class="form-control border-success max-select" name="categoria" id="edit_filtro_tipo_producto">
                                             <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
-                                            <option value="NUEVO">✨ Solo Equipos Nuevos</option>
+                                            <option value="NUEVO"> Solo Equipos Nuevos</option>
                                             <option value="USADO">🔧 Solo Equipos Usados</option>
                                             <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
                                         </select>

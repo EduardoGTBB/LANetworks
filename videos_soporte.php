@@ -45,7 +45,7 @@ include('views/include/head.php');
                                 <!-- ============================================== -->
                                 <?php if (!$es_cliente): ?>
                                 
-                                    <!-- ✨ SECCIÓN GLOBAL: Fuera de las pestañas -->
+                                    <!--  SECCIÓN GLOBAL: Fuera de las pestañas -->
                                     <div class="mb-5">
                                         <h6 class="fw-bolder text-primary mb-3"><i class="feather-monitor me-2"></i>Fundamentos del Sistema</h6>
                                         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
@@ -53,7 +53,7 @@ include('views/include/head.php');
                                             <div class="col">
                                                 <div class="card h-100 shadow-sm border-0 bg-light border-start border-primary border-4">
                                                     <div class="ratio ratio-16x9 rounded-top overflow-hidden position-relative btn-play-video" data-videoid="1y5dR2QcWkocGJ8tu7bzQPQq5YwCc7ygb" data-title="8. SAC - Editar & Eliminar">
-                                                        <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background-image: url('assets/images/banner/Portadas/EdiciónGoblal.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                                                        <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background-image: url('assets/images/banner/Portadas/EdicionGoblal.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
                                                             <div class="position-absolute top-0 start-0 w-100 h-100" style="background-color: rgba(30, 41, 59, 0.4);"></div>
                                                             <i class="feather-play-circle text-white opacity-90 icon-play position-relative" style="font-size: 4rem; transition: transform 0.2s; z-index: 2; text-shadow: 0px 4px 10px rgba(0,0,0,0.5);"></i>
                                                         </div>
@@ -70,7 +70,7 @@ include('views/include/head.php');
                                     <hr class="mb-4 border-secondary border-opacity-25">
                                     <h6 class="fw-bolder text-dark mb-3"><i class="feather-layers me-2 text-primary"></i>Videos Específicos por Módulo</h6>
 
-                                    <!-- ✨ Navegación por Pestañas (Tabs) -->
+                                    <!-- Navegación por Pestañas (Tabs) -->
                                     <ul class="nav nav-pills nav-justified mb-4 gap-2 border-bottom pb-3" id="videoTabs" role="tablist">
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link active fw-bold border" id="cotizaciones-tab" data-bs-toggle="pill" data-bs-target="#tab-cotizaciones" type="button" role="tab" aria-selected="true">
@@ -128,6 +128,57 @@ include('views/include/head.php');
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                <!-- NUEVOS -->
+                                                <!-- CONVERTIR COTIZACIÓN TEMPORAL EN NORMAL -->
+                                                <div class="col">
+                                                    <div class="card h-100 shadow-sm border-0 bg-light">
+                                                        <div class="ratio ratio-16x9 rounded-top overflow-hidden position-relative btn-play-video" data-videoid="1B3VmwFZx4PYQT0Ik-_eVSasq2QokIOQK" data-title="SAC - Conversión a Cotización Normal">
+                                                            <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background-image: url('assets/images/banner/Portadas/ConvertCotiTemporal.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                                                                <div class="position-absolute top-0 start-0 w-100 h-100" style="background-color: rgba(30, 41, 59, 0.4);"></div>
+                                                                <i class="feather-play-circle text-white opacity-90 icon-play position-relative" style="font-size: 4rem; transition: transform 0.2s; z-index: 2; text-shadow: 0px 4px 10px rgba(0,0,0,0.5);"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <h6 class="fw-bold text-dark mb-2">SAC - Conversión a Cotización Normal </h6>
+                                                            <p class="fs-12 text-muted mb-0">Aprende el flujo para asignar una sucursal destino a una cotización temporal y generar su folio oficial.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- SUBIR LOS DATOS DE GUIA DE PAQUETERIA -->
+                                                <div class="col">
+                                                    <div class="card h-100 shadow-sm border-0 bg-light">
+                                                        <div class="ratio ratio-16x9 rounded-top overflow-hidden position-relative btn-play-video" data-videoid="1L48Gv63tW911RSOzRoI7L-gbAWhOkgYI" data-title="SAC - Guía de Rastreo">
+                                                            <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background-image: url('assets/images/banner/Portadas/GuiaPaquete.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                                                                <div class="position-absolute top-0 start-0 w-100 h-100" style="background-color: rgba(30, 41, 59, 0.4);"></div>
+                                                                <i class="feather-play-circle text-white opacity-90 icon-play position-relative" style="font-size: 4rem; transition: transform 0.2s; z-index: 2; text-shadow: 0px 4px 10px rgba(0,0,0,0.5);"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <h6 class="fw-bold text-dark mb-2">SAC - Guía de Rastreo</h6>
+                                                            <p class="fs-12 text-muted mb-0">Añade datos de paquetería a una venta autorizada para notificar automáticamente al cliente su fecha de entrega.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- ORDEN DE COMPRA -->
+                                                <div class="col">
+                                                    <div class="card h-100 shadow-sm border-0 bg-light">
+                                                        <div class="ratio ratio-16x9 rounded-top overflow-hidden position-relative btn-play-video" data-videoid="1Q10h4ZA1_DPyTqBYV_vRXodJctWxEDN-" data-title="SAC - Solicitar Orden de Compra (OC)">
+                                                            <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background-image: url('assets/images/banner/Portadas/OrdenCompra.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                                                                <div class="position-absolute top-0 start-0 w-100 h-100" style="background-color: rgba(30, 41, 59, 0.4);"></div>
+                                                                <i class="feather-play-circle text-white opacity-90 icon-play position-relative" style="font-size: 4rem; transition: transform 0.2s; z-index: 2; text-shadow: 0px 4px 10px rgba(0,0,0,0.5);"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <h6 class="fw-bold text-dark mb-2">SAC - Solicitar Orden de Compra (OC)</h6>
+                                                            <p class="fs-12 text-muted mb-0">Cómo marcar un equipo como entregado para habilitar la carga de la Orden de Compra desde el portal del cliente</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- NUEVOS -->
                                             </div>
                                         </div>    
 
@@ -279,6 +330,41 @@ include('views/include/head.php');
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- NUEVOS -->
+                                        <!-- VISUALIZAR GUIA DE RASTREO -->
+                                        <div class="col">
+                                            <div class="card h-100 shadow-sm border-0 bg-light">
+                                                <div class="ratio ratio-16x9 rounded-top overflow-hidden position-relative btn-play-video" data-videoid="1Ds0m_S7Vu5pagIBWvkJQI73DDYHY517G" data-title="SAC - Rastreo de Envíos">
+                                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background-image: url('assets/images/banner/Portadas/GuiaPaquete_B2B.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                                                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background-color: rgba(30, 41, 59, 0.4);"></div>
+                                                        <i class="feather-play-circle text-white opacity-90 icon-play position-relative" style="font-size: 4rem; transition: transform 0.2s; z-index: 2; text-shadow: 0px 4px 10px rgba(0,0,0,0.5);"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h6 class="fw-bold text-dark mb-2">SAC - Rastreo de Envíos</h6>
+                                                    <p class="fs-12 text-muted mb-0">Consulta la paquetería, número de guía y la fecha estimada de llegada de tus equipos autorizados.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- SUBIR ORDEN DE COMPRA -->
+                                        <div class="col">
+                                            <div class="card h-100 shadow-sm border-0 bg-light">
+                                                <div class="ratio ratio-16x9 rounded-top overflow-hidden position-relative btn-play-video" data-videoid="1tKl6B70OU1g8YHmKPGXFKwXTt-kzu8qX" data-title="SAC - Carga de Orden de Compra (OC)">
+                                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background-image: url('assets/images/banner/Portadas/OrdenCompra_B2B.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                                                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background-color: rgba(30, 41, 59, 0.4);"></div>
+                                                        <i class="feather-play-circle text-white opacity-90 icon-play position-relative" style="font-size: 4rem; transition: transform 0.2s; z-index: 2; text-shadow: 0px 4px 10px rgba(0,0,0,0.5);"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h6 class="fw-bold text-dark mb-2">SAC - Carga de Orden de Compra (OC)</h6>
+                                                    <p class="fs-12 text-muted mb-0">Cómo adjuntar tu archivo PDF y registrar el número de recepción una vez que tus equipos han sido entregados.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- NUEVOS -->
                                     </div>
 
                                 <?php endif; ?>
@@ -293,7 +379,7 @@ include('views/include/head.php');
         <?php include('views/include/footer.php'); ?>
     </main>
 
-    <!-- ✨ MODAL GLOBAL PARA REPRODUCIR VIDEOS ✨ -->
+    <!--  MODAL GLOBAL PARA REPRODUCIR VIDEOS  -->
     <div class="modal fade" id="modalVideoTutorial" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content bg-dark border-0 shadow-lg">
@@ -313,7 +399,7 @@ include('views/include/head.php');
     <script src="assets/vendors/js/vendors.min.js"></script>
     <script src="assets/js/common-init.min.js"></script>
 
-    <!-- ✨ LÓGICA JAVASCRIPT DEL REPRODUCTOR -->
+    <!--  LÓGICA JAVASCRIPT DEL REPRODUCTOR -->
     <script>
     $(document).ready(function() {
         
