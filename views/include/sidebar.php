@@ -94,7 +94,7 @@ if ($es_cliente) {
                             <!-- //*Cotizaciones Temporales "Temporal" -->
                             <?php if (defined('HABILITAR_COTS_TEMPORALES') && HABILITAR_COTS_TEMPORALES && !$es_cliente): ?>
                                 <?php if ($permisos['mp_ver_cotiz'] === 'Activado' || $permisos['mp_ver_all_cotiz'] === 'Activado'): ?>
-                                    <li class="nxl-item"><a class="nxl-link" href="ver_cotizaciones_temporales.php">Cotizaciones temporales</a></li>
+                                    <li class="nxl-item"><a class="nxl-link" href="ver_cotizaciones_temporales.php">Cotizaciones Provicionales</a></li>
                                 <?php endif; ?>
                             <?php endif; ?>
                         </ul>
@@ -176,7 +176,7 @@ if ($es_cliente) {
                 </li>
             </ul>
 
-            <!-- ✨ NUEVO: Tarjeta de Firma / Contacto al fondo del menú ✨ -->
+            <!--  NUEVO: Tarjeta de Firma / Contacto al fondo del menú  -->
             <div class="sidebar-footer p-3 mt-4 text-center">
                 <!-- Se recomienda renombrar la imagen en tu carpeta a algo sin espacios como 'firma_contacto.jpeg' -->
                 <img src="assets/images/general/Firma.png"

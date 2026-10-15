@@ -141,7 +141,7 @@ include('views/include/head.php');
                                                         </div>
                                                         <div class="card-body">
                                                             <h6 class="fw-bold text-dark mb-2">SAC - Conversión a Cotización Normal </h6>
-                                                            <p class="fs-12 text-muted mb-0">Aprende el flujo para asignar una sucursal destino a una cotización temporal y generar su folio oficial.</p>
+                                                            <p class="fs-12 text-muted mb-0">Aprende el flujo para asignar una sucursal destino a una cotización Provicional y generar su folio oficial.</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -203,7 +203,7 @@ include('views/include/head.php');
                                                 <!-- PERSONAL FARMACIAS -->
                                                 <div class="col">
                                                     <div class="card h-100 shadow-sm border-0 bg-light">
-                                                        <div class="ratio ratio-16x9 rounded-top overflow-hidden position-relative btn-play-video" data-videoid="13bkJMMASGrD6JtykHrrEJ8uLSlo9F65o" data-title=" SAC - Agregar Usuarios (Personal Farmacias)">
+                                                        <div class="ratio ratio-16x9 rounded-top overflow-hidden position-relative btn-play-video" data-videoid="1IjOjqPF9_WX6f84DvOlKRHc9k2IBTuff" data-title=" SAC - Agregar Usuarios (Personal Farmacias)">
                                                             <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background-image: url('assets/images/banner/Portadas/Usuarios_CLI.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
                                                                 <div class="position-absolute top-0 start-0 w-100 h-100" style="background-color: rgba(30, 41, 59, 0.4);"></div>
                                                                 <i class="feather-play-circle text-white opacity-90 icon-play position-relative" style="font-size: 4rem; transition: transform 0.2s; z-index: 2; text-shadow: 0px 4px 10px rgba(0,0,0,0.5);"></i>

@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-    // ✨ 1. INICIALIZAR SELECTS DEL MODAL DE EDICIÓN
+    //  1. INICIALIZAR SELECTS DEL MODAL DE EDICIÓN
     // (Hemos omitido el campo oculto #edit_estatus para que no colapse Select2)
     $('#tipo_precio, #edit_filtro_tipo_producto').each(function () {
         if ($(this).hasClass('select2-hidden-accessible')) {
@@ -101,7 +101,7 @@ $(document).ready(function () {
                     let colEstatusHTML = `<span class="badge ${badgeColor}">${estatusTexto}</span>`;
                     let fechaFiltro = cot.fecha_cot ? cot.fecha_cot : '';
 
-                    // ✨ NUEVO: Inyectar botón de acción rápida (Solo Rechazar habilitado)
+                    //  NUEVO: Inyectar botón de acción rápida (Solo Rechazar habilitado)
                     let esClienteSeguro = (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL);
 
                     if (estatusTexto === 'Guardado para aprobación' && !esClienteSeguro) {
@@ -146,7 +146,7 @@ $(document).ready(function () {
                                         <span class="text-dark">Solicitante:</span> ${solicitante}
                                     </span>
                                     <span class="text-warning fw-bold" style="font-size: 11px;">
-                                        <i class="feather-alert-triangle me-1"></i>SIN DESTINO / TEMPORAL
+                                        <i class="feather-alert-triangle me-1"></i>SIN DESTINO / PROVICIONAL
                                     </span>
                                 </div>
                             </td>
@@ -582,7 +582,7 @@ $(document).ready(function () {
             $selectSuc.val('').trigger('change.select2').prop('required', false); 
             $('.col-edit-multisucursal').fadeIn('fast');
             
-            // ✨ FIX UI: Aplicar estilos Select2 a las filas existentes cuando se muestra la columna
+            //  FIX UI: Aplicar estilos Select2 a las filas existentes cuando se muestra la columna
             $('.select-sucursal-fila-edit').each(function () {
                 if (!$(this).hasClass('select2-hidden-accessible')) {
                     $(this).select2({ 
@@ -645,7 +645,7 @@ $(document).ready(function () {
     // >>>==============================================
 
 
-    // ✨ ABRIR MODAL
+    //  ABRIR MODAL
     $(document).on('click', '.btn-editar-modal', function (e) {
         e.preventDefault();
         window.productoAgregadoEnEdicion = false;
@@ -700,7 +700,7 @@ $(document).ready(function () {
                 let estatusBD = cot.estatus ? cot.estatus : 'Guardado para aprobación';
                 $('#edit_estatus').val(estatusBD);
 
-                // ✨ INYECTA EL ESTADO DE LOS RADIO BUTTONS AL CARGAR
+                //  INYECTA EL ESTADO DE LOS RADIO BUTTONS AL CARGAR
                 // 🛡️ ZERO TRUST FRONTEND: Si por alguna razón la red falla o la BD no envía el dato, forzamos 'Y' por seguridad extrema para evitar conversiones accidentales.
                 let naturalezaBD = cot.es_temporal ? cot.es_temporal : 'Y';
 
@@ -899,7 +899,7 @@ $(document).ready(function () {
         $("#edit_total_amount_visual").val(formatoMoneda.format(totalFinal));
     }
 
-    // ✨ GUARDAR Y CERRAR MODAL
+    //  GUARDAR Y CERRAR MODAL
     $('#formEditarCotizacion').on('submit', function (e) {
         e.preventDefault();
         
@@ -1083,7 +1083,7 @@ $(document).ready(function () {
     });
 
     // >>>============================================== 
-    // >>> ✨ MOTOR AVANZADO DE RANGOS DE FECHA Y ESTATUS
+    // >>>  MOTOR AVANZADO DE RANGOS DE FECHA Y ESTATUS
     // >>>============================================== 
     window.filtroFechaInicio = '';
     window.filtroFechaFin = '';
@@ -1172,7 +1172,7 @@ $(document).ready(function () {
         let nuevo_estatus = $(this).data('estatus');
         let folio = $(this).data('folio');
 
-        if (confirm(`¿Estás seguro de que deseas RECHAZAR la cotización temporal #${folio}?`)) {
+        if (confirm(`¿Estás seguro de que deseas RECHAZAR la cotización Provicional #${folio}?`)) {
             $.ajax({
                 url: 'api/api_ver_cotizaciones.php',
                 type: 'POST',

@@ -18,19 +18,22 @@ try {
     $scope = $_GET['scope'] ?? 'todas'; 
     $estatus = $_GET['estatus'] ?? '';
     $categoria = $_GET['categoria'] ?? '';
-    $fecha_inicio = trim($_GET['fecha_inicio'] ?? ''); // 🚀 RANGO INICIO
-    $fecha_fin = trim($_GET['fecha_fin'] ?? '');       // 🚀 RANGO FIN
+    $fecha_inicio = trim($_GET['fecha_inicio'] ?? '');
+    $fecha_fin = trim($_GET['fecha_fin'] ?? '');       
     $busqueda = $_GET['search'] ?? '';
+    
+    // ✨ Captura del Laboratorio Seleccionado (evamsa o 4p)
+    $laboratorio_req = $_GET['laboratorio'] ?? 'evamsa'; 
 
-    // Ciberseguridad: Extraemos el ID exacto de la sesión
     $id_admin = isset($_SESSION['id_user_admin']) ? (int)$_SESSION['id_user_admin'] : 0;
     $id_cliente = isset($_SESSION['id_usuario_cliente']) ? (int)$_SESSION['id_usuario_cliente'] : 0;
     
-    // 2. EXTRAER DATOS CON LOS FILTROS APLICADOS
+    // 2. EXTRAER DATOS
     $datos = obtenerReporteExportacion($pdo, $estatus, $categoria, $busqueda, $scope, $id_admin, $id_cliente, $fecha_inicio, $fecha_fin);
     
     $fecha_actual = date('Y-m-d_H-i');
-    $nombre_archivo = "Reporte_" . ucfirst($tipo_reporte) . "_LAN_{$fecha_actual}.csv";
+    $nombre_lab_sufijo = ($tipo_reporte === 'laboratorio') ? "_LAB_" . strtoupper($laboratorio_req) : "";
+    $nombre_archivo = "Reporte_" . ucfirst($tipo_reporte) . "_LAN" . $nombre_lab_sufijo . "_{$fecha_actual}.csv";
 
     // 🚀 3. CABECERAS HTTP PARA FORZAR EXCEL
     header('Content-Type: text/csv; charset=utf-8');
@@ -39,32 +42,38 @@ try {
     header('Expires: 0');
 
     $salida = fopen('php://output', 'w');
-    // BOM UTF-8 para que Excel lea acentos sin problemas
     fputs($salida, $bom = (chr(0xEF) . chr(0xBB) . chr(0xBF)));
 
-    // ✨ CABECERAS (Mantenemos ID EQUIPO como columna estructural)
+    // ✨ CABECERAS: Añadimos COSTO LAB entre CLAVE y DESCRIPCION si es reporte de laboratorio
     if ($tipo_reporte === 'laboratorio') {
-        fputcsv($salida, ['CANTIDAD', 'FOLIO', 'FECHA ELABORACION', 'RAZON SOCIAL', 'CLAVE', 'DESCRIPCION', 'PTOS CALIBRACION', 'ID EQUIPO', 'SUCURSAL', 'DOM SUCURSAL', 'PLAZA']);
+        $titulo_lab = ($laboratorio_req === 'evamsa') ? 'COSTO EVAMSA' : 'COSTO 4PLAB';
+        fputcsv($salida, ['CANTIDAD', 'FOLIO', 'FECHA ELABORACION', 'RAZON SOCIAL', 'CLAVE', $titulo_lab, 'DESCRIPCION', 'PTOS CALIBRACION', 'ID EQUIPO', 'SUCURSAL', 'DOM SUCURSAL', 'PLAZA']);
     } else {
-        fputcsv($salida, ['CANTIDAD', 'FOLIO', 'FECHA ELABORACION', 'RAZON SOCIAL', 'CLAVE', 'DESCRIPCION', 'PRECIO UNITARIO', 'SUBTOTAL', 'IVA', 'TOTAL', 'PLAZA']);
+        fputcsv($salida, ['CANTIDAD', 'FOLIO', 'FECHA ELABORACION', 'RAZON SOCIAL', 'CLAVE', 'DESCRIPCION', 'PRECIO UNITARIO', 'SUBTOTAL', 'IVA', 'TOTAL', 'TOTAL PEDIDO', 'PLAZA']);
     }
 
-    // ✨ 4. LÓGICA DE AGRUPACIÓN
     $cotizaciones_agrupadas = [];
     foreach ($datos as $row) {
         $id = $row['id_cotizacion'];
-        if (!isset($cotizaciones_agrupadas[$id])) {
-            $cotizaciones_agrupadas[$id] = [];
-        }
+        if (!isset($cotizaciones_agrupadas[$id])) $cotizaciones_agrupadas[$id] = [];
         $cotizaciones_agrupadas[$id][] = $row;
     }
 
-    // ✨ 5. ITERACIÓN Y CÁLCULO DE TOTALES
     foreach ($cotizaciones_agrupadas as $id_cotizacion => $filas) {
         $suma_total = 0;
         $folio_actual = '';
+        $total_items = count($filas);
 
-        foreach ($filas as $row) {
+        if ($tipo_reporte !== 'laboratorio') {
+            foreach ($filas as $row) {
+                $subtotal_calc = (float)$row['precio_extendido'];
+                $pct_iva_calc = (float)$row['porcentaje_iva'];
+                $iva_calc = $subtotal_calc * ($pct_iva_calc / 100);
+                $suma_total += ($subtotal_calc + $iva_calc);
+            }
+        }
+
+        foreach ($filas as $index => $row) {
             $folio_actual = $row['folio_especial'] ? $row['folio_especial'] : str_pad((string)$row['id_cotizacion'], 5, '0', STR_PAD_LEFT);
             $fecha_cot = $row['fecha_cot'];
             $empresa = $row['razon_social'];
@@ -77,18 +86,17 @@ try {
             $equipo_id = trim($row['equipo_id'] ?? '');
 
             if ($tipo_reporte === 'laboratorio') {
-                
-                // Formateamos los puntos de calibración
                 $ptos_calib_format = !empty($ptos_calib) ? str_replace("\n", " ", $ptos_calib) : 'N/A';
                 
-                // ✨ NUEVA LÓGICA: Validación Inteligente de ID (PHP 8+)
                 if (str_ends_with((string)$folio_actual, '-N')) {
-                    // Es un equipo NUEVO: La celda queda en blanco para limpieza visual
                     $equipo_id_format = '';
                 } else {
-                    // Es USADO o CALIBRACIÓN: Evaluamos si hay ID, si no, ponemos N/A
                     $equipo_id_format = !empty($equipo_id) ? $equipo_id : 'N/A';
                 }
+
+                // ✨ Obtener el costo del laboratorio seleccionado
+                $costo_lab_db = ($laboratorio_req === 'evamsa') ? (float)$row['pl_evamsa'] : (float)$row['pl_4p'];
+                $costo_lab_format = '$' . number_format($costo_lab_db, 2);
 
                 $sucursal = $row['nombre_sucursal'] ?? 'N/A';
                 
@@ -114,8 +122,8 @@ try {
 
                 $domicilio = !empty($partes_domicilio) ? implode(', ', $partes_domicilio) : 'N/A';
 
-                // Inyectamos las columnas estructuradas
-                fputcsv($salida, [$cantidad, $folio_actual, $fecha_cot, $empresa, $clave, $descripcion, $ptos_calib_format, $equipo_id_format, $sucursal, $domicilio, $plaza]);
+                // ✨ Inyectamos el costo entre CLAVE y DESCRIPCION
+                fputcsv($salida, [$cantidad, $folio_actual, $fecha_cot, $empresa, $clave, $costo_lab_format, $descripcion, $ptos_calib_format, $equipo_id_format, $sucursal, $domicilio, $plaza]);
 
             } else {
                 $p_unitario = (float)$row['precio_unitario'];
@@ -123,39 +131,28 @@ try {
                 $pct_iva = (float)$row['porcentaje_iva'];
                 $iva = $subtotal * ($pct_iva / 100);
                 $total = $subtotal + $iva;
-
-                // Acumulamos SOLO el Gran Total para el folio en curso
-                $suma_total += $total;
-
+                
                 $fmt_unitario = '$' . number_format($p_unitario, 2);
                 $fmt_subtotal = '$' . number_format($subtotal, 2);
                 $fmt_iva = '$' . number_format($iva, 2);
                 $fmt_total = '$' . number_format($total, 2);
 
-                fputcsv($salida, [$cantidad, $folio_actual, $fecha_cot, $empresa, $clave, $descripcion, $fmt_unitario, $fmt_subtotal, $fmt_iva, $fmt_total, $plaza]);
-            }
-        } // Fin de filas internas del grupo
+                $val_total_pedido = ($index === $total_items - 1) ? '$' . number_format($suma_total, 2) : '';
 
-        // ✨ IMPRESIÓN DEL TOTAL ESTRATÉGICO AL FINAL DE CADA FOLIO
+                fputcsv($salida, [$cantidad, $folio_actual, $fecha_cot, $empresa, $clave, $descripcion, $fmt_unitario, $fmt_subtotal, $fmt_iva, $fmt_total, $val_total_pedido, $plaza]);
+            }
+        } 
+
         if ($tipo_reporte !== 'laboratorio') {
             fputcsv($salida, [
-                '', // CANTIDAD
-                '', // FOLIO
-                '', // FECHA
-                '', // RAZON SOCIAL
-                '', // CLAVE
-                '', // DESCRIPCION
-                '', // PRECIO UNITARIO
-                '▶ TOTAL FOLIO ' . $folio_actual . ':', // SUBTOTAL
-                '', // IVA
-                '$' . number_format($suma_total, 2), // TOTAL
-                ''  // PLAZA
+                '', '', '', '', '', '', '',
+                '▶ FIN DEL FOLIO ' . $folio_actual, 
+                '', '', '', ''
             ]);
-            // Separador en blanco entre cotizaciones para limpieza visual
             fputcsv($salida, []);
         }
 
-    } // Fin agrupaciones generales
+    } 
 
     fclose($salida);
     exit;

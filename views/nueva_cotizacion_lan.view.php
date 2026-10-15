@@ -161,7 +161,7 @@
                                         </div>
                                     </div> -->
 
-                                    <!-- ✨ LÓGICA MOVIDA AFUERA DE LA TARJETA -->
+                                    <!--  LÓGICA MOVIDA AFUERA DE LA TARJETA -->
                                     <?php if (defined('HABILITAR_COTS_TEMPORALES') && HABILITAR_COTS_TEMPORALES && !isset($_SESSION['id_usuario_cliente'])): ?>
                                         <div class="mb-4 p-3 rounded shadow-sm" style="background-color: #fff3cd; border: 1px solid #ffe69c;">
                                             <label class="form-label text-dark fw-bold mb-2"><i class="feather-clock me-1 text-warning"></i>Importante: Aún no determinas la sucursal a la que va dirigida la cotización</label>
@@ -172,7 +172,7 @@
                                                 </div>
                                                 <div class="form-check">
                                                     <input class="form-check-input border-warning" type="radio" name="es_temporal" id="rad_temporal" value="Y" style="cursor: pointer;">
-                                                    <label class="form-check-label fw-bold text-muted" for="rad_temporal" style="cursor: pointer;">Temporal (Sin destino)</label>
+                                                    <label class="form-check-label fw-bold text-muted" for="rad_temporal" style="cursor: pointer;">Provicional (Sin destino)</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -196,7 +196,7 @@
                                                             <option value="LA NETWORKS & SMART TECHNOLOGIES" selected>LA NETWORKS & SMART TECHNOLOGIES SA DE CV</option>
                                                             <!-- <option value="LA NETWORKS ANALITICAL">LA NETWORKS ANALITICAL, SA DE CV</option> -->
                                                         </select>
-                                                        <!-- ✨ Campo oculto que SI envía la información de forma segura al backend -->
+                                                        <!--  Campo oculto que SI envía la información de forma segura al backend -->
                                                         <input type="hidden" name="division" value="LA NETWORKS & SMART TECHNOLOGIES">
                                                     </div>
 
@@ -206,7 +206,35 @@
                                                             <option value="">Selecciona un solicitante...</option>
                                                         </select>
                                                     </div>
-                                                    <div class="mb-2">
+                                                    
+                                                    <?php 
+                                                        $esTemporalPredefinido = (defined('HABILITAR_COTS_TEMPORALES') && HABILITAR_COTS_TEMPORALES && !isset($_SESSION['id_usuario_cliente'])) ? 'Y' : 'N';
+                                                    ?>
+                                                    <!--  LÓGICA UI B2B: Intercambio entre Selectores y Leyenda -->
+                                                    <div class="mb-2" id="wrapper_tipo_sucursal">
+                                                        <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-primary"></i>Determinar tipo de sucursal</label>
+                                                        
+                                                        <!-- Contenedor 1: Los Selectores (Visibles en NORMAL por defecto) -->
+                                                        <div id="selectores_sucursal_unica_multi" class="d-flex gap-4 mt-2">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo" id="rad_unica" value="unica" checked>
+                                                                <label class="form-check-label fw-semibold" for="rad_unica">🏢 Sucursal Única</label>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo" id="rad_multi" value="multisucursal">
+                                                                <label class="form-check-label fw-semibold" for="rad_multi">📦 Multi-sucursal (Masivo)</label>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Contenedor 2: Leyenda Informativa (Oculta por defecto mediante d-none) -->
+                                                        <div id="leyenda_sucursal_provisional" class="mt-2 p-2 rounded bg-light border border-info border-opacity-25 d-none">
+                                                            <small class="text-muted fw-semibold">
+                                                                <i class="feather-info text-info me-1"></i>
+                                                                Al convertirla a una cotización final podrás seleccionar si es única o multisucursal.
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                    <!-- <div class="mb-2" id="wrapper_tipo_sucursal">
                                                         <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-primary"></i>Determinar tipo de sucursal</label>
                                                         <div class="d-flex gap-4 mt-2">
                                                             <div class="form-check">
@@ -218,7 +246,7 @@
                                                                 <label class="form-check-label fw-semibold" for="rad_multi">📦 Multi-sucursal (Masivo)</label>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </div> -->
                                                 </div>
                                             </div>
                                         </div>
@@ -427,7 +455,7 @@
         <i class="feather-arrow-up" style="font-size: 1.2rem; font-weight: bold;"></i>
     </button> -->
 
-    <!-- ✨ UX/PHP: Inyectamos la clase 'btn-back-top-b2b' SOLO si es un cliente -->
+    <!--  UX/PHP: Inyectamos la clase 'btn-back-top-b2b' SOLO si es un cliente -->
     <button type="button" id="btnBackToTop" class="btn btn-primary shadow-lg <?php echo isset($_SESSION['id_usuario_cliente']) ? 'btn-back-top-b2b' : ''; ?>" title="Volver al inicio">
         <i class="feather-arrow-up" style="font-size: 1.2rem; font-weight: bold;"></i>
     </button>

@@ -107,6 +107,8 @@ try {
                 'pf_calib'            => (float)str_replace(',', '', $_POST['pf_calib'] ?? '0'),
                 'pp_equipo'           => (float)str_replace(',', '', $_POST['pp_equipo'] ?? '0'),
                 'pp_calib'            => (float)str_replace(',', '', $_POST['pp_calib'] ?? '0'),
+                'pl_evamsa'           => (float)str_replace(',', '', $_POST['pl_evamsa'] ?? '0'),
+                'pl_4p'               => (float)str_replace(',', '', $_POST['pl_4p'] ?? '0'),
                 'estatus'             => isset($_POST['estatus']) ? 'Y' : 'N',
                 'foto_product'        => $foto_final
             ];

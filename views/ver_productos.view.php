@@ -213,22 +213,28 @@
                         <div class="card stretch stretch-full">
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-hover" id="proposalList">
+                                    <table class="table table-hover table-sm" id="proposalList" style="table-layout: auto;">
                                         <thead>
                                             <tr>
-                                                <th class="text-center">Clave</th>
+                                                <!-- <th class="text-center">Clave</th>
                                                 <th>Atributos</th>
                                                 <th class="wd-400">Producto</th>
                                                 <th>Precio farmacia</th>
                                                 <th>Precio publico</th>
                                                 <th>Estatus</th>
-                                                <th class="text-center">Acciones</th>
+                                                <th class="text-center">Acciones</th> -->
+                                                <th width="15%" class="text-center">Código</th>
+                                                <th width="40%">Descripción del Producto</th>
+                                                <th width="15%" class="text-end">Precio Farmacia</th>
+                                                <th width="15%" class="text-end">Precio Público</th>
+                                                <th width="5%" class="text-center">Estatus</th>
+                                                <th width="10%" class="text-end">Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody id="table_productos">
                                             <tr class="single-item">
-                                                <td>
-                                                    <div class="hstack gap-3">
+                                                <td colspan="6">
+                                                    <div class="hstack gap-3 justify-content-center">
                                                         <div class="spinner-border text-primary mt-3" role="status">
                                                             <span class="visually-hidden">Cargando...</span>
                                                         </div>
@@ -333,6 +339,19 @@
                         <div class="col-md-6">
                             <label class="form-label small">Precio Calibración</label>
                             <input type="text" class="form-control precio-mask" name="pp_calib" id="pp_calib" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <!-- NUEVA FILA: COSTOS DE LABORATORIO -->
+                    <div class="row bg-light p-3 rounded mb-3 border">
+                        <h6 class="fw-bold text-info"><i class="feather-box me-2"></i>Costos LABORATORIO</h6>
+                        <div class="col-md-6">
+                            <label class="form-label small">Costo EVAMSA</label>
+                            <input type="text" class="form-control precio-mask" name="pl_evamsa" id="pl_evamsa" placeholder="0.00" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Costo 4PLAB</label>
+                            <input type="text" class="form-control precio-mask" name="pl_4p" id="pl_4p" placeholder="0.00" required>
                         </div>
                     </div>
 

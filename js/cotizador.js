@@ -192,7 +192,7 @@ $(document).ready(function () {
         }
     });
 
-    // ✨ LÓGICA DE COTIZACIÓN TEMPORAL
+    // LÓGICA DE COTIZACIÓN TEMPORAL Y OCULTAR TIPO SUCURSAL (VERSIÓN DEFINITIVA)
     $(document).on('change', 'input[name="es_temporal"]', function () {
         if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) return;
 
@@ -200,19 +200,85 @@ $(document).ready(function () {
         let $selectSuc = $('#select_sucursal');
         let $radMulti = $('#rad_multi');
         let $radUnica = $('#rad_unica');
+        
+        let $bloqueSelectores = $('#selectores_sucursal_unica_multi'); 
+        let $bloqueLeyenda = $('#leyenda_sucursal_provisional');
+
+        if (esTemporal === 'Y') {
+            // 🛡️ 1. Ocultamos la selección de Sucursal y quitamos su propiedad required
+            $('#wrapper_selector_sucursal').addClass('d-none');
+            $selectSuc.prop('required', false);
+            
+            // 🛡️ 2. Forzamos la opción "Sucursal Única" por debajo
+            $radUnica.prop('checked', true).trigger('change');
+            $radMulti.prop('disabled', true);
+            
+            // 🛡️ 3. Ocultamos los selectores y mostramos la leyenda
+            $bloqueSelectores.addClass('d-none');
+            $bloqueLeyenda.removeClass('d-none');
+
+        } else {
+            // ✅ 1. Ocultamos la leyenda y mostramos los selectores
+            $bloqueLeyenda.addClass('d-none');
+            $bloqueSelectores.removeClass('d-none');
+            $radMulti.prop('disabled', false);
+
+            // ✅ 2. Restauramos la selección de sucursal si está marcada como "Única"
+            if ($radUnica.is(':checked')) {
+                $('#wrapper_selector_sucursal').removeClass('d-none');
+                $selectSuc.prop('required', true);
+            }
+        }
+
+        // 🛡️ Recargamos el solicitante y productos para refrescar dependencias
+        if ($('#select_solicitante').val() !== '') {
+            $('#select_solicitante').trigger('change');
+        }
+        $('#filtro_estado_producto').trigger('change');
+    });
+
+    // ✨ Validar al iniciar la página de forma inmediata para sincronizar la vista
+    setTimeout(() => {
+        let esTemporalInit = $('input[name="es_temporal"]:checked').val();
+        
+        if (esTemporalInit === 'Y') {
+            $('#selectores_sucursal_unica_multi').addClass('d-none');
+            $('#wrapper_selector_sucursal').addClass('d-none');
+            $('#leyenda_sucursal_provisional').removeClass('d-none');
+        } else {
+            $('#leyenda_sucursal_provisional').addClass('d-none');
+            $('#selectores_sucursal_unica_multi').removeClass('d-none');
+        }
+    }, 50);
+
+    /* // ✨ LÓGICA DE COTIZACIÓN TEMPORAL
+    $(document).on('change', 'input[name="es_temporal"]', function () {
+        if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) return;
+
+        let esTemporal = $(this).val();
+        let $selectSuc = $('#select_sucursal');
+        let $radMulti = $('#rad_multi');
+        let $radUnica = $('#rad_unica');
+        let $wrapperTipoSucursal = $('#wrapper_tipo_sucursal');
 
         if (esTemporal === 'Y') {
             // 🛡️ Ocultamos SOLO la sucursal (La Plaza se mantiene activa)
-            $('#wrapper_selector_sucursal').hide();
+            $('#wrapper_selector_sucursal').addClass('d-none');
             $selectSuc.prop('required', false);
             
             $radUnica.prop('checked', true).trigger('change');
             $radMulti.prop('disabled', true);
+
+            // 🛡️ 3. Desaparecemos por completo el bloque "¿Sucursal Única o Multisucursal?" usando d-none
+            $wrapperTipoSucursal.addClass('d-none');
+
         } else {
             // Restauramos flujo de la sucursal
             $radMulti.prop('disabled', false);
+            $wrapperTipoSucursal.removeClass('d-none');
+
             if ($radUnica.is(':checked')) {
-                $('#wrapper_selector_sucursal').show();
+                $('#wrapper_selector_sucursal').removeClass('d-none');
                 $selectSuc.prop('required', true);
             }
         }
@@ -224,6 +290,12 @@ $(document).ready(function () {
 
         $('#filtro_estado_producto').trigger('change');
     });
+
+   /// Validar al iniciar la página de forma inmediata
+    if ($('input[name="es_temporal"]:checked').val() === 'Y') {
+        $('#wrapper_tipo_sucursal').addClass('d-none');
+        $('#wrapper_selector_sucursal').addClass('d-none');
+    } */
 
     // >>> 2. EVENTOS DE DROPDOWNS (SOLICITANTE Y SUCURSALES)
     function cargarSolicitantes(empresaId) {

@@ -15,7 +15,7 @@ $(document).ready(function () {
         });
     }, 'json');
     
-    // ✨ LÓGICA DE MÁSCARAS DE PRECIOS
+    //  LÓGICA DE MÁSCARAS DE PRECIOS
     // Al salir del campo: formatear bonito (Ej: 1,150.10)
     $(document).on('blur', '.precio-mask', function() {
         let valor = $(this).val().replace(/,/g, '');
@@ -54,7 +54,7 @@ $(document).ready(function () {
                 tbody.empty();
 
                 if (!data || data.length === 0) {
-                    tbody.append('<tr><td colspan="7" class="text-center text-muted py-4">No hay productos registrados.</td></tr>');
+                    tbody.append('<tr><td colspan="6" class="text-center text-muted py-4">No hay productos registrados.</td></tr>');
                     return;
                 }
 
@@ -69,7 +69,88 @@ $(document).ready(function () {
                     let p_publico = prod.pp_equipo ? parseFloat(prod.pp_equipo) : 0;
                     let c_publico = prod.pp_calib ? parseFloat(prod.pp_calib) : 0;
 
-                    let marca = (prod.marca_product && prod.marca_product !== 'N/A') ? prod.marca_product : '<span class="text-muted fst-italic">N/A</span>';
+                    // (Dentro del bucle data.forEach en cargarProductos)
+                    let marca = (prod.marca_product && prod.marca_product !== 'N/A') ? prod.marca_product : 'S/M';
+                    let tipo = (prod.tipo_product && prod.tipo_product !== 'N/A') ? prod.tipo_product : 'S/T';
+                    let estado = (prod.estado_product && prod.estado_product !== 'N/A') ? prod.estado_product : 'S/E';
+
+                    // 🎨 LÓGICA DE COLORES SEMÁNTICOS (Sin fondo pesado, solo color de texto)
+                    let colorEstado = 'text-secondary'; 
+                    let iconoEstado = 'feather-tag';
+                    
+                    if (estado === 'NUEVO') {
+                        colorEstado = 'text-success';
+                        iconoEstado = 'feather-star';
+                    } else if (estado === 'USADO') {
+                        colorEstado = 'text-warning';
+                        iconoEstado = 'feather-tool';
+                    } else if (estado === 'CALIBRACION') {
+                        colorEstado = 'text-info';
+                        iconoEstado = 'feather-thermometer';
+                    }
+
+                    //  NUEVO ESTILO: Línea de Especificaciones (Minimalista y horizontal)
+                    let especificaciones = `
+                        <div class="d-flex flex-wrap align-items-center gap-3 mt-1 mb-2 fs-11 fw-semibold text-muted">
+                            <span><i class="feather-award me-1"></i>${marca}</span>
+                            <span style="border-left: 1px solid #dee2e6; padding-left: 10px;"><i class="feather-cpu me-1"></i>${tipo}</span>
+                            <span class="${colorEstado}" style="border-left: 1px solid #dee2e6; padding-left: 10px;"><i class="${iconoEstado} me-1"></i>${estado}</span>
+                        </div>
+                    `;
+                    
+                    let badgePuntos = '';
+                    if (prod.puntos_calibracion && String(prod.puntos_calibracion).trim() !== '' && String(prod.puntos_calibracion).trim() !== 'null') {
+                        let ptosFormateados = String(prod.puntos_calibracion).trim().replace(/\n/g, '<br>');
+                        badgePuntos = `
+                            <div>
+                                <span class="badge bg-soft-primary text-primary px-2 py-1 fs-11 shadow-sm d-inline-block" style="white-space: normal; text-align: left; line-height: 1.4; border-left: 3px solid #0d6efd;">
+                                    <i class="feather-target me-1 fw-bold"></i> Ptos: ${ptosFormateados}
+                                </span>
+                            </div>
+                        `;
+                    }
+
+                    //  ESTRUCTURA REDISEÑADA
+                    let tr = `
+                        <tr>
+                            <!-- 1. Columna Código (Limpia, solo foto y clave) -->
+                            <td class="text-center align-middle">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <div class="avatar-image avatar-md rounded mb-1 border border-light shadow-sm">
+                                        <img class="img-fluid" src="assets/images/productos/${foto}" alt="img" style="object-fit: cover;">
+                                    </div>
+                                    <span class="fw-bolder text-dark fs-12 mt-1">${prod.clave_product}</span>
+                                </div>
+                            </td>
+
+                            <!-- 2. Columna Descripción (Agrupa Título + Especificaciones + Puntos) -->
+                            <td class="align-middle">
+                                <span class="d-block text-wrap fw-bolder fs-13 text-dark">${prod.descripcion_product}</span>
+                                ${especificaciones}
+                                ${badgePuntos}
+                            </td>
+
+                            <!-- 3. Precios y Estatus se mantienen igual -->
+                            <td class="align-middle text-end">
+                                <span class="text-primary fw-bolder fs-13">${formatoMoneda.format(p_farmacia)}</span><br>
+                                <span class="text-muted fs-11">+ ${formatoMoneda.format(c_farmacia)} calib</span>
+                            </td>
+                            <td class="align-middle text-end">
+                                <span class="text-success fw-bolder fs-13">${formatoMoneda.format(p_publico)}</span><br>
+                                <span class="text-muted fs-11">+ ${formatoMoneda.format(c_publico)} calib</span>
+                            </td>
+                            <td class="align-middle text-center">${estatusBadge}</td>
+                            <td class="align-middle text-end">
+                                <div class="hstack gap-2 justify-content-end">
+                                    <a href="#" class="avatar-text avatar-sm bg-soft-primary btn-editar" data-id="${prod.id_product}"><i class="feather-edit text-primary"></i></a>
+                                    <a href="#" class="avatar-text avatar-sm bg-soft-danger btn-eliminar" data-id="${prod.id_product}"><i class="feather-trash-2 text-danger"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(tr);
+
+                    /* let marca = (prod.marca_product && prod.marca_product !== 'N/A') ? prod.marca_product : '<span class="text-muted fst-italic">N/A</span>';
                     let tipo = (prod.tipo_product && prod.tipo_product !== 'N/A') ? prod.tipo_product : '<span class="text-muted fst-italic">N/A</span>';
                     let estado = (prod.estado_product && prod.estado_product !== 'N/A') ? prod.estado_product : '<span class="text-muted fst-italic">N/A</span>';
 
@@ -117,7 +198,7 @@ $(document).ready(function () {
                             </td>
                         </tr>
                     `;
-                    tbody.append(tr);
+                    tbody.append(tr); */
                 });
 
                 if ($.fn.DataTable) {
@@ -136,7 +217,7 @@ $(document).ready(function () {
                 }
             },
             error: function () {
-                $('#table_productos').html('<tr><td colspan="7" class="text-center text-danger py-4">Error al cargar productos</td></tr>');
+                $('#table_productos').html('<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar productos</td></tr>');
             }
         });
     }
@@ -183,11 +264,15 @@ $(document).ready(function () {
                     $('#clave_product').val(res.clave_product);
                     $('#descripcion_product').val(res.descripcion_product);
 
-                    // ✨ Aplicamos el formato oficial a los campos de edición
+                    //  Aplicamos el formato oficial a los campos de edición
                     $('#pf_equipo').val(res.pf_equipo ? formatoInput.format(res.pf_equipo) : '');
                     $('#pf_calib').val(res.pf_calib ? formatoInput.format(res.pf_calib) : '');
                     $('#pp_equipo').val(res.pp_equipo ? formatoInput.format(res.pp_equipo) : '');
                     $('#pp_calib').val(res.pp_calib ? formatoInput.format(res.pp_calib) : '');
+
+                    //  NUEVO: Inyectar datos de laboratorio
+                    $('#pl_evamsa').val((res.pl_evamsa !== null && res.pl_evamsa !== undefined) ? formatoInput.format(res.pl_evamsa) : '');
+                    $('#pl_4p').val((res.pl_4p !== null && res.pl_4p !== undefined) ? formatoInput.format(res.pl_4p) : '');
 
                     $('#marca_product').val(res.marca_product || 'N/A');
                     $('#tipo_product').val(res.tipo_product || 'N/A');
