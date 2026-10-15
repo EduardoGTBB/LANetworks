@@ -13,18 +13,6 @@ $(document).ready(function () {
         });
     });
 
-    // Inicialización de Select2 en Modal
-    /* $('#tipo_precio, #edit_filtro_tipo_producto').each(function () {
-        if ($(this).hasClass('select2-hidden-accessible')) {
-            $(this).select2('destroy');
-        }
-        $(this).select2({
-            theme: 'bootstrap-5',
-            dropdownParent: $('#modalEditarCotizacion'),
-            width: '100%'
-        });
-    }); */
-
     const formatoMoneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
     const formatoInput = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -1477,9 +1465,62 @@ $(document).ready(function () {
     }
 
     // >>>============================================== 
-    // >>> ✨ MOTOR DE EXPORTACIÓN INTELIGENTE CON RANGOS
+    // >>> MOTOR DE EXPORTACIÓN INTELIGENTE CON RANGOS
     // >>>============================================== 
+    let excelExportParams_TMP = {}; // Objeto temporal para retener los datos
+
     $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
+        e.preventDefault();
+
+        // 🛡️ ZERO TRUST FRONTEND: Abortar si es un cliente B2B
+        if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL === true) {
+            alert("No tienes los privilegios necesarios para exportar reportes.");
+            return false;
+        }
+
+        let tipo = $(this).attr('data-tipo') || $(this).data('tipo');
+        let scope = $(this).attr('data-scope') || $(this).data('scope') || 'todas';
+        let estatus = $('#filtro_estatus_tabla').val() || '';
+        let f_inicio = window.filtroFechaInicio || '';
+        let f_fin = window.filtroFechaFin || '';
+        let categoria = (window.pestanaActivaCotizaciones === 'TODOS' || window.pestanaActivaCotizaciones === 'CANCELADAS') ? '' : window.pestanaActivaCotizaciones;
+
+        let $tablaDT =$('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+        let busqueda = $tablaDT.search() || '';
+
+        // Guardamos los filtros en la variable temporal
+        excelExportParams_TMP = {
+            tipo: tipo, scope: scope, estatus: estatus, 
+            f_inicio: f_inicio, f_fin: f_fin, categoria: categoria, busqueda: busqueda
+        };
+
+        if (tipo === 'laboratorio') {
+            // ✨ Si es reporte de lab, abrimos el modal primero
+            $('#modalSelectLaboratorioExcel').modal('show');
+        } else {
+            // Si es comercial, descargamos directo (no lleva laboratorio)
+            descargarReporteExcel(null);
+        }
+    });
+
+    // Acción cuando dan click en alguno de los dos laboratorios del modal
+    $(document).on('click', '.btn-confirmar-lab-excel', function() {
+        let labElegido = $(this).data('lab');$('#modalSelectLaboratorioExcel').modal('hide');
+        descargarReporteExcel(labElegido);
+    });
+
+    // Función constructora final de URL
+    function descargarReporteExcel(laboratorio) {
+        let p = excelExportParams_TMP;
+        let base_url = `api/api_exportar_excel.php?tipo=${p.tipo}&scope=${p.scope}&estatus=${encodeURIComponent(p.estatus)}&fecha_inicio=${encodeURIComponent(p.f_inicio)}&fecha_fin=${encodeURIComponent(p.f_fin)}&categoria=${encodeURIComponent(p.categoria)}&search=${encodeURIComponent(p.busqueda)}`;
+        
+        if (laboratorio !== null) {
+            base_url += `&laboratorio=${laboratorio}`;
+        }
+        
+        window.open(base_url, '_blank');
+    }
+    /* $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
         e.preventDefault();
 
         // 🛡️ ZERO TRUST FRONTEND: Abortar si es un cliente B2B
@@ -1502,7 +1543,7 @@ $(document).ready(function () {
 
         let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&fecha_inicio=${encodeURIComponent(f_inicio)}&fecha_fin=${encodeURIComponent(f_fin)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
         window.open(url, '_blank');
-    });
+    }); */
 
     // >>>============================================== 
     // >>> ✨ MOTOR AVANZADO DE RANGOS DE FECHA Y ESTATUS

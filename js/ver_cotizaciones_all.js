@@ -183,7 +183,7 @@ $(document).ready(function () {
 
                     // 4. EDITAR, ELIMINAR Y PDFs
 
-                    // ✨ UX: Cambiamos el icono a un "Ojo" si está rechazada
+                    //  UX: Cambiamos el icono a un "Ojo" si está rechazada
                     let tooltipEdicion = (estatusTexto === 'No autorizada' || estatusTexto === 'Autorizada (información completa)') ? 'Ver detalles' : 'Editar información';
                     
                     let btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="${tooltipEdicion}" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`;
@@ -292,7 +292,7 @@ $(document).ready(function () {
                             <!-- Columna 4: CATEGORÍA (Con .trim() para seguridad) -->
                             <td class="d-none">${cot.categoria ? cot.categoria.trim().toUpperCase() : 'NUEVO'}</td>
                             
-                            <!-- ✨ Columna 5: MES (Oculta para filtro nativo) -->
+                            <!--  Columna 5: MES (Oculta para filtro nativo) -->
                             <td class="d-none">${fechaFiltro}</td>
 
                             <!-- Columna 5: ACCIONES -->
@@ -341,7 +341,7 @@ $(document).ready(function () {
 
                                 // $('#filtro_fecha_tabla').trigger('change');
 
-                                // ✨ FIX UX: Le avisamos a DataTables si el navegador dejó una fecha guardada al recargar
+                                //  FIX UX: Le avisamos a DataTables si el navegador dejó una fecha guardada al recargar
                                 if ($('#filtro_fecha_tabla').val() !== '') {
                                     $('#filtro_fecha_tabla').trigger('change');
                                 }
@@ -386,7 +386,7 @@ $(document).ready(function () {
                                     bordeBox = '#f5c6cb'; bordeLateral = '#dc3545'; claseTexto = 'text-danger'; 
                                 }
 
-                                // ✨ UX: Diseño ultracompacto a 34px
+                                //  UX: Diseño ultracompacto a 34px
                                 let badgeHTML = `
                                     <div class="d-flex align-items-center bg-white shadow-sm px-3" style="height: 34px; border-radius: 6px; border: 1px solid ${bordeBox}; border-left: 4px solid ${bordeLateral};">
                                         <span class="text-muted fw-bold text-uppercase me-2" style="font-size: 10px;">Total:</span>
@@ -480,7 +480,7 @@ $(document).ready(function () {
                             conteoNombres[nombre] = (conteoNombres[nombre] || 0) + 1;
                         });
 
-                        let sucursalesAgregadas = new Set(); // ✨ ESCUDO CONTRA DUPLICADOS
+                        let sucursalesAgregadas = new Set(); //  ESCUDO CONTRA DUPLICADOS
 
                         data.forEach(suc => {
                             if (!sucursalesAgregadas.has(suc.id_sucursal)) {
@@ -524,7 +524,7 @@ $(document).ready(function () {
 
                     $selectSuc.select2({ dropdownParent: $('#modalEditarCotizacion'), theme: 'bootstrap-5', width: '100%' });
 
-                    // ✨ BLOQUEO PARA SUCURSAL SI ESTÁ AUTORIZADA
+                    //  BLOQUEO PARA SUCURSAL SI ESTÁ AUTORIZADA
                     if (isReadOnly) {
                         $selectSuc.prop('disabled', true);
                     }
@@ -539,7 +539,7 @@ $(document).ready(function () {
                         } else if (isEditMultiSucursal && $.fn.select2) {
                             $(this).select2({ theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%', placeholder: "Selecciona destino..." });
 
-                            // ✨ Bloqueamos también los selects internos si es multisucursal
+                            //  Bloqueamos también los selects internos si es multisucursal
                             if (isReadOnly) $(this).prop('disabled', true);
                         }
                     });
@@ -588,7 +588,7 @@ $(document).ready(function () {
                         }
                     }
 
-                    // ✨ CORRECCIÓN DE CIBERSEGURIDAD: Evaluamos isReadOnly ANTES de decidir si bloqueamos o no
+                    //  CORRECCIÓN DE CIBERSEGURIDAD: Evaluamos isReadOnly ANTES de decidir si bloqueamos o no
                     if (isReadOnly || plazasUnicas.size <= 1) {
                         $infoPlaza.prop('disabled', true).removeClass('bg-white').addClass('bg-light').css('pointer-events', 'none');
                     } else {
@@ -657,7 +657,7 @@ $(document).ready(function () {
                 <td class="align-middle">
                     <select class="form-control select-prod-modal" name="productos[]" required>${opciones}</select>
                     <div class="puntos-calibracion-wrapper mt-2" style="display:none;"></div>
-                    <!-- ✨ CAMPO ID DEL EQUIPO OCULTO POR DEFECTO -->
+                    <!--  CAMPO ID DEL EQUIPO OCULTO POR DEFECTO -->
                     <input type="text" name="equipo_id[]" class="form-control form-control-sm mt-2 equipo-id-input border-primary" placeholder="ID del equipo (Opcional)" value="${equipo_id || ''}" style="display:none;">
                 </td>
                 ${tdSucursal}
@@ -674,9 +674,9 @@ $(document).ready(function () {
                 <td class="align-middle"><input type="text" name="unitario[]" class="form-control edit-price precio-mask" value="${precioVal}" autocomplete="off" required></td>
                 <td class="align-middle">
                     <div class="d-flex align-items-center gap-2">
-                        <!-- ✨ VISUAL EN MXN -->
+                        <!--  VISUAL EN MXN -->
                         <input type="text" class="form-control edit-total-visual text-end fw-bold" readonly value="">
-                        <!-- ✨ CRUDA PARA LA BASE DE DATOS -->
+                        <!--  CRUDA PARA LA BASE DE DATOS -->
                         <input type="hidden" name="total[]" class="edit-total-hidden" value="${total}">
                         <a href="#" class="text-danger btn-eliminar-fila-unica" title="Eliminar fila" style="font-size: 1.2rem;"><i class="feather-trash-2"></i></a>
                     </div>
@@ -703,7 +703,7 @@ $(document).ready(function () {
 
                 if (preseleccion) {
                     $selSol.data('old', preseleccion.toString()).val(preseleccion);
-                    // ✨ Pasamos "isReadOnly" hacia la carga de sucursales/plazas
+                    //  Pasamos "isReadOnly" hacia la carga de sucursales/plazas
                     cargarSucursalesEdicion(preseleccion, preseleccion_suc, preseleccion_plaza, isReadOnly);
                 }
 
@@ -745,7 +745,7 @@ $(document).ready(function () {
     //& EDITAR EL MODAL Y LLENAR DATOS
     $(document).on('click', '.btn-editar-modal', function (e) {
         e.preventDefault();
-        window.productoAgregadoEnEdicion = false; // ✨ BANDERA APAGADA
+        window.productoAgregadoEnEdicion = false; //  BANDERA APAGADA
         let id_cot = $(this).data('id');
         let folioVisualModal = String($(this).data('folio'));
         $('#modal_folio_badge').text(folioVisualModal.includes('-') ? folioVisualModal : '#' + folioVisualModal);
@@ -764,7 +764,7 @@ $(document).ready(function () {
                 // let isReadOnly = (cot.estatus === 'Autorizada (información completa)' || cot.estatus === 'No autorizada');
                 // Si está Rechazada, es 'Solo Lectura' para TODOS. 
                 // Si está Autorizada, es 'Solo Lectura' para los clientes, pero editable para el Admin.
-                // ✨ UX/Seguridad: Determinamos si el modal se bloquea
+                //  UX/Seguridad: Determinamos si el modal se bloquea
                 let isReadOnly = false;
                 let perfilActual = (typeof USER_PERFIL !== 'undefined') ? USER_PERFIL : 'cliente';
 
@@ -788,7 +788,7 @@ $(document).ready(function () {
 
                 $('#edit_tax').val(cot.porcentaje_iva);
 
-                // ✨ Inyectamos el valor oculto y el visual formateado
+                //  Inyectamos el valor oculto y el visual formateado
                 $('#edit_sub_total').val(cot.importe_total);
                 $('#edit_sub_total_visual').val(formatoMoneda.format(cot.importe_total));
 
@@ -829,21 +829,6 @@ $(document).ready(function () {
                     $('.col-edit-multisucursal').hide();
                 }
 
-                /* if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-                    $wrapPrecio.hide();
-                    $wrapEstatus.hide();
-                    $selEmp.prop('disabled', true);
-
-                    if ($('#hidden_edit_empresa').length === 0) {
-                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
-                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_precio" name="tipo_precio" value="${cot.tipo_precio}">`);
-                        $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_estatus" name="estatus" value="${cot.estatus ? cot.estatus : 'Guardado para aprobación'}">`);
-                    } else {
-                        $('#hidden_edit_empresa').val(cot.Empresa_id);
-                        $('#hidden_edit_precio').val(cot.tipo_precio);
-                        $('#hidden_edit_estatus').val(cot.estatus ? cot.estatus : 'Guardado para aprobación');
-                    }
-                } */
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
                     $wrapPrecio.hide();
                     $wrapEstatus.hide();$selEmp.prop('disabled', true);
@@ -965,7 +950,7 @@ $(document).ready(function () {
         calcEditTotal();
     });
 
-    // ✨ CÁLCULO DE FILA Y CONTROL DE ID DE EQUIPO
+    //  CÁLCULO DE FILA Y CONTROL DE ID DE EQUIPO
     function calculateRowEdit(row) {
         let prodSelect = row.find('.select-prod-modal');
         let prodId = prodSelect.val();
@@ -1228,7 +1213,7 @@ $(document).ready(function () {
     if (urlParams.has('reopen_edit')) {
         let idToOpen = urlParams.get('reopen_edit');
 
-        // ✨ CIBERSEGURIDAD Y UX: Borramos el parámetro de la URL sin recargar la página 
+        //  CIBERSEGURIDAD Y UX: Borramos el parámetro de la URL sin recargar la página 
         // usando la API History de HTML5. Esto evita ciclos infinitos si el usuario refresca (F5).
         let cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
         window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
@@ -1269,7 +1254,7 @@ $(document).ready(function () {
         if (paq) $('#logistica_paqueteria').val(paq);
         if (guia) $('#logistica_guia').val(guia);
 
-        // ✨ UX: Si ya hay fecha registrada, la mostramos. Si no, ponemos la fecha de HOY por defecto.
+        //  UX: Si ya hay fecha registrada, la mostramos. Si no, ponemos la fecha de HOY por defecto.
         if (fecha) {
             $('#logistica_fecha').val(fecha);
         } else {
@@ -1277,7 +1262,7 @@ $(document).ready(function () {
             $('#logistica_fecha').val(hoy);
         }
 
-        // ✨ UX: Inyectamos la fecha estimada si existe
+        //  UX: Inyectamos la fecha estimada si existe
         if (fecha_est) {
             $('#logistica_fecha_estimada').val(fecha_est);
         }
@@ -1449,19 +1434,10 @@ $(document).ready(function () {
         aplicarFiltroCategoria(categoria);
     });
 
-    /* function aplicarFiltroCategoria(categoria) {
-        let $tablaDT = $('#tableAllCotizaciones').DataTable();
-        if (categoria === 'TODOS') {
-            $tablaDT.column(4).search('').draw();
-        } else {
-            let regex = '^\\s*' + categoria + '\\s*$';
-            $tablaDT.column(4).search(regex, true, false).draw();
-        }
-    } */
     function aplicarFiltroCategoria(categoria) {
         let $tablaDT = $('#tableAllCotizaciones').DataTable();
         
-        // ✨ Primero, limpiamos AMBAS columnas (Categoría Oculta y Estatus)
+        //  Primero, limpiamos AMBAS columnas (Categoría Oculta y Estatus)
         $tablaDT.column(4).search(''); 
         $tablaDT.column(3).search(''); 
 
@@ -1474,7 +1450,7 @@ $(document).ready(function () {
             $tablaDT.draw();
             
         } else if (categoria === 'CANCELADAS') {
-            // ✨ LÓGICA NUEVA: Filtramos la columna 3 (Estatus) buscando "No autorizada"
+            //  LÓGICA NUEVA: Filtramos la columna 3 (Estatus) buscando "No autorizada"
             $tablaDT.column(3).search('^\\s*No autorizada', true, false).draw();
             
             // Opcional: Forzamos visualmente el selector global de arriba para que coincida
@@ -1508,7 +1484,7 @@ $(document).ready(function () {
     });
 
     // >>>============================================== 
-    // >>> ✨ MOTOR AVANZADO DE RANGOS DE FECHA Y ESTATUS
+    // >>>  MOTOR AVANZADO DE RANGOS DE FECHA Y ESTATUS
     // >>>============================================== 
     
     // 1. Variables globales para retener el filtro
@@ -1529,7 +1505,7 @@ $(document).ready(function () {
     $('input[name="tipo_filtro_fecha"]').on('change', toggleFechas);
     toggleFechas();
 
-    // ✨ FIX UX MÓVIL: Prevenir que el clic en los inputs nativos cierre el Dropdown de Bootstrap
+    //  FIX UX MÓVIL: Prevenir que el clic en los inputs nativos cierre el Dropdown de Bootstrap
     $('#fecha_inicio_filtro, #fecha_fin_filtro, #input_mes_filtro').on('click touchstart', function(e) {
         e.stopPropagation();
     });
@@ -1542,7 +1518,7 @@ $(document).ready(function () {
         $('#btnFiltroPeriodo').dropdown('toggle'); // Cierra el menú
     });
 
-    // ✨ NUEVA FUNCIÓN: LIMPIAR FILTRO
+    //  NUEVA FUNCIÓN: LIMPIAR FILTRO
     $('#btn_limpiar_periodo').on('click', function() {
         window.filtroFechaInicio = '';
         window.filtroFechaFin = '';
@@ -1640,9 +1616,65 @@ $(document).ready(function () {
     });
 
     // >>>============================================== 
-    // >>> ✨ MOTOR DE EXPORTACIÓN INTELIGENTE CON RANGOS
+    // >>>  MOTOR DE EXPORTACIÓN INTELIGENTE (LABORATORIOS)
     // >>>============================================== 
+    let excelExportParams_TMP = {}; // Objeto temporal para retener los datos
+
     $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
+        e.preventDefault();
+
+        // 🛡️ ZERO TRUST FRONTEND: Abortar si es un cliente B2B
+        if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL === true) {
+            alert("No tienes los privilegios necesarios para exportar reportes.");
+            return false;
+        }
+
+        let tipo = $(this).attr('data-tipo') || $(this).data('tipo');
+        let scope = $(this).attr('data-scope') || $(this).data('scope') || 'todas';
+        let estatus = $('#filtro_estatus_tabla').val() || '';
+        let f_inicio = window.filtroFechaInicio || '';
+        let f_fin = window.filtroFechaFin || '';
+        let categoria = (window.pestanaActivaCotizaciones === 'TODOS' || window.pestanaActivaCotizaciones === 'CANCELADAS') ? '' : window.pestanaActivaCotizaciones;
+        
+        let $tablaDT =$('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+        let busqueda = $tablaDT.search() || '';
+
+        excelExportParams_TMP = {
+            tipo: tipo, scope: scope, estatus: estatus, 
+            f_inicio: f_inicio, f_fin: f_fin, categoria: categoria, busqueda: busqueda
+        };
+
+        if (tipo === 'laboratorio') {
+            //  Si es reporte de lab, abrimos el modal primero
+            $('#modalSelectLaboratorioExcel').modal('show');
+        } else {
+            // Si es comercial, descargamos directo (no lleva laboratorio)
+            descargarReporteExcel(null);
+        }
+    });
+
+    // Acción cuando dan click en alguno de los dos laboratorios del modal
+    $(document).on('click', '.btn-confirmar-lab-excel', function() {
+        let labElegido = $(this).data('lab');$('#modalSelectLaboratorioExcel').modal('hide');
+        descargarReporteExcel(labElegido);
+    });
+
+    // Función constructora final de URL
+    function descargarReporteExcel(laboratorio) {
+        let p = excelExportParams_TMP;
+        let base_url = `api/api_exportar_excel.php?tipo=${p.tipo}&scope=${p.scope}&estatus=${encodeURIComponent(p.estatus)}&fecha_inicio=${encodeURIComponent(p.f_inicio)}&fecha_fin=${encodeURIComponent(p.f_fin)}&categoria=${encodeURIComponent(p.categoria)}&search=${encodeURIComponent(p.busqueda)}`;
+        
+        if (laboratorio !== null) {
+            base_url += `&laboratorio=${laboratorio}`;
+        }
+        
+        window.open(base_url, '_blank');
+    }
+
+    // >>>============================================== 
+    // >>>  MOTOR DE EXPORTACIÓN INTELIGENTE CON RANGOS
+    // >>>============================================== 
+    /* $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
         e.preventDefault();
         
         if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL === true) {
@@ -1662,6 +1694,6 @@ $(document).ready(function () {
 
         let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&fecha_inicio=${encodeURIComponent(f_inicio)}&fecha_fin=${encodeURIComponent(f_fin)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
         window.open(url, '_blank');
-    });
+    }); */
     
 });

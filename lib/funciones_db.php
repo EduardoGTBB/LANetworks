@@ -69,7 +69,7 @@ function obtenerClientes(PDO $pdo): array
 }
 
 // [fn] Obtener los productos
-function obtenerProduct(PDO $pdo): array
+/* function obtenerProduct(PDO $pdo): array
 {
     $sql = "SELECT p.*, 
             pf.pf_equipo, pf.pf_calibracion as pf_calib, pf.pf_precio_antes_iva as pf_antes_iva,
@@ -80,9 +80,22 @@ function obtenerProduct(PDO $pdo): array
     // ORDER BY p.id_product DESC
 
     return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+} */
+function obtenerProduct(PDO $pdo): array
+{
+    $sql = "SELECT p.*, 
+            pf.pf_equipo, pf.pf_calibracion as pf_calib, pf.pf_precio_antes_iva as pf_antes_iva,
+            pp.pp_equipo, pp.pp_calibracion as pp_calib, pp.pp_precio_antes_iva as pp_antes_iva,
+            pl.pl_evamsa, pl.pl_4p
+            FROM productos p
+            LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
+            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
+            LEFT JOIN precios_lab pl ON p.id_product = pl.Producto_id";
+
+    return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function obtenerProductPorId(PDO $pdo, int $id_product)
+/* function obtenerProductPorId(PDO $pdo, int $id_product)
 {
     // Usamos los nombres reales de las columnas en la BD: precio_equipo y precio_calibracion
     $sql = "SELECT p.*, 
@@ -96,79 +109,26 @@ function obtenerProductPorId(PDO $pdo, int $id_product)
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':id' => $id_product]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
+} */
+
+// [fn] Obtener producto por ID
+function obtenerProductPorId(PDO $pdo, int $id_product)
+{
+    $sql = "SELECT p.*, 
+            pf.pf_equipo, pf.pf_calibracion as pf_calib, pf.pf_precio_antes_iva as pf_antes_iva,
+            pp.pp_equipo, pp.pp_calibracion as pp_calib, pp.pp_precio_antes_iva as pp_antes_iva,
+            pl.pl_evamsa, pl.pl_4p
+            FROM productos p
+            LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
+            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
+            LEFT JOIN precios_lab pl ON p.id_product = pl.Producto_id
+            WHERE p.id_product = :id";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':id' => $id_product]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// [fn] Guardar la nueva cotización
-/* function saveCotizacion(PDO $pdo, array $datosCotizacion, array$detalles): string|false
-{
-    try {
-        $pdo->beginTransaction();
-
-        $categoria = $datosCotizacion['categoria'] ?? 'Nuevo';
-        $es_temporal = $datosCotizacion['es_temporal'] ?? 'N';$sufijo = '';
-        if ($categoria === 'Nuevo') {$sufijo = '-N'; } 
-        elseif ($categoria === 'Usado') {$sufijo = '-U'; } 
-        elseif ($categoria === 'Calibracion') {$sufijo = '-CALIB'; }
-
-        $prefijo = ($es_temporal === 'Y') ? 'TEMP-' : '';
-
-        // Buscamos el último folio según su categoría y naturaleza
-        $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND es_temporal = :temp AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1 FOR UPDATE";
-        $stmtMax =$pdo->prepare($sqlMax);$stmtMax->execute([':cat' => $categoria, ':temp' =>$es_temporal]);
-        $ultimoFolio =$stmtMax->fetchColumn();
-
-        if ($ultimoFolio) {$folioLimpio = str_replace([$prefijo,$sufijo], '', $ultimoFolio);$siguienteNumero = ((int)$folioLimpio) + 1;         } else {$siguienteNumero = 1;
-        }
-
-        $folio_especial =$prefijo . str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) .$sufijo;
-
-        $sqlCotizacion = "INSERT INTO cotizacion (categoria, folio_especial, Empresa_id, Sucursal_id, Plaza_id, Usuario_admin_id, Usuario_empresa_id , fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, es_temporal)
-                        VALUES (:categoria, :folio_especial, :empresa_id, :sucursal_id, :plaza_id, :id_user_admin, :usuario_id, :fecha_cot, :importe_total, :comentarios, :precio_iva, :pcte_iva , :tprecio, :division, :es_temporal)";
-
-        $stmtCot = $pdo->prepare($sqlCotizacion);
-
-        $stmtCot->execute([
-            ':categoria'      => $categoria,
-            ':folio_especial' => $folio_especial,
-            ':empresa_id'     => $datosCotizacion['empresa_id'],
-            ':sucursal_id'    => $datosCotizacion['sucursal_id'],
-            ':plaza_id'       => $datosCotizacion['plaza_id'],
-            ':id_user_admin'  => $datosCotizacion['id_user_admin'],
-            ':usuario_id'     => $datosCotizacion['usuario_id'],
-            ':fecha_cot'      => $datosCotizacion['fecha_cot'],
-            ':importe_total'  => $datosCotizacion['importe_total'],
-            ':comentarios'    => $datosCotizacion['comentarios'],
-            ':precio_iva'     => $datosCotizacion['precio_iva'],
-            ':pcte_iva'       => $datosCotizacion['porcentaje_iva'],
-            ':tprecio'        => $datosCotizacion['tipo_precio'],
-            ':division'       => $datosCotizacion['division'],
-            ':es_temporal'    => $es_temporal
-        ]);
-
-        $id_cotizacion =$pdo->lastInsertId();
-
-        $sqlDetalle = "INSERT INTO `detalle_cotizacion` (`Cotizacion_id`, `Product_id`, `cantidad`, `precio_unitario`, `precio_extendido`, `desglosar`, `sucursal_destino_id`, `equipo_id`) VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar, :suc_dest, :eq_id)";
-        $stmtDet = $pdo->prepare($sqlDetalle);
-
-        foreach ($detalles as $item) {$stmtDet->execute([
-                ':cot_id'     => $id_cotizacion,
-                ':prod_id'    => $item['producto_id'],
-                ':cantidad'   => $item['cantidad'],
-                ':precio_u'   => $item['precio_unitario'],
-                ':precio_ext' => $item['precio_extendido'],
-                ':desglosar'  => $item['desglosar'] ?? 'N',
-                ':suc_dest'   => $item['sucursal_destino_id'],
-                ':eq_id'      => $item['equipo_id']
-            ]);
-        }
-
-        $pdo->commit();
-        return $id_cotizacion;
-    } catch (Exception $e) {$pdo->rollBack();
-        error_log("Error al guardar cotización: " . $e->getMessage());
-        throw new Exception($e->getMessage());
-    }
-} */
 // [fn] Guardar la nueva cotización
 function saveCotizacion(PDO $pdo, array $datosCotizacion, array$detalles): string|false
 {
@@ -1496,7 +1456,7 @@ function eliminarPlazaCompleta(PDO $pdo, int $id_plaza)
 // >>>      INICIO: FUNCIONES ALMACEN|PRODUCTOS
 // >>> ============================================== 
 
-function insertarProduct(PDO $pdo, array $datos): void
+/* function insertarProduct(PDO $pdo, array $datos): void
 {
     try {
         $pdo->beginTransaction();
@@ -1519,12 +1479,12 @@ function insertarProduct(PDO $pdo, array $datos): void
         $id_product = $pdo->lastInsertId();
 
         // 2. Insertar Precios Farmacia
-        /* $pf_total = $datos['pf_equipo'] + $datos['pf_calib']; */
+        * $pf_total = $datos['pf_equipo'] + $datos['pf_calib']; *
         $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion) VALUES (?, ?, ?)";
         $pdo->prepare($sqlF)->execute([$id_product, $datos['pf_equipo'], $datos['pf_calib']]);
 
         // 3. Insertar Precios Público
-        /* $pp_total = $datos['pp_equipo'] + $datos['pp_calib']; */
+        * $pp_total = $datos['pp_equipo'] + $datos['pp_calib']; *
         $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion) VALUES (?, ?, ?)";
         $pdo->prepare($sqlP)->execute([$id_product, $datos['pp_equipo'], $datos['pp_calib']]);
 
@@ -1533,9 +1493,47 @@ function insertarProduct(PDO $pdo, array $datos): void
         $pdo->rollBack();
         throw $e;
     }
+} */
+// [fn] Insertar Producto (Actualizado para guardar costos de laboratorio)
+function insertarProduct(PDO $pdo, array $datos): void
+{
+    try {
+        $pdo->beginTransaction();
+
+        $sql = "INSERT INTO productos (clave_product, descripcion_product, marca_product, tipo_product, estado_product, puntos_calibracion,foto_product, estatus) 
+                VALUES (:clave, :desc, :marca, :tipo, :estado, :puntos,:foto, :estatus)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':clave'   => $datos['clave_product'],
+            ':desc'    => $datos['descripcion_product'],
+            ':marca'   => $datos['marca_product'],
+            ':tipo'    => $datos['tipo_product'],
+            ':estado'  => $datos['estado_product'],
+            ':puntos'  => $datos['puntos_calibracion'],
+            ':foto'    => $datos['foto_product'],
+            ':estatus' => $datos['estatus']
+        ]);
+
+        $id_product = $pdo->lastInsertId();
+
+        $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion) VALUES (?, ?, ?)";
+        $pdo->prepare($sqlF)->execute([$id_product, $datos['pf_equipo'], $datos['pf_calib']]);
+
+        $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion) VALUES (?, ?, ?)";
+        $pdo->prepare($sqlP)->execute([$id_product, $datos['pp_equipo'], $datos['pp_calib']]);
+
+        // ✨ NUEVO: Insertar Costos de Laboratorio
+        $sqlL = "INSERT INTO precios_lab (Producto_id, pl_evamsa, pl_4p) VALUES (?, ?, ?)";
+        $pdo->prepare($sqlL)->execute([$id_product, $datos['pl_evamsa'], $datos['pl_4p']]);
+
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
 }
 
-function actualizarProduct(PDO $pdo, array $datos): void
+/* function actualizarProduct(PDO $pdo, array $datos): void
 {
     try {
         $pdo->beginTransaction();
@@ -1575,6 +1573,45 @@ function actualizarProduct(PDO $pdo, array $datos): void
         $pp_total = $datos['pp_equipo'] + $datos['pp_calib'];
         $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion) VALUES (?, ?, ?)";
         $pdo->prepare($sqlP)->execute([$datos['id_product'], $datos['pp_equipo'], $datos['pp_calib']]);
+
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+} */
+// [fn] Actualizar Producto (Actualizado para editar costos de laboratorio)
+function actualizarProduct(PDO $pdo, array $datos): void
+{
+    try {
+        $pdo->beginTransaction();
+
+        $sql = "UPDATE productos SET 
+                clave_product = :clave, descripcion_product = :desc, marca_product = :marca,
+                tipo_product = :tipo, estado_product = :estado, puntos_calibracion = :puntos,
+                foto_product = :foto, estatus = :estatus
+                WHERE id_product = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':clave'   => $datos['clave_product'], ':desc'    => $datos['descripcion_product'],
+            ':marca'   => $datos['marca_product'], ':tipo'    => $datos['tipo_product'],
+            ':estado'  => $datos['estado_product'], ':puntos'  => $datos['puntos_calibracion'],
+            ':foto'    => $datos['foto_product'], ':estatus' => $datos['estatus'],
+            ':id'      => $datos['id_product']
+        ]);
+
+        $pdo->prepare("DELETE FROM precios_farmacia WHERE Producto_id = ?")->execute([$datos['id_product']]);
+        $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion) VALUES (?, ?, ?)";
+        $pdo->prepare($sqlF)->execute([$datos['id_product'], $datos['pf_equipo'], $datos['pf_calib']]);
+
+        $pdo->prepare("DELETE FROM precios_publico WHERE Producto_id = ?")->execute([$datos['id_product']]);
+        $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion) VALUES (?, ?, ?)";
+        $pdo->prepare($sqlP)->execute([$datos['id_product'], $datos['pp_equipo'], $datos['pp_calib']]);
+
+        // ✨ NUEVO: Sincronizar Costos de Laboratorio
+        $pdo->prepare("DELETE FROM precios_lab WHERE Producto_id = ?")->execute([$datos['id_product']]);
+        $sqlL = "INSERT INTO precios_lab (Producto_id, pl_evamsa, pl_4p) VALUES (?, ?, ?)";
+        $pdo->prepare($sqlL)->execute([$datos['id_product'], $datos['pl_evamsa'], $datos['pl_4p']]);
 
         $pdo->commit();
     } catch (Exception $e) {
@@ -2330,11 +2367,6 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
         $params[':f_fin'] = $fecha_fin; 
     }
 
-    /* if (!empty($busqueda)) {
-        $whereClause .= " AND (c.folio_especial LIKE :busqueda OR e.razon_social LIKE :busqueda OR pr.descripcion_product LIKE :busqueda OR pr.clave_product LIKE :busqueda)";
-        $params[':busqueda'] = "%{$busqueda}%";
-    } */
-
     // ✨ Filtro de Búsqueda de DataTables (Parámetros únicos para PDO Estricto)
     if (!empty($busqueda)) {
         $whereClause .= " AND (c.folio_especial LIKE :b1 OR e.razon_social LIKE :b2 OR pr.descripcion_product LIKE :b3 OR pr.clave_product LIKE :b4)";
@@ -2355,7 +2387,7 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
         }
     }
 
-    $sql = "SELECT 
+    /* $sql = "SELECT 
                 c.folio_especial, c.id_cotizacion, c.fecha_cot, c.porcentaje_iva,
                 e.razon_social, pz.nombre_plaza,
                 dc.cantidad, dc.precio_unitario, dc.precio_extendido, dc.equipo_id,
@@ -2369,8 +2401,25 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
             JOIN productos pr ON dc.Product_id = pr.id_product
             LEFT JOIN sucursales s ON COALESCE(dc.sucursal_destino_id, c.Sucursal_id) = s.id_sucursal
             WHERE $whereClause
+            ORDER BY c.id_cotizacion DESC, dc.id_detalle_cot ASC"; */
+    $sql = "SELECT 
+                c.folio_especial, c.id_cotizacion, c.fecha_cot, c.porcentaje_iva,
+                e.razon_social, pz.nombre_plaza,
+                dc.cantidad, dc.precio_unitario, dc.precio_extendido, dc.equipo_id,
+                pr.clave_product, pr.descripcion_product, pr.puntos_calibracion,
+                s.nombre_sucursal, s.calle, s.num_ext, s.num_int, s.colonia,
+                s.cp, s.poblacion, s.municipio, s.estado,
+                pl.pl_evamsa, pl.pl_4p 
+            FROM detalle_cotizacion dc
+            JOIN cotizacion c ON dc.Cotizacion_id = c.id_cotizacion
+            JOIN empresa e ON c.Empresa_id = e.id_empresa
+            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
+            JOIN productos pr ON dc.Product_id = pr.id_product
+            LEFT JOIN precios_lab pl ON pr.id_product = pl.Producto_id 
+            LEFT JOIN sucursales s ON COALESCE(dc.sucursal_destino_id, c.Sucursal_id) = s.id_sucursal
+            WHERE $whereClause
             ORDER BY c.id_cotizacion DESC, dc.id_detalle_cot ASC";
-            
+
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);

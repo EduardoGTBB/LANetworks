@@ -151,10 +151,10 @@
                                 </div>
                             </div> -->
 
-                            <!-- ✨ CONTENEDOR MAESTRO DE CABECERA (Bloque estricto) -->
+                            <!--  CONTENEDOR MAESTRO DE CABECERA (Bloque estricto) -->
                             <div class="card-header p-0 border-bottom-0 w-100 d-block">
                                 
-                                <!-- ✨ FILA 1: Título y Buscador 
+                                <!--  FILA 1: Título y Buscador 
                                 <div class="d-flex justify-content-between align-items-center w-100 px-4 py-3">
                                     <h5 class="card-title mb-0">Lista de cotizaciones</h5>
                                     <div id="contenedor-buscador-dt"></div>
@@ -165,7 +165,7 @@
                                     <div id="contenedor-buscador-dt" style="max-width: 100%;"></div>
                                 </div>
 
-                                <!-- ✨ FILA 2: Botones y Filtros Equilibrados -->
+                                <!--  FILA 2: Botones y Filtros Equilibrados -->
                                 <div class="px-4 pb-3 pt-3 border-bottom bg-light-subtle">
                                     <!-- flex-column para celular (apilado), flex-md-row para PC (en línea) -->
                                     <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-3 w-100">
@@ -175,7 +175,7 @@
                                             <button class="btn fw-bold d-flex align-items-center justify-content-center shadow-sm dropdown-toggle text-white px-3 w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
                                                 <i class="feather-download me-2"></i> EXPORTAR
                                             </button>
-                                            <!-- ✨ FIX: Se quitó w-100 y se agregó un min-width de 220px -->
+                                            <!--  FIX: Se quitó w-100 y se agregó un min-width de 220px -->
                                             <ul class="dropdown-menu shadow-lg border-0" style="min-width: 220px; border-radius: 10px;">
                                                 <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6></li>
                                                 <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="todas"><i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial</a></li>
@@ -222,7 +222,7 @@
                                                     <label class="form-check-label text-dark fw-bold mb-0 fs-13" style="cursor:pointer;" for="radio_rango">Rango de fechas</label>
                                                 </div>
                                                 
-                                                <!-- ✨ FIX: flex-fill y min-width ajustado para evitar el desbordamiento -->
+                                                <!--  FIX: flex-fill y min-width ajustado para evitar el desbordamiento -->
                                                 <div class="d-flex align-items-center justify-content-between mb-4 pe-md-2 gap-2">
                                                     <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="fecha_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;">
                                                     <span class="text-muted fw-bold text-center">a</span>
@@ -295,7 +295,7 @@
 
                                 <!-- FILA 2: Botones y Filtros Expandidos 
                                 <div class="px-4 pb-3 pt-3 border-bottom bg-light-subtle">
-                                    !-- ✨ FIX: Usamos flex-wrap y quitamos overflow-x para que el Dropdown no se recorte --
+                                    !--  FIX: Usamos flex-wrap y quitamos overflow-x para que el Dropdown no se recorte --
                                     <div class="d-flex flex-row align-items-center gap-3 flex-wrap w-100">
 
                                         !-- 1. EXPORTAR (me-auto lo empuja a la izquierda) --
@@ -350,7 +350,7 @@
                                                 
                                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                                     <h6 class="text-dark fw-bolder mb-0" style="font-size: 15px; letter-spacing: 0.5px;">Filtrar por:</h6>
-                                                    !-- ✨ Botón Limpiar (Nuclear CSS: Sin salto ni sombra) --
+                                                    !--  Botón Limpiar (Nuclear CSS: Sin salto ni sombra) --
                                                     <button type="button" class="btn btn-sm fw-bold text-primary border px-2" id="btn_limpiar_periodo" style="font-size: 11px; background-color: #f8f9fa; transition: none !important; transform: none !important; box-shadow: none !important;">
                                                         <i class="feather-refresh-cw me-1"></i>LIMPIAR
                                                     </button>
@@ -542,7 +542,7 @@
                                         <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
                                         <select class="form-control border-success max-select" name="categoria" id="edit_filtro_tipo_producto">
                                             <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
-                                            <option value="NUEVO">✨ Solo Equipos Nuevos</option>
+                                            <option value="NUEVO"> Solo Equipos Nuevos</option>
                                             <option value="USADO">🔧 Solo Equipos Usados</option>
                                             <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
                                         </select>
@@ -736,6 +736,34 @@
                         </a>
                         <button type="button" class="btn btn-light text-muted fw-bold" data-bs-dismiss="modal">Cerrar</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUEVO MODAL: SELECCIÓN DE LABORATORIO PARA REPORTE EXCEL -->
+    <div class="modal fade" id="modalSelectLaboratorioExcel" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title fw-bold text-white"><i class="feather-thermometer me-2"></i>Reporte Laboratorio</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="text-dark fw-bold mb-4">¿Con base a qué laboratorio deseas generar el reporte de Excel?</p>
+                    
+                    <div class="d-grid gap-3">
+                        <button type="button" class="btn btn-primary fw-bold text-uppercase btn-confirmar-lab-excel" data-lab="evamsa">
+                            <i class="feather-box me-2"></i>Laboratorio EVAMSA
+                        </button>
+                        
+                        <button type="button" class="btn btn-dark fw-bold text-uppercase btn-confirmar-lab-excel" data-lab="4p">
+                            <i class="feather-package me-2"></i>Laboratorio 4PLAB
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center border-0 pt-0">
+                    <button type="button" class="btn btn-light text-muted fw-bold btn-sm" data-bs-dismiss="modal">Cancelar</button>
                 </div>
             </div>
         </div>

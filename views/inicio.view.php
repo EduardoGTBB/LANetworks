@@ -118,7 +118,7 @@
                 "Inicio"
             ];
 
-            // ✨ Inyectamos el HTML exacto de tu fechador como una variable
+            //  Inyectamos el HTML exacto de tu fechador como una variable
             // Asegúrate de usar las clases o IDs correctos que tu JavaScript ya está leyendo
             $custom_header_center = '
                     <div class="input-group input-group-sm bg-white border rounded shadow-sm" style="max-width: 260px;">
@@ -259,8 +259,8 @@
                                     <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="13"></button>
                                     <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="14"></button>
                                     <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="15"></button>
-                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="16"></button>
-                                    <!-- <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="17"></button> -->
+                                    <!-- <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="16"></button>
+                                    <button type="button" data-bs-target="#carouselEquipos" data-bs-slide-to="17"></button> -->
                                 </div>
 
                                 <!-- // >>>=======================
@@ -269,13 +269,13 @@
 
                                 <!-- Contenido del Carrusel -->
                                 <div class="carousel-inner h-100 bg-white" style="border-radius: 1rem;">
-
+                                    
+                                    <!-- EQUIPOS TAYLOR -->
                                     <div class="carousel-item active h-100" style="background-color: #ffffff;">
                                         <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica de GSP 6Pro">
                                             <img src="assets/images/general/carrusel/Taylor1.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#1">
                                         </a>
                                     </div>
-
                                     <div class="carousel-item h-100" style="background-color: #ffffff;">
                                         <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
                                             <img src="assets/images/general/carrusel/Taylor2.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#2">
@@ -318,19 +318,21 @@
                                     </div>
                                     <div class="carousel-item h-100" style="background-color: #ffffff;">
                                         <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
-                                            <img src="assets/images/general/carrusel/Taylor10.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#10">
+                                            <img src="assets/images/general/carrusel/Taylor10.jpg" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#10">
                                         </a>
                                     </div>
                                     <div class="carousel-item h-100" style="background-color: #ffffff;">
                                         <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
-                                            <img src="assets/images/general/carrusel/Taylor11.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#11">
+                                            <img src="assets/images/general/carrusel/Taylor11.jpg" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#11">
                                         </a>
                                     </div>
-                                    <div class="carousel-item h-100" style="background-color: #ffffff;">
+                                    <!-- <div class="carousel-item h-100" style="background-color: #ffffff;">
                                         <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
                                             <img src="assets/images/general/carrusel/Taylor12.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Taylor#12">
                                         </a>
-                                    </div>
+                                    </div> -->
+
+                                    <!-- EQUIPOS VA-INF -->
                                     <div class="carousel-item h-100" style="background-color: #ffffff;">
                                         <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
                                             <img src="assets/images/general/carrusel/VA-INF151.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="VA-INF151">
@@ -341,6 +343,8 @@
                                             <img src="assets/images/general/carrusel/VA-INF200.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="VA-INF200">
                                         </a>
                                     </div>
+
+                                    <!-- EQUIPOS AVALY -->
                                     <div class="carousel-item h-100" style="background-color: #ffffff;">
                                         <a href="#" target="_blank" rel="noopener noreferrer" class="d-block w-100 h-100" title="Ver ficha técnica">
                                             <img src="assets/images/general/carrusel/Avaly1.png" class="d-block w-100 h-100" style="object-fit: contain; padding: 1rem;" alt="Avaly#1">

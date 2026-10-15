@@ -24,7 +24,7 @@
                             <!-- Cabecera y Buscador -->
                             <div class="card-header p-0 border-bottom-0 w-100 d-block">
                                 <div class="d-flex justify-content-between align-items-center w-100 px-4 py-3 bg-warning bg-opacity-10">
-                                    <h5 class="card-title mb-0 text-warning fw-bolder"><i class="feather-clock me-2"></i>Cotizaciones Temporales (Sin Destino)</h5>
+                                    <h5 class="card-title mb-0 text-warning fw-bolder"><i class="feather-clock me-2"></i>Cotizaciones Provisionales (Sin Destino)</h5>
                                     <div id="contenedor-buscador-dt"></div>
                                 </div>
 
@@ -167,7 +167,7 @@
                             <!-- Opción 1: Temporal (A la izquierda, preseleccionado) -->
                             <div class="form-check">
                                 <input class="form-check-input border-warning" type="radio" name="es_temporal" id="edit_rad_temporal" value="Y" checked style="cursor: pointer;">
-                                <label class="form-check-label fw-bold text-dark" for="edit_rad_temporal" style="cursor: pointer;">Mantener Temporal (Sin destino)</label>
+                                <label class="form-check-label fw-bold text-dark" for="edit_rad_temporal" style="cursor: pointer;">Mantener Provicional (Sin destino)</label>
                             </div>
                             <!-- Opción 2: Normal (A la derecha) -->
                             <div class="form-check">
