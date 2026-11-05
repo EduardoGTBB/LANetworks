@@ -140,7 +140,6 @@
                                     </div>
                                 </div>
 
-                                <!-- <form enctype="multipart/form-data" id="nueva_cotizacion" action="?php echo trim(stripcslashes(strip_tags(htmlspecialchars($_SERVER['PHP_SELF'])))); ?>" method="POST" name="nueva_cotizacion"> -->
                                 <form id="nueva_cotizacion">
                                     <input type="hidden" name="fecha_cot" value="<?php echo date('Y-m-d'); ?>">
                                     <!-- <div class="row">
@@ -214,7 +213,7 @@
                                                     <div class="mb-2" id="wrapper_tipo_sucursal">
                                                         <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-primary"></i>Determinar tipo de sucursal</label>
                                                         
-                                                        <!-- Contenedor 1: Los Selectores (Visibles en NORMAL por defecto) -->
+                                                        <!-- Contenedor 1: Los Selectores -->
                                                         <div id="selectores_sucursal_unica_multi" class="d-flex gap-4 mt-2">
                                                             <div class="form-check">
                                                                 <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo" id="rad_unica" value="unica" checked>
@@ -234,19 +233,6 @@
                                                             </small>
                                                         </div>
                                                     </div>
-                                                    <!-- <div class="mb-2" id="wrapper_tipo_sucursal">
-                                                        <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-primary"></i>Determinar tipo de sucursal</label>
-                                                        <div class="d-flex gap-4 mt-2">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo" id="rad_unica" value="unica" checked>
-                                                                <label class="form-check-label fw-semibold" for="rad_unica">🏢 Sucursal Única</label>
-                                                            </div>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input border-primary" type="radio" name="tipo_sucursal_flujo" id="rad_multi" value="multisucursal">
-                                                                <label class="form-check-label fw-semibold" for="rad_multi">📦 Multi-sucursal (Masivo)</label>
-                                                            </div>
-                                                        </div>
-                                                    </div> -->
                                                 </div>
                                             </div>
                                         </div>
@@ -263,7 +249,7 @@
                                                             <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
                                                             <option value="NUEVO">✨ Solo Equipos Nuevos</option>
                                                             <option value="USADO">🔧 Solo Equipos Usados</option>
-                                                            <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
+                                                            <!-- <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option> -->
                                                         </select>
                                                     </div>
                                                     <div class="mb-4">

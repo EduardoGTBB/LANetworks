@@ -86,6 +86,7 @@ try {
             $equipo_id = trim($row['equipo_id'] ?? '');
 
             if ($tipo_reporte === 'laboratorio') {
+                // (Dentro del if ($tipo_reporte === 'laboratorio') { ... )
                 $ptos_calib_format = !empty($ptos_calib) ? str_replace("\n", " ", $ptos_calib) : 'N/A';
                 
                 if (str_ends_with((string)$folio_actual, '-N')) {
@@ -94,9 +95,17 @@ try {
                     $equipo_id_format = !empty($equipo_id) ? $equipo_id : 'N/A';
                 }
 
-                // ✨ Obtener el costo del laboratorio seleccionado
-                $costo_lab_db = ($laboratorio_req === 'evamsa') ? (float)$row['pl_evamsa'] : (float)$row['pl_4p'];
-                $costo_lab_format = '$' . number_format($costo_lab_db, 2);
+                // ✨ NUEVA LÓGICA: Multiplicar el costo unitario del laboratorio por la cantidad de equipos
+                $costo_lab_unitario = ($laboratorio_req === 'evamsa') ? (float)$row['pl_evamsa'] : (float)$row['pl_4p'];
+                
+                // Extraemos la cantidad de equipos de la fila actual
+                $cantidad_equipos = (int)$row['cantidad'];
+                
+                // Calculamos el costo total para el laboratorio
+                $costo_lab_total = $costo_lab_unitario * $cantidad_equipos;
+                
+                // Formateamos como moneda ($0.00)
+                $costo_lab_format = '$' . number_format($costo_lab_total, 2);
 
                 $sucursal = $row['nombre_sucursal'] ?? 'N/A';
                 

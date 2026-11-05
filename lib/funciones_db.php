@@ -69,18 +69,6 @@ function obtenerClientes(PDO $pdo): array
 }
 
 // [fn] Obtener los productos
-/* function obtenerProduct(PDO $pdo): array
-{
-    $sql = "SELECT p.*, 
-            pf.pf_equipo, pf.pf_calibracion as pf_calib, pf.pf_precio_antes_iva as pf_antes_iva,
-            pp.pp_equipo, pp.pp_calibracion as pp_calib, pp.pp_precio_antes_iva as pp_antes_iva
-            FROM productos p
-            LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
-            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id";
-    // ORDER BY p.id_product DESC
-
-    return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-} */
 function obtenerProduct(PDO $pdo): array
 {
     $sql = "SELECT p.*, 
@@ -94,22 +82,6 @@ function obtenerProduct(PDO $pdo): array
 
     return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 }
-
-/* function obtenerProductPorId(PDO $pdo, int $id_product)
-{
-    // Usamos los nombres reales de las columnas en la BD: precio_equipo y precio_calibracion
-    $sql = "SELECT p.*, 
-            pf.pf_equipo, pf.pf_calibracion as pf_calib, pf.pf_precio_antes_iva as pf_antes_iva,
-            pp.pp_equipo, pp.pp_calibracion as pp_calib, pp.pp_precio_antes_iva as pp_antes_iva
-            FROM productos p
-            LEFT JOIN precios_farmacia pf ON p.id_product = pf.Producto_id
-            LEFT JOIN precios_publico pp ON p.id_product = pp.Producto_id
-            WHERE p.id_product = :id";
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':id' => $id_product]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-} */
 
 // [fn] Obtener producto por ID
 function obtenerProductPorId(PDO $pdo, int $id_product)
@@ -320,166 +292,6 @@ function obtenerdetallesCotizacionID(PDO $pdo, int $id_cotizacion)
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// [fn] Actualizar la Cotizacion
-/* function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, array $detalles): bool
-{
-    try {
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $pdo->beginTransaction();
-
-        // ✨ 1. OBTENEMOS LA SUCURSAL ANTERIOR PARA SABER SI HUBO CAMBIO
-        $stmtOldCot = $pdo->prepare("SELECT Sucursal_id FROM cotizacion WHERE id_cotizacion = ?");
-        $stmtOldCot->execute([$id_cotizacion]);
-        $oldCotSuc = $stmtOldCot->fetchColumn();
-
-        if ($oldCotSuc != $datosCotizacion['sucursal_id']) {
-            // Limpiamos los domicilios viejos para que finalizar_venta extraiga los de la nueva sucursal
-            $pdo->prepare("UPDATE detalle_cotizacion SET id_dom_cert = NULL, id_dom_envio = NULL WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
-            $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
-            $pdo->prepare("DELETE FROM domicilio_envio WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
-        }
-
-        // ✨ LÓGICA DE CONVERSIÓN DE TEMPORAL A NORMAL
-        $stmtVerificar = $pdo->prepare("SELECT es_temporal, categoria FROM cotizacion WHERE id_cotizacion = ?");
-        $stmtVerificar->execute([$id_cotizacion]);
-        $cotActual = $stmtVerificar->fetch(PDO::FETCH_ASSOC);
-
-        $es_temporal_nuevo = isset($_SESSION['id_usuario_cliente']) ? $cotActual['es_temporal'] : ($datosCotizacion['es_temporal'] ?? $cotActual['es_temporal']);
-        $folio_query = "";
-
-        if ($cotActual['es_temporal'] === 'Y' && $es_temporal_nuevo === 'N') {
-            
-            $categoria = $cotActual['categoria'];
-            $sufijo = '';
-            if ($categoria === 'Nuevo') { $sufijo = '-N'; } 
-            elseif ($categoria === 'Usado') { $sufijo = '-U'; } 
-            elseif ($categoria === 'Calibracion') { $sufijo = '-CALIB'; }
-
-            // Buscamos el último folio normal
-            $sqlMax = "SELECT folio_especial FROM cotizacion WHERE categoria = :cat AND es_temporal = 'N' AND folio_especial IS NOT NULL ORDER BY id_cotizacion DESC LIMIT 1 FOR UPDATE";
-            $stmtMax = $pdo->prepare($sqlMax);
-            $stmtMax->execute([':cat' => $categoria]);
-            $ultimoFolioNormal = $stmtMax->fetchColumn();
-
-            if ($ultimoFolioNormal) {
-                $numeroExtraido = str_replace($sufijo, '', $ultimoFolioNormal);
-                $siguienteNumero = ((int)$numeroExtraido) + 1;
-            } else {
-                $siguienteNumero = 1;
-            }
-
-            // Generamos su nuevo folio oficial definitivo
-            $nuevo_folio = str_pad((string)$siguienteNumero, 5, '0', STR_PAD_LEFT) . $sufijo;
-            $folio_query = ", folio_especial = '$nuevo_folio'";
-        }
- 
-        // 1. Actualizamos el padre (La cotización)
-        $sqlCot = "UPDATE cotizacion 
-                   SET Empresa_id = :empresa_id, 
-                       Sucursal_id = :sucursal_id,
-                       Plaza_id = :plaza_id,
-                       Usuario_empresa_id = :usuario_id, 
-                       importe_total = :importe_total, 
-                       precio_iva = :precio_iva, 
-                       division = :division,
-                       tipo_precio = :tipo_precio,
-                       porcentaje_iva = :porcentaje_iva,
-                       estatus = :estatus,
-                       es_temporal = :es_temporal,
-                       comentarios = :comentarios
-                       $folio_query
-                   WHERE id_cotizacion = :id_cot";
-
-        $stmtCot = $pdo->prepare($sqlCot);
-        $stmtCot->execute([
-            ':es_temporal'    => $es_temporal_nuevo,
-            ':empresa_id'     => $datosCotizacion['empresa_id'],
-            ':sucursal_id'    => $datosCotizacion['sucursal_id'],
-            ':plaza_id'       => $datosCotizacion['plaza_id'],
-            ':usuario_id'     => $datosCotizacion['usuario_id'],
-            ':importe_total'  => $datosCotizacion['importe_total'],
-            ':precio_iva'     => $datosCotizacion['precio_iva'],
-            ':porcentaje_iva' => $datosCotizacion['porcentaje_iva'],
-            ':tipo_precio'    => $datosCotizacion['tipo_precio'],
-            ':division'       => $datosCotizacion['division'],
-            ':estatus'        => $datosCotizacion['estatus'],
-            ':comentarios'    => $datosCotizacion['comentarios'],
-            ':id_cot'         => $id_cotizacion
-        ]);
-
-        // ✨ 2. NUEVA LÓGICA DE ACTUALIZACIÓN DE DETALLES POR ID EXACTO
-        $stmtUpdateDetalle = $pdo->prepare("UPDATE detalle_cotizacion SET Product_id = :prod_id, cantidad = :cantidad, precio_unitario = :precio_u, precio_extendido = :precio_ext, desglosar = :desglosar, Sucursal_destino_id = :suc_dest, equipo_id = :eq_id WHERE id_detalle_cot = :id_detalle AND Cotizacion_id = :cot_id");
-
-        $stmtInsertDetalle = $pdo->prepare("INSERT INTO detalle_cotizacion (Cotizacion_id, Product_id, cantidad, precio_unitario, precio_extendido, desglosar, Sucursal_destino_id, equipo_id) VALUES (:cot_id, :prod_id, :cantidad, :precio_u, :precio_ext, :desglosar, :suc_dest, :eq_id)");
-
-        // DETECCIÓN: Verificamos si cambió el Certificado en cada partida (Multisucursal)
-        $stmtOldDet = $pdo->prepare("SELECT Sucursal_destino_id, id_dom_cert, id_dom_envio FROM detalle_cotizacion WHERE id_detalle_cot = ?");
-
-        $ids_que_quedan = [];
-
-        foreach ($detalles as $item) {
-            if (!empty($item['id_detalle']) && $item['id_detalle'] > 0) {
-
-                // Consultamos el registro viejo
-                $stmtOldDet->execute([$item['id_detalle']]);
-                $oldDet = $stmtOldDet->fetch(PDO::FETCH_ASSOC);
-
-                // Si la sucursal de destino (Certificado) es diferente a la que estaba guardada
-                if ($oldDet && $oldDet['Sucursal_destino_id'] != $item['sucursal_destino_id']) {
-                    // Desvinculamos y limpiamos para forzar la recarga de "entre_calle" y "y_calle" en finalizar_venta
-                    $pdo->prepare("UPDATE detalle_cotizacion SET id_dom_cert = NULL, id_dom_envio = NULL WHERE id_detalle_cot = ?")->execute([$item['id_detalle']]);
-                    if ($oldDet['id_dom_cert']) $pdo->prepare("DELETE FROM domicilio_cert_calib WHERE id_domicilio_cert = ?")->execute([$oldDet['id_dom_cert']]);
-                    if ($oldDet['id_dom_envio']) $pdo->prepare("DELETE FROM domicilio_envio WHERE id_domicilio_envio = ?")->execute([$oldDet['id_dom_envio']]);
-                }
-
-                // Si la fila ya existía, ACTUALIZAMOS EXACTAMENTE ESA (Conserva sus direcciones intactas)
-                $stmtUpdateDetalle->execute([
-                    ':prod_id'    => $item['producto_id'],
-                    ':cantidad'   => $item['cantidad'],
-                    ':precio_u'   => $item['precio_unitario'],
-                    ':precio_ext' => $item['precio_extendido'],
-                    ':desglosar'  => $item['desglosar'] ?? 'N',
-                    ':suc_dest'   => $item['sucursal_destino_id'],
-                    ':eq_id'      => $item['equipo_id'],
-                    ':id_detalle' => $item['id_detalle'],
-                    ':cot_id'     => $id_cotizacion
-                ]);
-                $ids_que_quedan[] = $item['id_detalle'];
-            } else {
-                // Si es una fila nueva, la insertamos (quedará con direcciones en blanco listas para llenarse)
-                $stmtInsertDetalle->execute([
-                    ':cot_id'     => $id_cotizacion,
-                    ':prod_id'    => $item['producto_id'],
-                    ':cantidad'   => $item['cantidad'],
-                    ':precio_u'   => $item['precio_unitario'],
-                    ':precio_ext' => $item['precio_extendido'],
-                    ':desglosar'  => $item['desglosar'] ?? 'N',
-                    ':suc_dest'   => $item['sucursal_destino_id'],
-                    ':eq_id'      => $item['equipo_id'],
-                ]);
-                $ids_que_quedan[] = $pdo->lastInsertId();
-            }
-        }
-
-        // 3. Limpiar los excedentes de forma segura (Si borró algo, lo sacamos de la BD)
-        if (!empty($ids_que_quedan)) {
-            $inQuery = implode(',', array_fill(0, count($ids_que_quedan), '?'));
-            $sqlDel = "DELETE FROM detalle_cotizacion WHERE Cotizacion_id = ? AND id_detalle_cot NOT IN ($inQuery)";
-            $paramsDel = array_merge([$id_cotizacion], $ids_que_quedan);
-            $pdo->prepare($sqlDel)->execute($paramsDel);
-        } else {
-            $pdo->prepare("DELETE FROM detalle_cotizacion WHERE Cotizacion_id = ?")->execute([$id_cotizacion]);
-        }
-
-        $pdo->commit();
-        return true;
-    } catch (Exception $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-        throw new Exception("Error al actualizar: " . $e->getMessage());
-    }
-} */
 // [fn] Actualizar la Cotizacion
 function updateCotizacion(PDO $pdo, int $id_cotizacion, array $datosCotizacion, array $detalles): bool
 {
@@ -1456,44 +1268,6 @@ function eliminarPlazaCompleta(PDO $pdo, int $id_plaza)
 // >>>      INICIO: FUNCIONES ALMACEN|PRODUCTOS
 // >>> ============================================== 
 
-/* function insertarProduct(PDO $pdo, array $datos): void
-{
-    try {
-        $pdo->beginTransaction();
-
-        // 1. Insertar Producto (Removido nombre_product)
-        $sql = "INSERT INTO productos (clave_product, descripcion_product, marca_product, tipo_product, estado_product, puntos_calibracion,foto_product, estatus) 
-                VALUES (:clave, :desc, :marca, :tipo, :estado, :puntos,:foto, :estatus)";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':clave'   => $datos['clave_product'],
-            ':desc'    => $datos['descripcion_product'],
-            ':marca'   => $datos['marca_product'],
-            ':tipo'    => $datos['tipo_product'],
-            ':estado'  => $datos['estado_product'],
-            ':puntos'  => $datos['puntos_calibracion'],
-            ':foto'    => $datos['foto_product'],
-            ':estatus' => $datos['estatus']
-        ]);
-
-        $id_product = $pdo->lastInsertId();
-
-        // 2. Insertar Precios Farmacia
-        * $pf_total = $datos['pf_equipo'] + $datos['pf_calib']; *
-        $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion) VALUES (?, ?, ?)";
-        $pdo->prepare($sqlF)->execute([$id_product, $datos['pf_equipo'], $datos['pf_calib']]);
-
-        // 3. Insertar Precios Público
-        * $pp_total = $datos['pp_equipo'] + $datos['pp_calib']; *
-        $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion) VALUES (?, ?, ?)";
-        $pdo->prepare($sqlP)->execute([$id_product, $datos['pp_equipo'], $datos['pp_calib']]);
-
-        $pdo->commit();
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        throw $e;
-    }
-} */
 // [fn] Insertar Producto (Actualizado para guardar costos de laboratorio)
 function insertarProduct(PDO $pdo, array $datos): void
 {
@@ -1533,53 +1307,6 @@ function insertarProduct(PDO $pdo, array $datos): void
     }
 }
 
-/* function actualizarProduct(PDO $pdo, array $datos): void
-{
-    try {
-        $pdo->beginTransaction();
-
-        // 1. Actualizar Producto (Removido nombre_product)
-        $sql = "UPDATE productos SET 
-                clave_product = :clave, 
-                descripcion_product = :desc, 
-                marca_product = :marca,
-                tipo_product = :tipo,
-                estado_product = :estado,
-                puntos_calibracion = :puntos,
-                foto_product = :foto, 
-                estatus = :estatus
-                WHERE id_product = :id";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':clave'   => $datos['clave_product'],
-            ':desc'    => $datos['descripcion_product'],
-            ':marca'   => $datos['marca_product'],
-            ':tipo'    => $datos['tipo_product'],
-            ':estado'  => $datos['estado_product'],
-            ':puntos'  => $datos['puntos_calibracion'],
-            ':foto'    => $datos['foto_product'],
-            ':estatus' => $datos['estatus'],
-            ':id'      => $datos['id_product']
-        ]);
-
-        // 2. Sincronizar Precios Farmacia
-        $pdo->prepare("DELETE FROM precios_farmacia WHERE Producto_id = ?")->execute([$datos['id_product']]);
-        $pf_total = $datos['pf_equipo'] + $datos['pf_calib'];
-        $sqlF = "INSERT INTO precios_farmacia (Producto_id, pf_equipo, pf_calibracion) VALUES (?, ?, ?)";
-        $pdo->prepare($sqlF)->execute([$datos['id_product'], $datos['pf_equipo'], $datos['pf_calib']]);
-
-        // 3. Sincronizar Precios Público
-        $pdo->prepare("DELETE FROM precios_publico WHERE Producto_id = ?")->execute([$datos['id_product']]);
-        $pp_total = $datos['pp_equipo'] + $datos['pp_calib'];
-        $sqlP = "INSERT INTO precios_publico (Producto_id, pp_equipo, pp_calibracion) VALUES (?, ?, ?)";
-        $pdo->prepare($sqlP)->execute([$datos['id_product'], $datos['pp_equipo'], $datos['pp_calib']]);
-
-        $pdo->commit();
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        throw $e;
-    }
-} */
 // [fn] Actualizar Producto (Actualizado para editar costos de laboratorio)
 function actualizarProduct(PDO $pdo, array $datos): void
 {
@@ -2342,7 +2069,8 @@ function obtenerDatosClientePorCotizacion(PDO $pdo, int $id_cotizacion): array|f
 
 // [fn] Obtener datos aplanados para Exportación a Excel (Dinámico)
 function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0,string $fecha_inicio = '', string $fecha_fin = ''): array {
-    $whereClause = "1=1";
+    $whereClause = "c.es_temporal = 'N'";
+    /* $whereClause = "1=1"; */
     $params = [];
 
     if (!empty($estatus)) {
@@ -2387,21 +2115,6 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
         }
     }
 
-    /* $sql = "SELECT 
-                c.folio_especial, c.id_cotizacion, c.fecha_cot, c.porcentaje_iva,
-                e.razon_social, pz.nombre_plaza,
-                dc.cantidad, dc.precio_unitario, dc.precio_extendido, dc.equipo_id,
-                pr.clave_product, pr.descripcion_product, pr.puntos_calibracion,
-                s.nombre_sucursal, s.calle, s.num_ext, s.num_int, s.colonia,
-                s.cp, s.poblacion, s.municipio, s.estado
-            FROM detalle_cotizacion dc
-            JOIN cotizacion c ON dc.Cotizacion_id = c.id_cotizacion
-            JOIN empresa e ON c.Empresa_id = e.id_empresa
-            LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
-            JOIN productos pr ON dc.Product_id = pr.id_product
-            LEFT JOIN sucursales s ON COALESCE(dc.sucursal_destino_id, c.Sucursal_id) = s.id_sucursal
-            WHERE $whereClause
-            ORDER BY c.id_cotizacion DESC, dc.id_detalle_cot ASC"; */
     $sql = "SELECT 
                 c.folio_especial, c.id_cotizacion, c.fecha_cot, c.porcentaje_iva,
                 e.razon_social, pz.nombre_plaza,
