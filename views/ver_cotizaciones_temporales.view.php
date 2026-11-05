@@ -24,7 +24,7 @@
                             <!-- Cabecera y Buscador -->
                             <div class="card-header p-0 border-bottom-0 w-100 d-block">
                                 <div class="d-flex justify-content-between align-items-center w-100 px-4 py-3 bg-warning bg-opacity-10">
-                                    <h5 class="card-title mb-0 text-warning fw-bolder"><i class="feather-clock me-2"></i>Cotizaciones Provisionales (Sin Destino)</h5>
+                                    <h5 class="card-title mb-0 text-warning fw-bolder"><i class="feather-clock me-2"></i>Cotizaciones Provisionales</h5>
                                     <div id="contenedor-buscador-dt"></div>
                                 </div>
 
@@ -114,7 +114,7 @@
                                 <table class="table table-hover mb-0 w-100" id="tableCotizacionesTemporales" style="table-layout: auto;">
                                     <thead>
                                         <tr>
-                                            <th width="15%" class="text-center">Cotización TEMP</th>
+                                            <th width="15%" class="text-center">Cotización Provisional</th>
                                             <th width="40%" class="text-center">Cliente / Detalles</th>
                                             <th width="15%" class="text-center">Importe</th>
                                             <th width="15%" class="text-center">Estatus</th>
@@ -240,9 +240,9 @@
                                         <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
                                         <select class="form-control border-success max-select" name="categoria" id="edit_filtro_tipo_producto">
                                             <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
-                                            <option value="NUEVO"> Solo Equipos Nuevos</option>
+                                            <option value="NUEVO">✨ Solo Equipos Nuevos</option>
                                             <option value="USADO">🔧 Solo Equipos Usados</option>
-                                            <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
+                                            <!-- <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option> -->
                                         </select>
                                     </div>
                                     <div class="mb-4">

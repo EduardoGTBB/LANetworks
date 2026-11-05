@@ -542,9 +542,9 @@
                                         <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
                                         <select class="form-control border-success max-select" name="categoria" id="edit_filtro_tipo_producto">
                                             <option value="TODOS" selected>Mostrar Todo el Catálogo</option>
-                                            <option value="NUEVO"> Solo Equipos Nuevos</option>
+                                            <option value="NUEVO">✨ Solo Equipos Nuevos</option>
                                             <option value="USADO">🔧 Solo Equipos Usados</option>
-                                            <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option>
+                                            <!-- <option value="CALIBRACION">🔬 Solo Servicios de Calibración</option> -->
                                         </select>
                                     </div>
 

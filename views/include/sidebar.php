@@ -94,7 +94,7 @@ if ($es_cliente) {
                             <!-- //*Cotizaciones Temporales "Temporal" -->
                             <?php if (defined('HABILITAR_COTS_TEMPORALES') && HABILITAR_COTS_TEMPORALES && !$es_cliente): ?>
                                 <?php if ($permisos['mp_ver_cotiz'] === 'Activado' || $permisos['mp_ver_all_cotiz'] === 'Activado'): ?>
-                                    <li class="nxl-item"><a class="nxl-link" href="ver_cotizaciones_temporales.php">Cotizaciones Provicionales</a></li>
+                                    <li class="nxl-item"><a class="nxl-link" href="ver_cotizaciones_temporales.php">Cotizaciones Provisionales</a></li>
                                 <?php endif; ?>
                             <?php endif; ?>
                         </ul>
