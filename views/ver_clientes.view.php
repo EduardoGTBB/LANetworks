@@ -275,8 +275,49 @@
                             <input type="number" min="0" value="30" class="form-control" name="dias_credito" id="dias_credito" required>
                         </div>
                     </div>
+                    
+                    <hr>
+                    <p class="fw-bold mb-3"><i class="feather-map-pin text-primary"></i> Domicilio Fiscal</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Calle y Número <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="calle_numero" id="calle_numero" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Colonia <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="colonia" id="colonia" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Código Postal <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="codigo_postal" id="codigo_postal" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Localidad <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="localidad" id="localidad" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Municipio <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="municipio" id="municipio" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Estado <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="estado" id="estado" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">País</label>
+                            <input type="text" class="form-control bg-light" name="pais" id="pais" value="México" readonly>
+                        </div>
+                    </div>
 
-                    <div id="bloque_estatus_cli" class="row mt-3">
+                    <div id="bloque_estatus_cli" class="row">
                         <div class="col-md-12">
                             <hr>
                             <p class="fw-bold"><i class="feather-settings"></i> Configuración</p>

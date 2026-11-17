@@ -106,54 +106,9 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card stretch stretch-full">
-
-                            <!-- <div class="card-header">
-                                <div class="d-flex align-items-center gap-3">
-                                    <h5 class="card-title mb-0">Lista de cotizaciones</h5>
-                                </div>
-
-                                <div class="card-header-action pe-md-3">
-                                    <div class="d-flex align-items-center justify-content-end gap-3 flex-wrap">
-                                        <div class="dropdown">
-                                            <button class="btn fw-bold d-flex align-items-center shadow-sm dropdown-toggle text-white px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
-                                                <i class="feather-download me-2"></i> EXPORTAR
-                                            </button>
-                                            <ul class="dropdown-menu shadow-lg border-0">
-                                                <li>
-                                                    <h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="todas">
-                                                        <i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="todas">
-                                                        <i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="feather-filter text-primary" style="font-size: 1rem;"></i>
-                                            <select id="filtro_estatus_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-3" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; min-width: 200px;">
-                                                <option value="">Mostrar todos los estatus</option>
-                                                <option value="Guardado para aprobación">Guardado para aprobación</option>
-                                                <option value="Autorizada">Autorizadas (Aprobadas)</option>
-                                                <option value="No autorizada">No autorizadas (Rechazadas)</option>
-                                            </select>
-                                        </div>
-
-                                        <div id="contenedor-badge-total"></div>
-
-                                    </div>
-                                </div>
-                            </div> -->
-
                             <!--  CONTENEDOR MAESTRO DE CABECERA (Bloque estricto) -->
                             <div class="card-header p-0 border-bottom-0 w-100 d-block">
-                                
+
                                 <!--  FILA 1: Título y Buscador 
                                 <div class="d-flex justify-content-between align-items-center w-100 px-4 py-3">
                                     <h5 class="card-title mb-0">Lista de cotizaciones</h5>
@@ -177,9 +132,17 @@
                                             </button>
                                             <!--  FIX: Se quitó w-100 y se agregó un min-width de 220px -->
                                             <ul class="dropdown-menu shadow-lg border-0" style="min-width: 220px; border-radius: 10px;">
-                                                <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6></li>
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6>
+                                                </li>
                                                 <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="todas"><i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial</a></li>
                                                 <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="todas"><i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio</a></li>
+
+                                                <!-- ✨ NUEVO: Botón de Reporte por Modelos -->
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="modelos" data-scope="todas"><i class="feather-package text-primary me-2"></i> Reporte por Modelos</a></li>
                                             </ul>
                                         </div>
 
@@ -201,7 +164,7 @@
                                                 <span><i class="feather-calendar text-primary me-2"></i><span id="texto_periodo">Periodo: Todos</span></span>
                                                 <i class="feather-chevron-down ms-1 text-muted"></i>
                                             </button>
-                                            
+
                                             <!-- Menú desplegable anclado a la derecha -->
                                             <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-3 p-md-4" style="width: 100%; min-width: 360px; max-width: 440px; border-radius: 12px; z-index: 1060;">
                                                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -210,25 +173,37 @@
                                                         <i class="feather-refresh-cw me-1"></i>LIMPIAR
                                                     </button>
                                                 </div>
-                                                
+
                                                 <div class="form-check mb-4 d-flex align-items-center ps-md-4">
                                                     <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_mes" value="mes" checked style="cursor:pointer; width: 18px; height: 18px;">
                                                     <label class="form-check-label text-dark fw-bold mb-0 flex-grow-1 fs-13" style="cursor:pointer;" for="radio_mes">Mes específico</label>
                                                     <input type="month" class="form-control form-control-sm fw-bold shadow-sm ms-auto" id="input_mes_filtro" style="width: 140px; cursor:pointer; color: #495057; border: 1px solid #ced4da; height: 38px;">
                                                 </div>
-                                                
+
                                                 <div class="form-check mb-3 d-flex align-items-center ps-md-4">
                                                     <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_rango" value="rango" style="cursor:pointer; width: 18px; height: 18px;">
                                                     <label class="form-check-label text-dark fw-bold mb-0 fs-13" style="cursor:pointer;" for="radio_rango">Rango de fechas</label>
                                                 </div>
-                                                
+
                                                 <!--  FIX: flex-fill y min-width ajustado para evitar el desbordamiento -->
                                                 <div class="d-flex align-items-center justify-content-between mb-4 pe-md-2 gap-2">
                                                     <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="fecha_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;">
                                                     <span class="text-muted fw-bold text-center">a</span>
                                                     <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="fecha_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;">
                                                 </div>
-                                                
+
+                                                <!-- NUEVO: Opcion 3: Rango de Pedidos (Folios) -->
+                                                <div class="form-check mb-3 d-flex align-items-center ps-md-4 border-top pt-3">
+                                                    <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_pedido" value="pedido" style="cursor:pointer; width: 18px; height: 18px;">
+                                                    <label class="form-check-label text-dark fw-bold mb-0 fs-13" style="cursor:pointer;" for="radio_pedido">Rango de pedidos (Folios)</label>
+                                                </div>
+
+                                                <div class="d-flex align-items-center justify-content-between mb-4 pe-md-2 gap-2">
+                                                    <input type="number" min="1" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="pedido_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;" placeholder="Del folio...">
+                                                    <span class="text-muted fw-bold text-center">a</span>
+                                                    <input type="number" min="1" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="pedido_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;" placeholder="Al folio...">
+                                                </div>
+
                                                 <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
                                                     <button type="button" class="btn btn-sm btn-light fw-bold text-muted border px-3 py-2 w-100 w-md-auto" id="btn_cancelar_periodo" style="background-color: #f8f9fa; transition: none !important; transform: none !important; box-shadow: none !important;">CANCELAR</button>
                                                     <button type="button" class="btn btn-sm fw-bold text-white px-3 py-2 w-100 w-md-auto" id="btn_aceptar_periodo" style="background-color: #0d6efd; border: 1px solid #0d6efd; transition: none !important; transform: none !important; box-shadow: none !important;">APLICAR</button>
@@ -292,114 +267,6 @@
 
                                     </div>
                                 </div>
-
-                                <!-- FILA 2: Botones y Filtros Expandidos 
-                                <div class="px-4 pb-3 pt-3 border-bottom bg-light-subtle">
-                                    !--  FIX: Usamos flex-wrap y quitamos overflow-x para que el Dropdown no se recorte --
-                                    <div class="d-flex flex-row align-items-center gap-3 flex-wrap w-100">
-
-                                        !-- 1. EXPORTAR (me-auto lo empuja a la izquierda) --
-                                        <div class="dropdown me-auto">
-                                            <button class="btn fw-bold d-flex align-items-center shadow-sm dropdown-toggle text-white px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; background-color: #2b3d5b; border-color: #2b3d5b;">
-                                                <i class="feather-download me-2"></i> EXPORTAR
-                                            </button>
-                                            <ul class="dropdown-menu shadow-lg border-0">
-                                                <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size: 10px;">Formatos Excel</h6></li>
-                                                <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="comercial" data-scope="todas"><i class="feather-dollar-sign text-success me-2"></i> Reporte Comercial</a></li>
-                                                <li><a class="dropdown-item fw-bold text-dark py-2 btn-exportar-filtrado" href="#" data-tipo="laboratorio" data-scope="todas"><i class="feather-thermometer text-info me-2"></i> Reporte Laboratorio</a></li>
-                                            </ul>
-                                        </div>
-
-                                        !-- 2. MES 
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="feather-calendar text-primary" style="font-size: 1rem;"></i>
-                                            <select id="filtro_mes_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-2" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 160px;" title="Filtrar por mes">
-                                                <option value="">Todos los meses</option>
-                                                <option value="-01-">Enero</option>
-                                                <option value="-02-">Febrero</option>
-                                                <option value="-03-">Marzo</option>
-                                                <option value="-04-">Abril</option>
-                                                <option value="-05-">Mayo</option>
-                                                <option value="-06-">Junio</option>
-                                                <option value="-07-">Julio</option>
-                                                <option value="-08-">Agosto</option>
-                                                <option value="-09-">Septiembre</option>
-                                                <option value="-10-">Octubre</option>
-                                                <option value="-11-">Noviembre</option>
-                                                <option value="-12-">Diciembre</option>
-                                            </select>
-                                        </div>--
-
-                                        !-- 2. FECHA EXACTA 
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="feather-calendar text-primary" style="font-size: 1rem;"></i>
-                                            <input type="date" id="filtro_fecha_tabla" class="form-control border-primary fw-bold text-dark shadow-sm px-2" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 140px;" title="Filtrar por fecha exacta">
-                                        </div>--
-
-                                        !-- 2. FILTRO DE FECHAS AVANZADO (ESTÁTICO Y DIRECTO) --
-                                        <div class="dropdown">
-                                            !-- Botón principal Estático --
-                                            <button class="btn btn-light bg-white border-primary fw-bold text-dark shadow-sm d-flex align-items-center gap-2 px-3" type="button" id="btnFiltroPeriodo" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="height: 34px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b;">
-                                                <i class="feather-calendar text-primary"></i> 
-                                                <span id="texto_periodo">Periodo: Todos</span>
-                                                <i class="feather-chevron-down ms-1 text-muted"></i>
-                                            </button>
-                                            
-                                            !-- Menú desplegable ampliado (440px) --
-                                            <div class="dropdown-menu shadow-lg border-0 p-4" style="min-width: 440px; border-radius: 12px; z-index: 1060; right: auto;">
-                                                
-                                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                                    <h6 class="text-dark fw-bolder mb-0" style="font-size: 15px; letter-spacing: 0.5px;">Filtrar por:</h6>
-                                                    !--  Botón Limpiar (Nuclear CSS: Sin salto ni sombra) --
-                                                    <button type="button" class="btn btn-sm fw-bold text-primary border px-2" id="btn_limpiar_periodo" style="font-size: 11px; background-color: #f8f9fa; transition: none !important; transform: none !important; box-shadow: none !important;">
-                                                        <i class="feather-refresh-cw me-1"></i>LIMPIAR
-                                                    </button>
-                                                </div>
-                                                
-                                                !-- Opcion 1: Mes Específico (Sin animaciones) --
-                                                <div class="form-check mb-4 d-flex align-items-center ps-4">
-                                                    <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_mes" value="mes" checked style="cursor:pointer; width: 18px; height: 18px; margin-left: -1.5rem;">
-                                                    <label class="form-check-label text-dark fw-bold mb-0 flex-grow-1 fs-13" style="cursor:pointer;" for="radio_mes">Mes específico</label>
-                                                    <input type="month" class="form-control form-control-sm fw-bold" id="input_mes_filtro" style="width: 160px; cursor:pointer; color: #495057; border: 1px solid #ced4da; height: 38px;">
-                                                </div>
-                                                
-                                                !-- Opcion 2: Rango manual --
-                                                <div class="form-check mb-3 d-flex align-items-center ps-4">
-                                                    <input class="form-check-input mt-0 me-3" type="radio" name="tipo_filtro_fecha" id="radio_rango" value="rango" style="cursor:pointer; width: 18px; height: 18px; margin-left: -1.5rem;">
-                                                    <label class="form-check-label text-dark fw-bold mb-0 fs-13" style="cursor:pointer;" for="radio_rango">Rango de fechas</label>
-                                                </div>
-                                                
-                                                !-- Entradas de rango (Sin animaciones) --
-                                                <div class="d-flex align-items-center justify-content-between mb-4 ps-4 pe-2 gap-3">
-                                                    <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2" id="fecha_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; width: 160px; height: 38px;">
-                                                    <span class="text-muted fw-bold">a</span>
-                                                    <input type="date" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2" id="fecha_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; width: 160px; height: 38px;">
-                                                </div>
-                                                
-                                                !-- Botones de Acción (Estáticos) --
-                                                <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
-                                                    <button type="button" class="btn btn-sm btn-light fw-bold text-muted border px-4 py-2" id="btn_cancelar_periodo" style="background-color: #f8f9fa;">CANCELAR</button>
-                                                    <button type="button" class="btn btn-sm fw-bold text-white px-4 py-2" id="btn_aceptar_periodo" style="background-color: #0d6efd; border: 1px solid #0d6efd;">APLICAR</button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        !-- 3. ESTATUS --
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="feather-filter text-primary" style="font-size: 1rem;"></i>
-                                            <select id="filtro_estatus_tabla" class="form-select border-primary fw-bold text-dark shadow-sm px-3" style="height: 34px; padding-top: 0; padding-bottom: 0; line-height: 32px; font-size: 12px; border-radius: 6px; border-color: #2b3d5b; cursor: pointer; width: 230px;">
-                                                <option value="">Mostrar todos los estatus</option>
-                                                <option value="Guardado para aprobación">Guardado para aprobación</option>
-                                                <option value="Autorizada">Autorizadas (Aprobadas)</option>
-                                                <option value="No autorizada">No autorizadas (Rechazadas)</option>
-                                            </select>
-                                        </div>
-
-                                        !-- 4. TOTAL --
-                                        <div id="contenedor-badge-total" class="flex-shrink-0"></div>
-
-                                    </div>
-                                </div>-->
                             </div>
 
                             <!-- TEMPLATE PESTAÑAS (Estilo Nav-Pills Corporativo Full-Width) -->
@@ -502,29 +369,43 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-4">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-users me-1 text-primary"></i>Cliente <span class="text-danger">*</span></label>
+                                        <select class="form-control border-primary" id="edit_select_empresa" name="Empresa_id" data-select2-selector="status" required>
+                                            <option value="">Cargando clientes...</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-4">
                                         <label class="form-label text-dark fw-bold"><i class="feather-briefcase me-1 text-primary"></i>División de LAN</label>
                                         <select class="form-control border-primary bg-light" id="division_visual" disabled>
                                             <option value="LA NETWORKS & TECHNOLOGIES" selected>LA NETWORKS & SMART TECHNOLOGIES SA DE CV</option>
                                         </select>
                                         <input type="hidden" name="division" id="division" value="LA NETWORKS & TECHNOLOGIES">
                                     </div>
-                                    <div class="mb-4">
-                                        <label class="form-label text-dark fw-bold"><i class="feather-users me-1 text-primary"></i>Cliente <span class="text-danger">*</span></label>
-                                        <select class="form-control border-primary" id="edit_select_empresa" name="Empresa_id" data-select2-selector="status" required>
-                                            <option value="">Cargando clientes...</option>
-                                        </select>
-                                    </div>
+                                    
                                     <div class="mb-4">
                                         <label class="form-label text-dark fw-bold"><i class="feather-user-check me-1 text-primary"></i>Solicitante <span class="text-danger">*</span></label>
                                         <select class="form-control border-primary" id="edit_select_solicitante" name="Usuario_id" data-select2-selector="status" required>
                                             <option value="">Selecciona un cliente primero...</option>
                                         </select>
                                     </div>
-                                    <div class="mb-2" id="wrapper_info_plaza_edit" style="display: none;">
-                                        <label class="form-label text-dark fw-bold"><i class="feather-map me-1 text-primary"></i>Plaza Asignada</label>
-                                        <select class="form-control border-primary bg-light shadow-sm" id="edit_info_plaza" name="Plaza_id" disabled>
-                                            <option value="">Esperando sucursal...</option>
-                                        </select>
+
+                                    <div class="mb-2" id="wrapper_tipo_sucursal_edit">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-share-2 me-1 text-dark"></i>Determinar tipo de sucursal</label>
+                                        <div class="d-flex gap-4 mt-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input text-dark" type="radio" name="tipo_sucursal_radio" id="edit_radio_unica" value="0" checked style="cursor: pointer;">
+                                                <label class="form-check-label fw-bold text-dark" for="edit_radio_unica" style="cursor: pointer;">
+                                                    🏢 Sucursal Única
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input text-dark" type="radio" name="tipo_sucursal_radio" id="edit_radio_multi" value="1" style="cursor: pointer;">
+                                                <label class="form-check-label fw-bold text-muted" for="edit_radio_multi" style="cursor: pointer;">
+                                                    📦 Multi-sucursal (Masivo)
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -537,7 +418,6 @@
                                     <h6 class="mb-0 text-white fw-bold"><i class="feather-settings me-2"></i>Parámetros de Cotización</h6>
                                 </div>
                                 <div class="card-body">
-
                                     <div class="mb-4">
                                         <label class="form-label text-dark fw-bold"><i class="feather-filter me-1 text-success"></i>¿Qué tipo de producto se cotizará?</label>
                                         <select class="form-control border-success max-select" name="categoria" id="edit_filtro_tipo_producto">
@@ -564,7 +444,12 @@
                                         </select>
                                     </div>
 
-
+                                    <div class="mb-3" id="wrapper_info_plaza_edit" style="display: none;">
+                                        <label class="form-label text-dark fw-bold"><i class="feather-map me-1 text-success"></i>Plaza Asignada</label>
+                                        <select class="form-control border-primary bg-light shadow-sm" id="edit_info_plaza" name="Plaza_id" disabled>
+                                            <option value="">Esperando sucursal...</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -695,7 +580,7 @@
                         <label class="form-label text-dark fw-bold">Fecha de Envío <span class="text-danger">*</span></label>
                         <input type="date" class="form-control border-primary fw-bold" name="fecha_envio" id="logistica_fecha" required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label text-dark fw-bold">Estimada de Recepción</label>
                         <input type="date" class="form-control border-primary fw-bold" name="fecha_estimada" id="logistica_fecha_estimada" required>
@@ -751,12 +636,12 @@
                 </div>
                 <div class="modal-body p-4 text-center">
                     <p class="text-dark fw-bold mb-4">¿Con base a qué laboratorio deseas generar el reporte de Excel?</p>
-                    
+
                     <div class="d-grid gap-3">
                         <button type="button" class="btn btn-primary fw-bold text-uppercase btn-confirmar-lab-excel" data-lab="evamsa">
                             <i class="feather-box me-2"></i>Laboratorio EVAMSA
                         </button>
-                        
+
                         <button type="button" class="btn btn-dark fw-bold text-uppercase btn-confirmar-lab-excel" data-lab="4p">
                             <i class="feather-package me-2"></i>Laboratorio 4PLAB
                         </button>
@@ -768,6 +653,33 @@
             </div>
         </div>
     </div>
+
+    <!-- //& Pruebas -->
+    <!-- Modal Ver Direcciones (Resumen) -->
+    <div class="modal fade-scale" id="modalVerDirecciones" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold text-white">
+                        <i class="feather-map-pin me-2"></i>Direcciones de la Cotización 
+                        <span id="ver_dir_folio" class="badge bg-white text-primary ms-2 shadow-sm"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 bg-light-subtle" id="contenido_ver_direcciones">
+                    <!-- Contenido inyectado por JS -->
+                    <div class="text-center py-4">
+                        <span class="spinner-border text-primary"></span>
+                        <p class="mt-2 text-muted fw-bold">Cargando información...</p>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center border-0 pt-0 bg-light-subtle">
+                    <button type="button" class="btn btn-secondary fw-bold shadow-sm px-4" data-bs-dismiss="modal">Cerrar Visor</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- //& Pruebas -->
 
     <!--! ================================================================ !-->
     <!--! [End] Main Content !-->

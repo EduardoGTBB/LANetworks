@@ -13,23 +13,30 @@ require_once '../lib/funciones_db.php';
 
 try {
 
-    // ✨ 1. CAPTURAR FILTROS EXACTOS DEL JAVASCRIPT
+    // 1. CAPTURAR FILTROS EXACTOS DEL JAVASCRIPT
     $tipo_reporte = $_GET['tipo'] ?? 'comercial'; 
     $scope = $_GET['scope'] ?? 'todas'; 
     $estatus = $_GET['estatus'] ?? '';
     $categoria = $_GET['categoria'] ?? '';
+    
+    // Filtros de fecha
     $fecha_inicio = trim($_GET['fecha_inicio'] ?? '');
     $fecha_fin = trim($_GET['fecha_fin'] ?? '');       
+    
+    // Filtros de Rango de Pedidos (Folio)
+    $pedido_inicio = (int)($_GET['pedido_inicio'] ?? 0);
+    $pedido_fin = (int)($_GET['pedido_fin'] ?? 0);
+
     $busqueda = $_GET['search'] ?? '';
     
-    // ✨ Captura del Laboratorio Seleccionado (evamsa o 4p)
+    //Captura del Laboratorio Seleccionado (evamsa o 4p)
     $laboratorio_req = $_GET['laboratorio'] ?? 'evamsa'; 
 
     $id_admin = isset($_SESSION['id_user_admin']) ? (int)$_SESSION['id_user_admin'] : 0;
     $id_cliente = isset($_SESSION['id_usuario_cliente']) ? (int)$_SESSION['id_usuario_cliente'] : 0;
     
     // 2. EXTRAER DATOS
-    $datos = obtenerReporteExportacion($pdo, $estatus, $categoria, $busqueda, $scope, $id_admin, $id_cliente, $fecha_inicio, $fecha_fin);
+    $datos = obtenerReporteExportacion($pdo, $estatus, $categoria, $busqueda, $scope, $id_admin, $id_cliente, $fecha_inicio, $fecha_fin, $pedido_inicio, $pedido_fin);
     
     $fecha_actual = date('Y-m-d_H-i');
     $nombre_lab_sufijo = ($tipo_reporte === 'laboratorio') ? "_LAB_" . strtoupper($laboratorio_req) : "";
@@ -44,12 +51,90 @@ try {
     $salida = fopen('php://output', 'w');
     fputs($salida, $bom = (chr(0xEF) . chr(0xBB) . chr(0xBF)));
 
-    // ✨ CABECERAS: Añadimos COSTO LAB entre CLAVE y DESCRIPCION si es reporte de laboratorio
+    // CABECERAS: Añadimos COSTO LAB entre CLAVE y DESCRIPCION si es reporte de laboratorio
     if ($tipo_reporte === 'laboratorio') {
         $titulo_lab = ($laboratorio_req === 'evamsa') ? 'COSTO EVAMSA' : 'COSTO 4PLAB';
         fputcsv($salida, ['CANTIDAD', 'FOLIO', 'FECHA ELABORACION', 'RAZON SOCIAL', 'CLAVE', $titulo_lab, 'DESCRIPCION', 'PTOS CALIBRACION', 'ID EQUIPO', 'SUCURSAL', 'DOM SUCURSAL', 'PLAZA']);
+    } elseif ($tipo_reporte === 'modelos') {
+        // ✨ NUEVO: REPORTE RESUMEN POR MODELOS CON CONDICIÓN
+        fputcsv($salida, ['CLAVE / MODELO', 'CONDICIÓN (NUEVO/USADO)', 'DESCRIPCION', 'CANTIDAD TOTAL VENDIDA', 'SUBTOTAL ACUMULADO', 'IVA ACUMULADO', 'TOTAL ACUMULADO']);
     } else {
         fputcsv($salida, ['CANTIDAD', 'FOLIO', 'FECHA ELABORACION', 'RAZON SOCIAL', 'CLAVE', 'DESCRIPCION', 'PRECIO UNITARIO', 'SUBTOTAL', 'IVA', 'TOTAL', 'TOTAL PEDIDO', 'PLAZA']);
+    }
+
+    // ==========================================
+    //   PROCESAMIENTO: REPORTE POR MODELOS
+    // ==========================================
+    if ($tipo_reporte === 'modelos') {
+        
+        // ✨ UX/BI: Título dinámico para que el Excel indique qué se filtró
+        $titulo_filtro = "TODOS LOS REGISTROS";
+        if ($pedido_inicio > 0 && $pedido_fin > 0) {
+            $titulo_filtro = "RANGO DE FOLIOS (PEDIDOS): " . $pedido_inicio . " AL " . $pedido_fin;
+        } elseif (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $titulo_filtro = "PERIODO: " . $fecha_inicio . " AL " . $fecha_fin;
+        }
+
+        // Imprimimos la cabecera informativa en el Excel
+        fputcsv($salida, ['REPORTE DE VENTAS POR MODELO DE EQUIPO']);
+        fputcsv($salida, ['FILTRO APLICADO:', $titulo_filtro]);
+        fputcsv($salida, []); // Fila vacía visual
+
+        // Cabeceras de la tabla
+        fputcsv($salida, ['CLAVE / MODELO', 'CONDICIÓN (NUEVO/USADO)', 'DESCRIPCION', 'CANTIDAD TOTAL VENDIDA', 'SUBTOTAL ACUMULADO', 'IVA ACUMULADO', 'TOTAL ACUMULADO']);
+        
+        $agrupado_modelos = [];
+
+        foreach ($datos as $row) {
+            $clave = trim($row['clave_product']);
+            
+            // Si el modelo no existe en el arreglo temporal, lo inicializamos
+            if (!isset($agrupado_modelos[$clave])) {
+                // Priorizamos el estado nativo del producto, si no, tomamos la categoría de la cotización
+                $condicion_equipo = trim($row['estado_product'] ?? $row['categoria'] ?? 'N/A');
+
+                $agrupado_modelos[$clave] = [
+                    'clave'       => $clave,
+                    'condicion'   => strtoupper($condicion_equipo), // Forzamos a MAYÚSCULAS por estética de Excel
+                    'descripcion' => trim($row['descripcion_product']),
+                    'cantidad'    => 0,
+                    'subtotal'    => 0,
+                    'iva'         => 0,
+                    'total'       => 0
+                ];
+            }
+
+            // Realizamos la sumatoria de este modelo
+            $qty = (int)$row['cantidad'];
+            $sub = (float)$row['precio_extendido'];
+            $iva = $sub * ((float)$row['porcentaje_iva'] / 100);
+
+            $agrupado_modelos[$clave]['cantidad'] += $qty;
+            $agrupado_modelos[$clave]['subtotal'] += $sub;
+            $agrupado_modelos[$clave]['iva']      += $iva;
+            $agrupado_modelos[$clave]['total']    += ($sub + $iva);
+        }
+
+        // Ordenamos de mayor a menor ventas
+        usort($agrupado_modelos, function($a, $b) {
+            return $b['cantidad'] <=> $a['cantidad'];
+        });
+
+        // Volcamos la data consolidada al CSV
+        foreach ($agrupado_modelos as $item) {
+            fputcsv($salida, [
+                $item['clave'],
+                $item['condicion'], // Imprimimos la nueva columna aquí
+                $item['descripcion'],
+                $item['cantidad'],
+                '$' . number_format($item['subtotal'], 2),
+                '$' . number_format($item['iva'], 2),
+                '$' . number_format($item['total'], 2)
+            ]);
+        }
+
+        fclose($salida);
+        exit;
     }
 
     $cotizaciones_agrupadas = [];
@@ -95,7 +180,7 @@ try {
                     $equipo_id_format = !empty($equipo_id) ? $equipo_id : 'N/A';
                 }
 
-                // ✨ NUEVA LÓGICA: Multiplicar el costo unitario del laboratorio por la cantidad de equipos
+                // NUEVA LÓGICA: Multiplicar el costo unitario del laboratorio por la cantidad de equipos
                 $costo_lab_unitario = ($laboratorio_req === 'evamsa') ? (float)$row['pl_evamsa'] : (float)$row['pl_4p'];
                 
                 // Extraemos la cantidad de equipos de la fila actual
@@ -131,7 +216,7 @@ try {
 
                 $domicilio = !empty($partes_domicilio) ? implode(', ', $partes_domicilio) : 'N/A';
 
-                // ✨ Inyectamos el costo entre CLAVE y DESCRIPCION
+                // Inyectamos el costo entre CLAVE y DESCRIPCION
                 fputcsv($salida, [$cantidad, $folio_actual, $fecha_cot, $empresa, $clave, $costo_lab_format, $descripcion, $ptos_calib_format, $equipo_id_format, $sucursal, $domicilio, $plaza]);
 
             } else {

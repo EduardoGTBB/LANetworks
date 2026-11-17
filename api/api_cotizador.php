@@ -156,10 +156,6 @@ try {
             exit;
         }
 
-
-        /* $id_user_admin = isset($_SESSION['id_user_admin']) ? (int)$_SESSION['id_user_admin'] : null;
-        $es_cliente = isset($_SESSION['id_usuario_cliente']); */
-
         // Datos principales
         $datosCotizacion = [
             'empresa_id'    => $empresa_id,
@@ -190,7 +186,7 @@ try {
         $totales       = $_POST['total'] ?? [];
         $desglosar_arr = $_POST['desglosar'] ?? [];
         $sucursales_fila = $_POST['sucursal_fila'] ?? [];
-        $equipos_ids   = $_POST['equipo_id'] ?? []; // ✨ NUEVA CAPTURA
+        $equipos_ids   = $_POST['equipo_id'] ?? [];
 
         $detalles      = [];
 

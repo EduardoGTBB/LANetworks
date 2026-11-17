@@ -70,6 +70,7 @@ try {
                 'mp_ver_clientes' => $_POST['mp_ver_clientes'] ?? 'Desactivado',
                 'mp_ver_productos' => $_POST['mp_ver_productos'] ?? 'Desactivado',
                 'mp_ver_usuarios' => $_POST['mp_ver_usuarios'] ?? 'Desactivado',
+                'mp_autorizar_cotiz' => $_POST['mp_autorizar_cotiz'] ?? 'Desactivado',
             ];
 
             if ($action === 'editar') {
