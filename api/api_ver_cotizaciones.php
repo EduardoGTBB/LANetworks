@@ -34,7 +34,6 @@ try {
             }
         } elseif ($action === 'leer_todas') {
             if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin') {
-                // echo json_encode(obtenerTodasLasCotizaciones($pdo));
                 echo json_encode(obtenerTodasLasCotizaciones($pdo));
 
             } else {
@@ -47,7 +46,7 @@ try {
 
             echo json_encode(['status' => 'success', 'cotizacion' => $cotizacion, 'detalles' => $detalles]);
         } elseif ($action === 'leer_temporales') {
-            // ✨ SOLO trae las cotizaciones que tienen la bandera es_temporal = 'Y'
+            // SOLO trae las cotizaciones que tienen la bandera es_temporal = 'Y'
             if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin' || $_SESSION['perfil'] === 'oper') {
                 $sql = "SELECT c.id_cotizacion, c.folio_especial, c.categoria, c.fecha_cot, c.precio_iva AS gran_total, 
                                e.razon_social, u.nombre, u.apellido_pat, ua.admin_nombre, ua.admin_apell_pat, c.estatus 
@@ -322,6 +321,28 @@ try {
                 exit;
             }
 
+            // 🛡️ ZERO TRUST BACKEND: Solo Admin o usuario con permiso explícito puede autorizar/rechazar
+            $es_admin = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin');
+            $tiene_permiso = false;
+            
+            if (!$es_admin && isset($_SESSION['id_user_admin'])) {
+                $stmtPerm = $pdo->prepare("SELECT mp_autorizar_cotiz FROM usuarios_admin WHERE id_user_admin = ?");
+                $stmtPerm->execute([$_SESSION['id_user_admin']]);
+                $tiene_permiso = ($stmtPerm->fetchColumn() === 'Activado');
+            }
+
+            if (!$es_admin && !$tiene_permiso) {
+                echo json_encode(['status' => 'error', 'message' => 'ACCESO DENEGADO: No tienes los privilegios para autorizar o rechazar cotizaciones. Consulta a tu administrador.']);
+                exit;
+            }
+            /*  $id_cotizacion = (int)($_POST['id_cotizacion'] ?? 0);
+            $nuevo_estatus = trim($_POST['estatus'] ?? '');
+            
+            if ($id_cotizacion === 0 || empty($nuevo_estatus)) {
+                echo json_encode(['status' => 'error', 'message' => 'Datos inválidos.']);
+                exit;
+            }
+
             // 🔒 CANDADO CIBERSEGURIDAD ESTRICTO EN EL ONE-CLICK
             if (strpos($nuevo_estatus, 'Autorizada') !== false) {
                 $stmtCheckDir = $pdo->prepare("SELECT COUNT(*) FROM domicilio_fiscal WHERE Cotizacion_id = ?");
@@ -344,7 +365,7 @@ try {
             $stmtUpdate = $pdo->prepare("UPDATE cotizacion SET estatus = ? WHERE id_cotizacion = ?");
             $stmtUpdate->execute([$nuevo_estatus, $id_cotizacion]);
 
-            echo json_encode(['status' => 'success', 'message' => 'El estatus se ha actualizado correctamente.']);
+            echo json_encode(['status' => 'success', 'message' => 'El estatus se ha actualizado correctamente.']); */
             
         }elseif ($action === 'marcar_entregado') {
             $id_cotizacion = (int)($_POST['id_cotizacion'] ?? 0);

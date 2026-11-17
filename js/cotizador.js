@@ -60,6 +60,7 @@ $(document).ready(function () {
             let $select = $('#select_empresa');
             if ($select.length) {
                 $select.empty().append('<option value="">Selecciona un cliente...</option>');
+                
                 data.forEach(emp => $select.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`));
 
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
@@ -72,6 +73,21 @@ $(document).ready(function () {
             } else {
                 cargarSolicitantes(1);
             }
+        }
+    });
+
+    // EVENTO: CUANDO CAMBIA LA EMPRESA, CARGAMOS SUS SOLICITANTES
+    $('#select_empresa').on('change', function () {
+        let empresaId = $(this).val();
+        
+        // Limpiamos los dependientes
+        $('#select_solicitante').empty().append('<option value="">Selecciona un solicitante...</option>');
+        $('#select_sucursal').empty().append('<option value="">Esperando al solicitante...</option>');
+        $('#info_plaza').empty().append('<option value="">Esperando sucursal...</option>');
+        $('#wrapper_info_plaza').hide();
+
+        if (empresaId) {
+            cargarSolicitantes(empresaId);
         }
     });
 
@@ -686,9 +702,9 @@ $(document).ready(function () {
         // Volvemos a bloquearlos inmediatamente para no romper la UI
         $disabledFields.prop('disabled', true);
         
-        if (formData.indexOf('Empresa_id=') === -1) {
+        /* if (formData.indexOf('Empresa_id=') === -1) {
             formData += '&Empresa_id=1';
-        }
+        } */
 
         $.ajax({
             url: 'api/api_cotizador.php',

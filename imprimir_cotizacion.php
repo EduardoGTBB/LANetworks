@@ -20,7 +20,7 @@ if (!$id_cot) {
 }
 
 // 1. Datos Generales
-$sql = "SELECT c.*, e.*, dem.calle_numero, dem.colonia, dem.localidad, dem.codigo_postal, dem.municipio, dem.estado, 
+/* $sql = "SELECT c.*, e.*, dem.calle_numero, dem.colonia, dem.localidad, dem.codigo_postal, dem.municipio, dem.estado, 
         CONCAT(usu.nombre, ' ', usu.apellido_pat, ' ', usu.apellido_mat) as cliente, 
         CONCAT(u.admin_nombre, ' ', u.admin_apell_pat) as vendedor,
         s.id_sae, s.nombre_sucursal, s.estado as sucursal_estado,
@@ -28,6 +28,22 @@ $sql = "SELECT c.*, e.*, dem.calle_numero, dem.colonia, dem.localidad, dem.codig
     FROM cotizacion c
     JOIN empresa e ON c.Empresa_id = e.id_empresa
     JOIN domicilio_empresa dem ON e.id_empresa = dem.Empresa_id
+    LEFT JOIN usuarios_admin u ON c.Usuario_admin_id = u.id_user_admin
+    JOIN usuarios usu ON c.Usuario_empresa_id = usu.id_usuario
+    LEFT JOIN sucursales s ON c.Sucursal_id = s.id_sucursal
+    LEFT JOIN plazas pz ON c.Plaza_id = pz.id_plaza
+    WHERE c.id_cotizacion = ?";
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$id_cot]);
+$cot = $stmt->fetch(PDO::FETCH_ASSOC); */
+$sql = "SELECT c.*, e.*, dem.calle_numero, dem.colonia, dem.localidad, dem.codigo_postal, dem.municipio, dem.estado, 
+        CONCAT(usu.nombre, ' ', usu.apellido_pat, ' ', usu.apellido_mat) as cliente, 
+        CONCAT(u.admin_nombre, ' ', u.admin_apell_pat) as vendedor,
+        s.id_sae, s.nombre_sucursal, s.estado as sucursal_estado,
+        pz.nombre_plaza as plaza_guardada
+    FROM cotizacion c
+    JOIN empresa e ON c.Empresa_id = e.id_empresa
+    LEFT JOIN domicilio_empresa dem ON e.id_empresa = dem.Empresa_id
     LEFT JOIN usuarios_admin u ON c.Usuario_admin_id = u.id_user_admin
     JOIN usuarios usu ON c.Usuario_empresa_id = usu.id_usuario
     LEFT JOIN sucursales s ON c.Sucursal_id = s.id_sucursal
@@ -268,7 +284,8 @@ if ($es_multisucursal) {
                     <div class="small mt-1" style="font-size: 9px; line-height: 1.3;">
                         <strong>Régimen Fiscal: (601) General de Ley Personas Morales</strong><br>
                         <strong>R.F.C: N&S060721MU8</strong><br>
-                        CERRADA SUR 16 A, No. 31 Int. BIS CASA C, Col. AGRICOLA ORIENTAL, C.P.: 08500, IZTACALCO, CIUDAD DE MEXICO, MEXICO
+                        <!-- CERRADA SUR 16 A, No. 31 Int. BIS CASA C, Col. AGRICOLA ORIENTAL, C.P.: 08500, IZTACALCO, CIUDAD DE MEXICO, MEXICO -->
+                        CERRADA SUR 16 A, No. 31 BIS CASA C, Col. AGRICOLA ORIENTAL, C.P.: 08500, IZTACALCO, CIUDAD DE MEXICO, MEXICO
                     </div>
                 </div>
             </div>
@@ -533,7 +550,7 @@ if ($es_multisucursal) {
                                                         echo $calleCertDetalle . ', Col. ' . htmlspecialchars($d['colonia_cert']) . ', ' . htmlspecialchars($d['municipio_cert']) . ', ' . htmlspecialchars($d['estado_cert']) . ' C.P. ' . htmlspecialchars($d['cp_cert']);
                                                         ?>
                                                     </span>
-                                                    
+
                                                     <!-- <strong style="color: #000;">📍 Certificado (?php echo mb_strtoupper($nombre_destino_print, 'UTF-8'); ?>):</strong>
                                                     ?php
                                                     $calleCertDetalle = htmlspecialchars($d['calle_numero_cert']);

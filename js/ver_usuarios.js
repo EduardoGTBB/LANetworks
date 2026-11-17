@@ -33,7 +33,8 @@ $(document).ready(function () {
                         mp_ver_cotiz: user.mp_ver_cotiz,
                         mp_ver_clientes: user.mp_ver_clientes,
                         mp_ver_productos: user.mp_ver_productos,
-                        mp_ver_usuarios: user.mp_ver_usuarios
+                        mp_ver_usuarios: user.mp_ver_usuarios,
+                        mp_autorizar_cotiz: user.mp_autorizar_cotiz
                     });
 
                     let foto = (user.foto_perfil && user.foto_perfil.trim() !== '') ? user.foto_perfil : 'user.png';
@@ -205,6 +206,7 @@ $(document).ready(function () {
             $('select[name="mp_ver_clientes"]').val(permisos.mp_ver_clientes || 'Desactivado').trigger('change');
             $('select[name="mp_ver_productos"]').val(permisos.mp_ver_productos || 'Desactivado').trigger('change');
             $('select[name="mp_ver_usuarios"]').val(permisos.mp_ver_usuarios || 'Desactivado').trigger('change');
+            $('select[name="mp_autorizar_cotiz"]').val(permisos.mp_autorizar_cotiz || 'Desactivado').trigger('change');
         }
 
         $('#newPassword, #newPassword2').val('').prop('required', false);

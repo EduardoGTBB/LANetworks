@@ -70,9 +70,11 @@ $(document).ready(function() {
     $('#btnNuevoCliente').click(function(e) {
         e.preventDefault();
         $('#formEmpresa')[0].reset();
-        $('#empresa_action').val('crear');
-        $('#id_empresa').val('');
-        $('#bloque_estatus').hide(); 
+
+        $('#cliente_action').val('crear');
+        $('#cliente_id').val('');
+        $('#bloque_estatus_cli').hide(); 
+
         $('#modalEmpresaLabel').text('Nueva Empresa');
         $('#modalEmpresa').modal('show');
     });
@@ -89,8 +91,9 @@ $(document).ready(function() {
             success: function(res) {
                 if (res.status === 'success') {
                     let emp = res.data;
-                    $('#empresa_action').val('editar');
-                    $('#id_empresa').val(emp.id_empresa);
+                    $('#cliente_action').val('editar');
+                    $('#cliente_id').val(emp.id_empresa);
+                    
                     $('#modalEmpresaLabel').text('Editar Empresa');
                     
                     // Llenar datos simplificados
@@ -98,10 +101,19 @@ $(document).ready(function() {
                     $('#razon_social').val(emp.razon_social);
                     $('#rfc').val(emp.rfc);
                     $('#dias_credito').val(emp.dias_credito);
+
+                    // Llenar datos de domicilio
+                    $('#calle_numero').val(emp.calle_numero || '');
+                    $('#colonia').val(emp.colonia || '');
+                    $('#codigo_postal').val(emp.codigo_postal || '');
+                    $('#localidad').val(emp.localidad || '');
+                    $('#municipio').val(emp.municipio || '');
+                    $('#estado').val(emp.estado || '');
+                    $('#pais').val(emp.pais || 'México');
                     
                     // Mostrar control de estatus
-                    $('#bloque_estatus').show();
-                    $('#estatus').prop('checked', emp.estatus === 'Y');
+                    $('#bloque_estatus_cli').show();
+                    $('#estatus_cli').prop('checked', emp.estatus === 'Y');
 
                     $('#modalEmpresa').modal('show');
                 } else {

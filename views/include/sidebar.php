@@ -135,7 +135,7 @@ if ($es_cliente) {
                 <?php endif; ?>
 
                 <?php if ($permisos['mp_ver_reportes'] === 'Activado'): ?>
-                    <li class="nxl-item nxl-hasmenu">
+                    <!-- <li class="nxl-item nxl-hasmenu">
                         <a href="javascript:void(0);" class="nxl-link">
                             <span class="nxl-micon"><i class="feather-file-text"></i></span>
                             <span class="nxl-mtext">Reportes</span><span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
@@ -146,6 +146,13 @@ if ($es_cliente) {
                             <li class="nxl-item"><a class="nxl-link" href="#">Project Report</a></li>
                             <li class="nxl-item"><a class="nxl-link" href="#">Timesheets Report</a></li>
                         </ul>
+                    </li>
+ -->
+                    <li class="nxl-item nxl-hasmenu">
+                        <a href="javascript:void(0);" class="nxl-link">
+                            <span class="nxl-micon"><i class="feather-file-text"></i></span>
+                            <span class="nxl-mtext">Reportes</span>
+                        </a>
                     </li>
                 <?php endif; ?>
 

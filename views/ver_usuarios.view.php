@@ -423,6 +423,21 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td>
+                                            <div class="fw-bold text-dark">Autorizar / Rechazar</div>
+                                            <small class="fs-12 text-muted">Aprobar o declinar cotizaciones (Operativos).</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="form-group select-wd-lg">
+                                                <select class="form-control select-permisos" data-select2-selector="icon" name="mp_autorizar_cotiz" required>
+                                                    <option value="">Elige una opción...</option>
+                                                    <option value="Activado" data-icon="feather-toggle-right" data-color="text-success">Activado</option>
+                                                    <option value="Desactivado" data-icon="feather-toggle-left" data-color="text-danger">Desactivado</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td colspan="2">
                                             <div class="fw-bold text-dark">Ventas</div>
                                         </td>

@@ -110,22 +110,6 @@
                     <div class="col-lg-12">
                         <div class="card stretch stretch-full">
                             <div class="card-body lead-status">
-
-                                <!-- OPCIÓN Original: Estilo "Ticket" con borde punteado a la derecha 
-                                <div class="mb-5 d-flex flex-wrap align-items-center justify-content-between border-bottom pb-4">
-                                    <h5 class="fw-bold mb-0 mt-2">
-                                        <span class="d-block fs-18 mb-2">Nueva cotización</span>
-                                        <span class="fs-12 fw-normal text-muted">Completa los campos comerciales y logísticos.</span>
-                                    </h5>
-                                    
-                                    <div class="text-end mt-3 mt-md-0">
-                                        <span class="d-block fs-10 text-muted text-center fw-bold text-uppercase mb-2" style="letter-spacing: 0.5px;">Folio Asignado</span>
-                                        <span id="preview_folio" class="badge bg-soft-secondary text-secondary d-inline-flex align-items-center px-4 py-2" style="font-size: 16px; font-weight: 800; letter-spacing: 1px; border: 2px dashed rgba(0,0,0,0.15) !important; border-radius: 6px;">
-                                            <i class="feather-info me-2" style="font-size: 1.1em; transform: translateY(-1px);"></i> Selecciona tipo
-                                        </span>
-                                    </div>
-                                </div>-->
-
                                 <div class="mb-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between border-bottom pb-4 gap-3">
                                     <h5 class="fw-bold mb-0 mt-2">
                                         <span class="d-block fs-18 mb-2">Nueva cotización</span>
@@ -142,24 +126,6 @@
 
                                 <form id="nueva_cotizacion">
                                     <input type="hidden" name="fecha_cot" value="<?php echo date('Y-m-d'); ?>">
-                                    <!-- <div class="row">
-                                        <div class="col-md-6 mb-4">
-                                            <label class="form-label fw-bold" style="color: #dc3545 !important;"><i class="feather-briefcase me-1"></i>División de LAN</label>
-                                            <select class="form-control" id="division" name="division"
-                                                data-select2-selector="status" required>
-                                                <option value="">Selecciona una división...</option>
-                                                <option value="LA NETWORKS & TECHNOLOGIES">LA NETWORKS & SMART TECHNOLOGIES SA DE CV</option>
-                                                <option value="LA NETWORKS ANALITICAL">LA NETWORKS ANALITICAL, SA DE CV</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6 mb-4">
-                                            <label class="form-label fw-bold" style="color: #0d6efd !important;"><i class="feather-users me-1"></i>Solicitante</label>
-                                            <select class="form-control" id="select_solicitante" name="Usuario_id" data-select2-selector="status" required>
-                                                <option value="">Selecciona un solicitante...</option>
-                                            </select>
-                                        </div>
-                                    </div> -->
-
                                     <!--  LÓGICA MOVIDA AFUERA DE LA TARJETA -->
                                     <?php if (defined('HABILITAR_COTS_TEMPORALES') && HABILITAR_COTS_TEMPORALES && !isset($_SESSION['id_usuario_cliente'])): ?>
                                         <div class="mb-4 p-3 rounded shadow-sm" style="background-color: #fff3cd; border: 1px solid #ffe69c;">
@@ -187,6 +153,13 @@
                                                     <h6 class="mb-0 text-white fw-bold"><i class="feather-user me-2"></i>Datos Comerciales</h6>
                                                 </div>
                                                 <div class="card-body">
+                                                    <!-- NUEVO SELECTOR DE CLIENTE -->
+                                                    <div class="mb-4">
+                                                        <label class="form-label text-dark fw-bold"><i class="feather-users me-1 text-primary"></i>Cliente <span class="text-danger">*</span></label>
+                                                        <select class="form-control border-primary" id="select_empresa" name="Empresa_id" data-select2-selector="status" required>
+                                                            <option value="">Cargando clientes...</option>
+                                                        </select>
+                                                    </div>
                                                     <div class="mb-4">
                                                         <label class="form-label text-dark fw-bold"><i class="feather-briefcase me-1 text-primary"></i>División de LAN</label>
                                                         <!-- <select class="form-control border-primary bg-light" id="division" name="division" data-select2-selector="status" required> -->
@@ -256,7 +229,7 @@
                                                         <label class="form-label text-dark fw-bold"><i class="feather-tag me-1 text-success"></i>Selecciona el precio que se utilizará</label>
                                                         <select class="form-control border-success" id="tipo_precio" name="tipo_precio" data-select2-selector="status" required>
                                                             <option value="">Selecciona el tipo de precio...</option>
-                                                            <option value="Farmacia">Farmacia</option>
+                                                            <option value="Farmacia">Farmacia del ahorro</option>
                                                             <option value="Público">Público</option>
                                                         </select>
                                                     </div>
@@ -1047,6 +1020,4 @@
     </script> -->
 
 </body>
-
-
 </html>

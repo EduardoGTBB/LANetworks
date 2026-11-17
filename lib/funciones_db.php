@@ -202,7 +202,7 @@ function obtenerCotizaciones(PDO $pdo, int $id_user_admin): array
                    e.razon_social, u.nombre, u.apellido_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio,
                    c.fecha_entrega, c.fecha_estimada_recepcion, c.numero_recepcion, c.ruta_oc, c.oc_cargada,
                    pz.nombre_plaza,
-                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
+                   (SELECT COUNT(*) FROM domicilio_cert_calib dcc WHERE dcc.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
             FROM cotizacion c
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
@@ -223,7 +223,8 @@ function obtenerCotizacionesCliente(PDO $pdo, int $id_usuario_cliente): array
                    e.razon_social, u.nombre, u.apellido_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio,
                    c.fecha_entrega, c.fecha_estimada_recepcion, c.numero_recepcion, c.ruta_oc, c.oc_cargada,
                    pz.nombre_plaza,
-                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
+                   /*(SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,*/
+                   (SELECT COUNT(*) FROM domicilio_cert_calib dcc WHERE dcc.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
             FROM cotizacion c 
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
@@ -270,7 +271,8 @@ function borrarCotizacion(PDO $pdo, int $id_cotizacion): bool
 function editarCotizacionporID(PDO $pdo, int $id_cotizacion)
 {
     $sql = "SELECT id_cotizacion,folio_especial, categoria, Empresa_id, Sucursal_id, Plaza_id, Usuario_admin_id, Usuario_empresa_id, fecha_cot, importe_total, comentarios, precio_iva, porcentaje_iva, tipo_precio, division, estatus, es_temporal,
-            (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = cotizacion.id_cotizacion) as tiene_dir
+            (SELECT COUNT(*) FROM domicilio_cert_calib dcc WHERE dcc.Cotizacion_id = cotizacion.id_cotizacion) as tiene_dir
+            /* (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = cotizacion.id_cotizacion) as tiene_dir */
             FROM cotizacion
             WHERE id_cotizacion = :id";
 
@@ -469,7 +471,8 @@ function obtenerTodasLasCotizaciones(PDO $pdo): array
                    ua.admin_nombre, ua.admin_apell_pat, c.estatus, c.paqueteria, c.numero_guia, c.fecha_envio, 
                    c.fecha_entrega, c.fecha_estimada_recepcion, c.numero_recepcion, c.ruta_oc, c.oc_cargada,
                    pz.nombre_plaza,
-                   (SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,
+                   /*(SELECT COUNT(*) FROM domicilio_fiscal df WHERE df.Cotizacion_id = c.id_cotizacion) as tiene_dir,*/
+                   (SELECT COUNT(*) FROM domicilio_cert_calib dcc WHERE dcc.Cotizacion_id = c.id_cotizacion) as tiene_dir,
                    (SELECT COUNT(*) FROM detalle_cotizacion dc WHERE dc.Cotizacion_id = c.id_cotizacion AND (dc.id_dom_cert IS NULL OR dc.id_dom_envio IS NULL)) as equipos_sin_dir
             FROM cotizacion c 
             LEFT JOIN empresa e ON c.Empresa_id = e.id_empresa
@@ -645,10 +648,9 @@ function obtenerAllempresas(PDO $pdo): array
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function insertarEmpresa(PDO $pdo, array $datos): bool
+/* function insertarEmpresa(PDO $pdo, array $datos): bool
 {
     try {
-        //° $pdo->beginTransaction();
         $sqlEMP = "INSERT INTO empresa (nombre_empresa, razon_social, rfc, dias_credito, estatus) 
             VALUES (:nombre, :razon, :rfc, :dias, 'Y')";
 
@@ -659,32 +661,74 @@ function insertarEmpresa(PDO $pdo, array $datos): bool
             ':rfc'      => $datos['rfc'],
             ':dias' => $datos['dias_credito']
         ]);
-        /* $id_empresa = $pdo->lastInsertId(); // Obtenemos el ID generado
 
-        $sqlDOM = "INSERT INTO domicilio_empresa(Empresa_id, calle_numero, colonia, localidad, codigo_postal, municipio, estado, pais)
+        $id_empresa = (int)$pdo->lastInsertId();
+
+        $sqlDOM = "INSERT INTO domicilio_empresa (Empresa_id, calle_numero, colonia, localidad, codigo_postal, municipio, estado, pais)
             VALUES (:emp_id, :calle, :colonia, :localidad, :cp, :municipio, :estado, :pais)";
 
         $stmtDOM = $pdo->prepare($sqlDOM);
         $stmtDOM->execute([
-            ':emp_id'   => $id_empresa,
-            ':calle'    => $datos['calle_numero'],
-            ':colonia'      => $datos['colonia'],
+            ':emp_id'    => $id_empresa,
+            ':calle'     => $datos['calle_numero'],
+            ':colonia'   => $datos['colonia'],
             ':localidad' => $datos['localidad'],
-            ':cp' => $datos['codigo_postal'],
+            ':cp'        => $datos['codigo_postal'],
             ':municipio' => $datos['municipio'],
-            ':estado' => $datos['estado'],
-            ':pais'   => $datos['pais']
+            ':estado'    => $datos['estado'],
+            ':pais'      => $datos['pais']
         ]);
- */
-        /* $pdo->commit();
-        return true; */
+
+        $pdo->commit();
+        return true;
+        
     } catch (Exception $e) {
         $pdo->rollBack(); // Revertimos si hay error
         throw $e;
     }
+} */
+function insertarEmpresa(PDO $pdo, array $datos): bool
+{
+    try {
+        $pdo->beginTransaction();
+        
+        $sqlEMP = "INSERT INTO empresa (nombre_empresa, razon_social, rfc, dias_credito, estatus) 
+            VALUES (:nombre, :razon, :rfc, :dias, 'Y')";
+
+        $stmtEMP = $pdo->prepare($sqlEMP);
+        $stmtEMP->execute([
+            ':nombre'   => $datos['nombre_empresa'],
+            ':razon'    => $datos['razon_social'],
+            ':rfc'      => $datos['rfc'],
+            ':dias'     => $datos['dias_credito']
+        ]);
+        
+        $id_empresa = (int)$pdo->lastInsertId();
+
+        $sqlDOM = "INSERT INTO domicilio_empresa (Empresa_id, calle_numero, colonia, localidad, codigo_postal, municipio, estado, pais)
+            VALUES (:emp_id, :calle, :colonia, :localidad, :cp, :municipio, :estado, :pais)";
+
+        $stmtDOM = $pdo->prepare($sqlDOM);
+        $stmtDOM->execute([
+            ':emp_id'    => $id_empresa,
+            ':calle'     => $datos['calle_numero'],
+            ':colonia'   => $datos['colonia'],
+            ':localidad' => $datos['localidad'],
+            ':cp'        => $datos['codigo_postal'],
+            ':municipio' => $datos['municipio'],
+            ':estado'    => $datos['estado'],
+            ':pais'      => $datos['pais']
+        ]);
+
+        $pdo->commit();
+        return true;
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
 }
 
-function actualizarEmpresa(PDO $pdo, array $datos): bool
+/* function actualizarEmpresa(PDO $pdo, array $datos): bool
 {
     try {
         //° $pdo->beginTransaction();
@@ -723,7 +767,53 @@ function actualizarEmpresa(PDO $pdo, array $datos): bool
         ]);
 
         $pdo->commit();
-        return true; */
+        return true; *
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+} */
+
+function actualizarEmpresa(PDO $pdo, array $datos): bool
+{
+    try {
+        $pdo->beginTransaction();
+
+        // 1. Actualizar empresa
+        $sqlEmp = "UPDATE empresa SET nombre_empresa = :nombre, razon_social = :razon, rfc = :rfc, dias_credito = :dias WHERE id_empresa = :id";
+        $stmtEmp = $pdo->prepare($sqlEmp);
+        $stmtEmp->execute([
+            ':nombre'   => $datos['nombre_empresa'],
+            ':razon'    => $datos['razon_social'],
+            ':rfc'      => $datos['rfc'],
+            ':dias'     => $datos['dias_credito'],
+            ':id'       => $datos['id_empresa']
+        ]);
+
+        // 2. Verificar si ya tenía domicilio registrado para actualizarlo o insertarlo
+        $stmtCheck = $pdo->prepare("SELECT id_domicilio_empresa FROM domicilio_empresa WHERE Empresa_id = :id");
+        $stmtCheck->execute([':id' => $datos['id_empresa']]);
+
+        if ($stmtCheck->rowCount() > 0) {
+            $sqlDom = "UPDATE domicilio_empresa SET calle_numero = :calle, colonia = :colonia, localidad = :localidad, codigo_postal = :cp, municipio = :municipio, estado = :estado, pais = :pais WHERE Empresa_id = :id";
+        } else {
+            $sqlDom = "INSERT INTO domicilio_empresa (calle_numero, colonia, localidad, codigo_postal, municipio, estado, pais, Empresa_id) VALUES (:calle, :colonia, :localidad, :cp, :municipio, :estado, :pais, :id)";
+        }
+
+        $stmtDom = $pdo->prepare($sqlDom);
+        $stmtDom->execute([
+            ':calle'     => $datos['calle_numero'],
+            ':colonia'   => $datos['colonia'],
+            ':localidad' => $datos['localidad'],
+            ':cp'        => $datos['codigo_postal'],
+            ':municipio' => $datos['municipio'],
+            ':estado'    => $datos['estado'],
+            ':pais'      => $datos['pais'],
+            ':id'        => $datos['id_empresa']
+        ]);
+
+        $pdo->commit();
+        return true;
     } catch (Exception $e) {
         $pdo->rollBack();
         throw $e;
@@ -1407,7 +1497,7 @@ function verificarProductoExistente(PDO $pdo, string $descripcion, string $clave
 // >>> ============================================== 
 
 // [fn] Obtener los usuarios Admin
-function obtenerusuarios(PDO $pdo, int $id_user_admin): array
+/* function obtenerusuarios(PDO $pdo, int $id_user_admin): array
 {
     // Traemos el ID, el nombre, correo(Usuario) y su estatus
     $sql = "SELECT id_user_admin, usuario_lan, admin_nombre, admin_apell_pat, perfil, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios, estatus
@@ -1418,9 +1508,20 @@ function obtenerusuarios(PDO $pdo, int $id_user_admin): array
 
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+} */
+function obtenerusuarios(PDO $pdo, int $id_user_admin): array
+{
+    $sql = "SELECT id_user_admin, usuario_lan, admin_nombre, admin_apell_pat, perfil, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios, mp_autorizar_cotiz, estatus
+            FROM usuarios_admin
+            ORDER BY admin_nombre ASC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+
 // [fn] Insertar nuevo usuario Admin
-function insertarUsuarioAdmin(PDO $pdo, array $datos): bool
+/* function insertarUsuarioAdmin(PDO $pdo, array $datos): bool
 {
     $foto = !empty($datos['foto_perfil']) ? $datos['foto_perfil'] : 'user.png';
     $sql = "INSERT INTO usuarios_admin (usuario_lan, password, admin_nombre, admin_apell_pat, perfil, estatus, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios) 
@@ -1441,10 +1542,25 @@ function insertarUsuarioAdmin(PDO $pdo, array $datos): bool
         ':p5'     => $datos['mp_ver_usuarios']
 
     ]);
+}*/
+function insertarUsuarioAdmin(PDO $pdo, array $datos): bool
+{
+    $foto = !empty($datos['foto_perfil']) ? $datos['foto_perfil'] : 'user.png';
+    $sql = "INSERT INTO usuarios_admin (usuario_lan, password, admin_nombre, admin_apell_pat, perfil, estatus, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios, mp_autorizar_cotiz) 
+            VALUES (:usr, :pass, :nom, :ape, :perfil, :est , :foto, :p1, :p2, :p3, :p4, :p5, :p6)";
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute([
+        ':usr'    => $datos['usuario_lan'], ':pass'   => $datos['password'],
+        ':nom'    => $datos['admin_nombre'], ':ape'    => $datos['admin_apell_pat'],
+        ':perfil' => $datos['perfil'], ':est'    => $datos['estatus'], ':foto'   => $foto,
+        ':p1'     => $datos['mp_cotizador'], ':p2'     => $datos['mp_ver_cotiz'],
+        ':p3'     => $datos['mp_ver_clientes'], ':p4'     => $datos['mp_ver_productos'],
+        ':p5'     => $datos['mp_ver_usuarios'], ':p6'     => $datos['mp_autorizar_cotiz']
+    ]);
 }
 
 // [fn] Actualizar usuario Admin
-function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
+/* function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
 {
     if (!empty($datos['foto_perfil'])) {
         $stmtFoto = $pdo->prepare("SELECT foto_perfil FROM usuarios_admin WHERE id_user_admin = :id");
@@ -1534,7 +1650,40 @@ function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
     ]);
 
     $stmt->execute($params); 
-    !return true;*/
+    !return true;*
+}*/
+function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
+{
+    if (!empty($datos['foto_perfil'])) {
+        $stmtFoto = $pdo->prepare("SELECT foto_perfil FROM usuarios_admin WHERE id_user_admin = :id");
+        $stmtFoto->execute([':id' => $datos['id_user_admin']]);
+        $oldUser = $stmtFoto->fetch(PDO::FETCH_ASSOC);
+        if ($oldUser && !empty($oldUser['foto_perfil']) && $oldUser['foto_perfil'] !== 'user.png') {
+            $ruta_vieja = '../assets/images/avatar/' . $oldUser['foto_perfil'];
+            if (file_exists($ruta_vieja)) { unlink($ruta_vieja); }
+        }
+    }
+
+    $permisosSql = "mp_cotizador = :p1, mp_ver_cotiz = :p2, mp_ver_clientes = :p3, mp_ver_productos = :p4, mp_ver_usuarios = :p5, mp_autorizar_cotiz = :p6";
+    $fotoSql = !empty($datos['foto_perfil']) ? ", foto_perfil = :foto" : ""; 
+
+    $sql = "UPDATE usuarios_admin SET usuario_lan = :usr, admin_nombre = :nom, admin_apell_pat = :ape, perfil = :perfil, estatus = :est " . $fotoSql . ", " . $permisosSql . " WHERE id_user_admin = :id";
+
+    if (!empty($datos['password'])) {
+        $sql = "UPDATE usuarios_admin SET usuario_lan = :usr, password = :pass, admin_nombre = :nom, admin_apell_pat = :ape, perfil = :perfil, estatus = :est " . $fotoSql . ", " . $permisosSql . " WHERE id_user_admin = :id";
+    }
+
+    $stmt = $pdo->prepare($sql);
+    $params = [
+        ':usr' => $datos['usuario_lan'], ':nom' => $datos['admin_nombre'], ':ape' => $datos['admin_apell_pat'],
+        ':perfil' => $datos['perfil'], ':est' => $datos['estatus'], ':p1' => $datos['mp_cotizador'],
+        ':p2' => $datos['mp_ver_cotiz'], ':p3' => $datos['mp_ver_clientes'], ':p4' => $datos['mp_ver_productos'],
+        ':p5' => $datos['mp_ver_usuarios'], ':p6' => $datos['mp_autorizar_cotiz'], ':id' => $datos['id_user_admin']
+    ];
+    if (!empty($datos['password'])) { $params[':pass'] = $datos['password']; }
+    if (!empty($datos['foto_perfil'])) { $params[':foto'] = $datos['foto_perfil']; }
+
+    return $stmt->execute($params);
 }
 
 // [fn] Candado para evitar registros duplicados
@@ -2068,9 +2217,9 @@ function obtenerDatosClientePorCotizacion(PDO $pdo, int $id_cotizacion): array|f
 // <<< ==============================================
 
 // [fn] Obtener datos aplanados para Exportación a Excel (Dinámico)
-function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0,string $fecha_inicio = '', string $fecha_fin = ''): array {
+function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0,string $fecha_inicio = '', string $fecha_fin = '', int $pedido_inicio = 0, int $pedido_fin = 0): array {
+
     $whereClause = "c.es_temporal = 'N'";
-    /* $whereClause = "1=1"; */
     $params = [];
 
     if (!empty($estatus)) {
@@ -2088,14 +2237,17 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
         $params[':categoria'] = $categoria;
     }
 
-    //✨ Filtro 3: Fecha Exacta (YYYY-MM-DD)
+    // Filtro 3: Fecha Exacta (YYYY-MM-DD)
     if (!empty($fecha_inicio) && !empty($fecha_fin)) {
         $whereClause .= " AND c.fecha_cot BETWEEN :f_inicio AND :f_fin"; 
         $params[':f_inicio'] = $fecha_inicio; 
         $params[':f_fin'] = $fecha_fin; 
     }
 
-    // ✨ Filtro de Búsqueda de DataTables (Parámetros únicos para PDO Estricto)
+    // ✨ NOTA CIBERSEGURIDAD: El Filtro de "Rango de Pedidos" (Folios) se procesará 
+    // a nivel PHP (Capa Aplicación) para garantizar compatibilidad con MySQL 5.7+
+
+    // Filtro de Búsqueda de DataTables
     if (!empty($busqueda)) {
         $whereClause .= " AND (c.folio_especial LIKE :b1 OR e.razon_social LIKE :b2 OR pr.descripcion_product LIKE :b3 OR pr.clave_product LIKE :b4)";
         $valor_busqueda = "%{$busqueda}%";
@@ -2116,10 +2268,10 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
     }
 
     $sql = "SELECT 
-                c.folio_especial, c.id_cotizacion, c.fecha_cot, c.porcentaje_iva,
+                c.folio_especial, c.id_cotizacion, c.fecha_cot, c.porcentaje_iva, c.categoria,
                 e.razon_social, pz.nombre_plaza,
                 dc.cantidad, dc.precio_unitario, dc.precio_extendido, dc.equipo_id,
-                pr.clave_product, pr.descripcion_product, pr.puntos_calibracion,
+                pr.clave_product, pr.descripcion_product, pr.puntos_calibracion, pr.estado_product,
                 s.nombre_sucursal, s.calle, s.num_ext, s.num_int, s.colonia,
                 s.cp, s.poblacion, s.municipio, s.estado,
                 pl.pl_evamsa, pl.pl_4p 
@@ -2135,5 +2287,28 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $resultados_crudos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // ✨ LÓGICA DE FILTRADO DE FOLIOS EN PHP (Compatible 100% con MySQL 5.7)
+    if ($pedido_inicio > 0 && $pedido_fin > 0) {
+        $resultados_filtrados = [];
+        
+        foreach ($resultados_crudos as $fila) {
+            $folio = (string)$fila['folio_especial'];
+            
+            // Usamos preg_match para extraer el primer bloque numérico (igual que en JS)
+            if (preg_match('/([0-9]+)/', $folio, $coincidencias)) {
+                $numero_folio = (int)$coincidencias[1];
+                
+                // Si está dentro del rango, lo guardamos
+                if ($numero_folio >= $pedido_inicio && $numero_folio <= $pedido_fin) {
+                    $resultados_filtrados[] = $fila;
+                }
+            }
+        }
+        return $resultados_filtrados;
+    }
+
+    // Si no hay filtro de pedidos, devolvemos todo normal
+    return $resultados_crudos;
 }

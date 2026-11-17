@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    // ✨ FIX UX: Inicialización segura de Select2 solo cuando el modal se abre
+    // FIX UX: Inicialización segura de Select2 solo cuando el modal se abre
     $('#modalEditarCotizacion').on('shown.bs.modal', function () {
         $('#tipo_precio, #edit_filtro_tipo_producto').each(function () {
             if ($(this).hasClass('select2-hidden-accessible')) {
@@ -200,15 +200,40 @@ $(document).ready(function () {
                     let btnPdfLab = (!ES_CLIENTE_PORTAL) ? `<a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}&tipo=lab" target="_blank" class="avatar-text avatar-md bg-soft-info text-info"><abbr title="PDF Laboratorio" style="text-decoration:none;"><i class="feather-thermometer"></i></abbr></a>` : '';
                     let btnPdfComercial = `<a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md bg-soft-dark text-dark"><abbr title="PDF Comercial" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>`;
 
-                    // ✨ MOTOR DINÁMICO DE BOTONES (A prueba de fallos)
+                    /* //& Pruebas */
+                    // NUEVO: ÍCONOS INFORMATIVOS DE DIRECCIONES (SUCURSAL Y ENVÍO)
+                    let iconoSucursal = '';
+                    let iconoEnvio = '';
+
+                    // Si ya tiene direcciones asignadas y no faltan equipos por direccionar
+                    if (yaTieneDirecciones > 0 && equiposSinDir === 0) {
+                        iconoSucursal = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-primary text-primary border border-primary border-opacity-25 btn-ver-sucursal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Ver Sucursal Asignada" style="text-decoration:none;"><i class="feather-home"></i></abbr></a>`;
+                        iconoEnvio = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-success text-success border border-success border-opacity-25 btn-ver-envio" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Ver Domicilio de Envío" style="text-decoration:none;"><i class="feather-navigation"></i></abbr></a>`;
+                    } else if (yaTieneDirecciones > 0 && equiposSinDir > 0) {
+                        iconoSucursal = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-warning text-warning border border-warning border-opacity-25 btn-ver-sucursal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Ver Sucursales (Incompleto)" style="text-decoration:none;"><i class="feather-home"></i></abbr></a>`;
+                        iconoEnvio = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-warning text-warning border border-warning border-opacity-25 btn-ver-envio" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Ver Envíos (Incompleto)" style="text-decoration:none;"><i class="feather-navigation"></i></abbr></a>`;
+                    } else {
+                        iconoSucursal = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-secondary text-secondary border border-secondary border-opacity-25 btn-ver-sucursal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Ver Estado de Direcciones" style="text-decoration:none;"><i class="feather-home"></i></abbr></a>`;
+                        iconoEnvio = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-secondary text-secondary border border-secondary border-opacity-25 btn-ver-envio" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Ver Estado de Envío" style="text-decoration:none;"><i class="feather-navigation"></i></abbr></a>`;
+                    }
+                    /* //& Pruebas */
+
+                    // MOTOR DINÁMICO DE BOTONES (A prueba de fallos)
                     let botonesActivos = [];
                     if (btnCompletarVenta) botonesActivos.push(btnCompletarVenta);
                     if (btnPdfComercial) botonesActivos.push(btnPdfComercial);
                     if (btnPdfLab) botonesActivos.push(btnPdfLab);
                     if (btnLogisticaRapida) botonesActivos.push(btnLogisticaRapida);
 
-                    // ✨ Inyectamos nuestro botón Inteligente Dual
+                    // Inyectamos nuestro botón Inteligente Dual
                     if (btnOC_Entregado) botonesActivos.push(btnOC_Entregado);
+
+                    /* //& Pruebas */
+                    // Separador lógico para la segunda fila (si quieres que los iconos de info bajen)
+                    // Agregamos los iconos de estado
+                    botonesActivos.push(iconoSucursal);
+                    botonesActivos.push(iconoEnvio);
+                    /* //& Pruebas */
 
                     if (btnEditar) botonesActivos.push(btnEditar);
                     if (btnEliminar) botonesActivos.push(btnEliminar);
@@ -228,10 +253,15 @@ $(document).ready(function () {
 
                     // ✨ 5. COLUMNA DE ESTATUS (Interactivo - Ciberseguridad: Oculto para Clientes B2B)
                     let colEstatusHTML = `<span class="badge ${badgeColor}">${estatusTexto}</span>`;
+                    let esClienteSeguro = (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL);
+                    
+                    // 🛡️ FRONTEND SECURITY: Verificamos si es admin o si el operativo tiene el poder
+                    let puedeAutorizar = (typeof USER_PERFIL !== 'undefined' && USER_PERFIL === 'admin') || 
+                                         (typeof PERMISO_AUTORIZAR !== 'undefined' && PERMISO_AUTORIZAR === 'Activado');
 
                     // 🛡️ REGLA ZERO TRUST FRONTEND: Solo mostramos el botón si NO es cliente
-                    if (estatusTexto === 'Guardado para aprobación' && !ES_CLIENTE_PORTAL) {
-                        colEstatusHTML = `
+                    if (estatusTexto === 'Guardado para aprobación' && !esClienteSeguro && puedeAutorizar) {
+                        colEstatusHTML =`
                             <div class="d-flex align-items-center justify-content-center gap-2">
                                 <span class="badge ${badgeColor}">${estatusTexto}</span>
                                 <div class="dropdown">
@@ -334,7 +364,7 @@ $(document).ready(function () {
                             // ✨ FIX RESPONSIVO: max-width 300px permite que en móviles se adapte sin desbordarse
                             $('.dataTables_filter').css({ 'margin': '0', 'padding': '0', 'text-align': 'right', 'max-width': '100%' });
                             $('.dataTables_filter label').addClass('mb-0 d-flex align-items-center justify-content-end gap-2 fw-bold text-muted').css({ 'font-size': '13px', 'max-width': '100%' });
-                            
+
                             // Mantenemos 250px en PC, pero encogemos al 100% en celulares
                             $('.dataTables_filter input').addClass('form-control shadow-sm m-0').css({ 'border-radius': '6px', 'border': '1px solid #ced4da', 'height': '34px', 'width': '250px', 'max-width': '100%' });
 
@@ -571,12 +601,12 @@ $(document).ready(function () {
                                     let calle = suc.calle ? suc.calle.trim() : '';
                                     let numExt = suc.num_ext ? suc.num_ext.trim() : '';
                                     let idSae = suc.id_sae ? suc.id_sae : '';
-                                    
+
                                     let direccionCompleta = calle;
                                     if (numExt !== '') {
                                         direccionCompleta += (direccionCompleta !== '' ? ' No. ' + numExt : 'No. ' + numExt);
                                     }
-                                    
+
                                     if (direccionCompleta !== '') {
                                         nombreVisual = `${nombreBase} - (${direccionCompleta})`;
                                     } else if (idSae !== '') {
@@ -736,8 +766,21 @@ $(document).ready(function () {
                 let cot = res.cotizacion;
                 let dets = res.detalles;
 
-                isEditMultiSucursal = !cot.Sucursal_id || cot.Sucursal_id == 0;
+                let sucId = cot.Sucursal_id;
+                // isEditMultiSucursal = !cot.Sucursal_id || cot.Sucursal_id == 0;
+                isEditMultiSucursal = (!sucId || sucId == 0 || sucId === '0' || sucId === 'null');
                 $('#edit_is_multisucursal').val(isEditMultiSucursal ? '1' : '0');
+
+                // NUEVO: SINCRONIZAR RADIOS DE TIPO DE SUCURSAL
+                if (isEditMultiSucursal) {
+                    $('#edit_radio_multi').prop('checked', true);
+                    $('#edit_radio_multi').next('label').removeClass('text-muted').addClass('text-dark');
+                    $('#edit_radio_unica').next('label').removeClass('text-dark').addClass('text-muted');
+                } else {
+                    $('#edit_radio_unica').prop('checked', true);
+                    $('#edit_radio_unica').next('label').removeClass('text-muted').addClass('text-dark');
+                    $('#edit_radio_multi').next('label').removeClass('text-dark').addClass('text-muted');
+                }
 
                 // ✨ UX/Seguridad: Determinamos si el modal se bloquea
                 let isReadOnly = false;
@@ -766,15 +809,16 @@ $(document).ready(function () {
                 $selEmp.empty().append('<option value="">Selecciona un cliente...</option>');
                 windowEmpresas.forEach(emp => { $selEmp.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`); });
                 $selEmp.val(cot.Empresa_id).select2({ dropdownParent: $('#modalEditarCotizacion') }); */
-                let $selEmp =$('#edit_select_empresa');
-                if ($selEmp.hasClass('select2-hidden-accessible')) {$selEmp.select2('destroy');
+                let $selEmp = $('#edit_select_empresa');
+                if ($selEmp.hasClass('select2-hidden-accessible')) {
+                    $selEmp.select2('destroy');
                 }
                 $selEmp.empty().append('<option value="">Selecciona un cliente...</option>');
                 windowEmpresas.forEach(emp => { $selEmp.append(`<option value="${emp.id_empresa}">${emp.razon_social}</option>`); });
-                
+
                 $selEmp.data('old', cot.Empresa_id.toString()).val(cot.Empresa_id);
                 // Inicializamos de forma segura sin forzar el dropdownParent si da conflicto visual
-                $selEmp.select2({ theme: 'bootstrap-5', dropdownParent:$('#modalEditarCotizacion'), width: '100%' });
+                $selEmp.select2({ theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%' });
 
                 let estatusBD = cot.estatus ? cot.estatus : 'Guardado para aprobación';
                 if (estatusBD === 'Autorizada (sin dirección)') estatusBD = 'Autorizada (información completa)';
@@ -806,9 +850,9 @@ $(document).ready(function () {
                     }
                 } */
 
-               // ✨ FIX: Eliminamos $wrapEstatus que no existe y causaba el bloqueo del modal
+                // ✨ FIX: Eliminamos $wrapEstatus que no existe y causaba el bloqueo del modal
                 if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL) {
-                    $wrapPrecio.hide();$selEmp.prop('disabled', true);
+                    $wrapPrecio.hide(); $selEmp.prop('disabled', true);
 
                     if ($('#hidden_edit_empresa').length === 0) {
                         $('#formEditarCotizacion').append(`<input type="hidden" id="hidden_edit_empresa" name="Empresa_id" value="${cot.Empresa_id}">`);
@@ -1485,12 +1529,12 @@ $(document).ready(function () {
         let f_fin = window.filtroFechaFin || '';
         let categoria = (window.pestanaActivaCotizaciones === 'TODOS' || window.pestanaActivaCotizaciones === 'CANCELADAS') ? '' : window.pestanaActivaCotizaciones;
 
-        let $tablaDT =$('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
         let busqueda = $tablaDT.search() || '';
 
         // Guardamos los filtros en la variable temporal
         excelExportParams_TMP = {
-            tipo: tipo, scope: scope, estatus: estatus, 
+            tipo: tipo, scope: scope, estatus: estatus,
             f_inicio: f_inicio, f_fin: f_fin, categoria: categoria, busqueda: busqueda
         };
 
@@ -1504,57 +1548,52 @@ $(document).ready(function () {
     });
 
     // Acción cuando dan click en alguno de los dos laboratorios del modal
-    $(document).on('click', '.btn-confirmar-lab-excel', function() {
-        let labElegido = $(this).data('lab');$('#modalSelectLaboratorioExcel').modal('hide');
+    $(document).on('click', '.btn-confirmar-lab-excel', function () {
+        let labElegido = $(this).data('lab'); $('#modalSelectLaboratorioExcel').modal('hide');
         descargarReporteExcel(labElegido);
     });
 
     // Función constructora final de URL
     function descargarReporteExcel(laboratorio) {
         let p = excelExportParams_TMP;
-        let base_url = `api/api_exportar_excel.php?tipo=${p.tipo}&scope=${p.scope}&estatus=${encodeURIComponent(p.estatus)}&fecha_inicio=${encodeURIComponent(p.f_inicio)}&fecha_fin=${encodeURIComponent(p.f_fin)}&categoria=${encodeURIComponent(p.categoria)}&search=${encodeURIComponent(p.busqueda)}`;
-        
+        let base_url = `api/api_exportar_excel.php?tipo=${p.tipo}&scope=${p.scope}&estatus=${encodeURIComponent(p.estatus)}&fecha_inicio=${encodeURIComponent(p.f_inicio)}&fecha_fin=${encodeURIComponent(p.f_fin)}&pedido_inicio=${window.filtroPedidoInicio}&pedido_fin=${window.filtroPedidoFin}&categoria=${encodeURIComponent(p.categoria)}&search=${encodeURIComponent(p.busqueda)}`;
+
         if (laboratorio !== null) {
             base_url += `&laboratorio=${laboratorio}`;
         }
-        
+
         window.open(base_url, '_blank');
     }
-    /* $(document).off('click', '.btn-exportar-filtrado').on('click', '.btn-exportar-filtrado', function (e) {
-        e.preventDefault();
-
-        // 🛡️ ZERO TRUST FRONTEND: Abortar si es un cliente B2B
-        if (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL === true) {
-            alert("No tienes los privilegios necesarios para exportar reportes.");
-            return false;
-        }
-
-        let tipo = $(this).attr('data-tipo') || $(this).data('tipo');
-        let scope = $(this).attr('data-scope') || $(this).data('scope') || 'todas';
-        let estatus = $('#filtro_estatus_tabla').val() || '';
-        let f_inicio = window.filtroFechaInicio || '';
-        let f_fin = window.filtroFechaFin || '';
-
-        // ✨ LÓGICA BI
-        let categoria = (window.pestanaActivaCotizaciones === 'TODOS' || window.pestanaActivaCotizaciones === 'CANCELADAS') ? '' : window.pestanaActivaCotizaciones;
-
-        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
-        let busqueda = $tablaDT.search() || '';
-
-        let url = `api/api_exportar_excel.php?tipo=${tipo}&scope=${scope}&estatus=${encodeURIComponent(estatus)}&fecha_inicio=${encodeURIComponent(f_inicio)}&fecha_fin=${encodeURIComponent(f_fin)}&categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(busqueda)}`;
-        window.open(url, '_blank');
-    }); */
 
     // >>>============================================== 
-    // >>> ✨ MOTOR AVANZADO DE RANGOS DE FECHA Y ESTATUS
+    // >>> MOTOR AVANZADO DE RANGOS DE FECHA, FOLIO Y ESTATUS
     // >>>============================================== 
 
     // 1. Variables globales para retener el filtro
     window.filtroFechaInicio = '';
     window.filtroFechaFin = '';
+    window.filtroPedidoInicio = 0;
+    window.filtroPedidoFin = 0;
 
     // 2. Lógica interactiva del Menú Dropdown
     function toggleFechas() {
+        let tipo = $('input[name="tipo_filtro_fecha"]:checked').val();
+
+        // Bloqueamos todos por defecto
+        $('#fecha_inicio_filtro, #fecha_fin_filtro').prop('disabled', true).removeClass('bg-white').addClass('bg-light border-0').css({ 'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none' });
+        $('#input_mes_filtro').prop('disabled', true).removeClass('shadow-sm').addClass('bg-light border-0').css({ 'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none' });
+        $('#pedido_inicio_filtro, #pedido_fin_filtro').prop('disabled', true).removeClass('bg-white').addClass('bg-light border-0').css({ 'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none' });
+
+        // Activamos solo el seleccionado
+        if (tipo === 'rango') {
+            $('#fecha_inicio_filtro, #fecha_fin_filtro').prop('disabled', false).removeClass('bg-light border-0').css({ 'cursor': 'pointer', 'color': '#0d6efd', 'border': '1px solid #0d6efd' });
+        } else if (tipo === 'mes') {
+            $('#input_mes_filtro').prop('disabled', false).removeClass('bg-light border-0').addClass('shadow-sm').css({ 'cursor': 'pointer', 'color': '#495057', 'border': '1px solid #ced4da' });
+        } else if (tipo === 'pedido') {
+            $('#pedido_inicio_filtro, #pedido_fin_filtro').prop('disabled', false).removeClass('bg-light border-0').css({ 'cursor': 'text', 'color': '#0d6efd', 'border': '1px solid #0d6efd' });
+        }
+    }
+    /* function toggleFechas() {
         if ($('#radio_rango').is(':checked')) {
             $('#fecha_inicio_filtro, #fecha_fin_filtro').prop('disabled', false).removeClass('bg-light border-0').css({ 'cursor': 'pointer', 'color': '#0d6efd', 'border': '1px solid #0d6efd' });
             $('#input_mes_filtro').prop('disabled', true).removeClass('shadow-sm').addClass('bg-light border-0').css({ 'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none' });
@@ -1562,13 +1601,13 @@ $(document).ready(function () {
             $('#fecha_inicio_filtro, #fecha_fin_filtro').prop('disabled', true).removeClass('bg-white').addClass('bg-light border-0').css({ 'cursor': 'not-allowed', 'color': '#6c757d', 'border': 'none' });
             $('#input_mes_filtro').prop('disabled', false).removeClass('bg-light border-0').addClass('shadow-sm').css({ 'cursor': 'pointer', 'color': '#495057', 'border': '1px solid #ced4da' });
         }
-    }
+    } */
 
     $('input[name="tipo_filtro_fecha"]').on('change', toggleFechas);
     toggleFechas();
 
-    // ✨ FIX UX MÓVIL: Prevenir que el clic en los inputs nativos cierre el Dropdown de Bootstrap
-    $('#fecha_inicio_filtro, #fecha_fin_filtro, #input_mes_filtro').on('click touchstart', function(e) {
+    // FIX UX MÓVIL: Prevenir que el clic en los inputs nativos cierre el Dropdown de Bootstrap
+    $('#fecha_inicio_filtro, #fecha_fin_filtro, #input_mes_filtro, #pedido_inicio_filtro, #pedido_fin_filtro').on('click touchstart', function (e) {
         e.stopPropagation();
     });
 
@@ -1580,10 +1619,30 @@ $(document).ready(function () {
         $('#btnFiltroPeriodo').dropdown('toggle'); // Cierra el menú
     });
 
-    // ✨ NUEVA FUNCIÓN: LIMPIAR FILTRO
+    // NUEVA FUNCIÓN: LIMPIAR FILTRO
     $('#btn_limpiar_periodo').on('click', function () {
         window.filtroFechaInicio = '';
         window.filtroFechaFin = '';
+        window.filtroPedidoInicio = 0;
+        window.filtroPedidoFin = 0;
+
+        $('#pedido_inicio_filtro').val('');
+        $('#pedido_fin_filtro').val('');
+        $('#fecha_inicio_filtro').val('');
+        $('#fecha_fin_filtro').val('');
+        /* $('#texto_periodo').text('Periodo: Todos');
+        $('#btnFiltroPeriodo').dropdown('toggle'); */
+
+        // 3. Restauramos el mes por defecto (Mes actual)
+        let hoyDate = new Date();
+        let mesActualFormato = hoyDate.getFullYear() + '-' + String(hoyDate.getMonth() + 1).padStart(2, '0');
+        $('#input_mes_filtro').val(mesActualFormato);
+
+        // 4. Regresamos la selección al Radio Button principal y bloqueamos el resto
+        $('#radio_mes').prop('checked', true);
+        toggleFechas();
+
+        // 5. Restauramos textos y cerramos el menú
         $('#texto_periodo').text('Periodo: Todos');
         $('#btnFiltroPeriodo').dropdown('toggle');
 
@@ -1591,9 +1650,93 @@ $(document).ready(function () {
         $tablaDT.draw();
     });
 
+    // APLICAR FILTRO SELECCIONADO (Mes, Rango de Fechas o Rango de Pedidos)
     $('#btn_aceptar_periodo').on('click', function () {
         let tipo = $('input[name="tipo_filtro_fecha"]:checked').val();
         let textoFiltro = 'Periodo: Todos';
+
+        // Reseteamos las variables globales antes de evaluar
+        window.filtroFechaInicio = '';
+        window.filtroFechaFin = '';
+        window.filtroPedidoInicio = 0;
+        window.filtroPedidoFin = 0;
+
+        if (tipo === 'mes') {
+            let valMes = $('#input_mes_filtro').val();
+
+            if (valMes) {
+                let parts = valMes.split('-');
+                let y = parseInt(parts[0], 10);
+                let m = parseInt(parts[1], 10);
+
+                window.filtroFechaInicio = `${y}-${String(m).padStart(2, '0')}-01`;
+
+                let ultimoDia = new Date(y, m, 0).getDate();
+                window.filtroFechaFin = `${y}-${String(m).padStart(2, '0')}-${ultimoDia}`;
+
+                let dateObj = new Date(y, m - 1, 1);
+                let mesTexto = dateObj.toLocaleString('es-ES', { month: 'short' }).toUpperCase();
+                textoFiltro = `MES: ${mesTexto} ${y}`;
+            }
+        }
+        // ✨ AQUÍ ESTÁ LA CORRECCIÓN: Reactivamos la lógica para 'rango' de fechas
+        else if (tipo === 'rango') {
+            let inicio = $('#fecha_inicio_filtro').val();
+            let fin = $('#fecha_fin_filtro').val();
+
+            if (inicio && fin) {
+                if (inicio > fin) {
+                    alert("La fecha de inicio no puede ser mayor a la fecha final.");
+                    return;
+                }
+                window.filtroFechaInicio = inicio;
+                window.filtroFechaFin = fin;
+
+                let iniArr = inicio.split('-');
+                let finArr = fin.split('-');
+                textoFiltro = `RANGO: ${iniArr[2]}/${iniArr[1]}/${iniArr[0].slice(2)} AL ${finArr[2]}/${finArr[1]}/${finArr[0].slice(2)}`;
+            } else {
+                alert("Por favor selecciona ambas fechas.");
+                return;
+            }
+        }
+        // Lógica para 'pedido' (Folios)
+        else if (tipo === 'pedido') {
+            let p_inicio = parseInt($('#pedido_inicio_filtro').val(), 10);
+            let p_fin = parseInt($('#pedido_fin_filtro').val(), 10);
+
+            if (p_inicio && p_fin) {
+                if (p_inicio > p_fin) {
+                    alert("El folio inicial no puede ser mayor al final.");
+                    return;
+                }
+                window.filtroPedidoInicio = p_inicio;
+                window.filtroPedidoFin = p_fin;
+                textoFiltro = `FOLIOS: ${p_inicio} AL ${p_fin}`;
+            } else {
+                alert("Por favor ingresa ambos folios (números).");
+                return;
+            }
+        }
+
+        // Actualizamos el botón visual y cerramos el menú
+        $('#texto_periodo').text(textoFiltro);
+        $('#btnFiltroPeriodo').dropdown('toggle');
+
+        // Disparamos la recarga de DataTables
+        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
+        $tablaDT.draw();
+    });
+
+    /* $('#btn_aceptar_periodo').on('click', function () {
+        let tipo = $('input[name="tipo_filtro_fecha"]:checked').val();
+        let textoFiltro = 'Periodo: Todos';
+
+        // Reseteamos las variables globales antes de evaluar
+        window.filtroFechaInicio = '';
+        window.filtroFechaFin = '';
+        window.filtroPedidoInicio = 0;
+        window.filtroPedidoFin = 0;
 
         if (tipo === 'mes') {
             let valMes = $('#input_mes_filtro').val();
@@ -1611,11 +1754,11 @@ $(document).ready(function () {
                 let dateObj = new Date(y, m - 1, 1);
                 let mesTexto = dateObj.toLocaleString('es-ES', { month: 'short' }).toUpperCase();
                 textoFiltro = `MES: ${mesTexto} ${y}`;
-            } else {
+            }else {
                 window.filtroFechaInicio = '';
                 window.filtroFechaFin = '';
             }
-        } else {
+        }else {
             let inicio = $('#fecha_inicio_filtro').val();
             let fin = $('#fecha_fin_filtro').val();
 
@@ -1638,10 +1781,66 @@ $(document).ready(function () {
 
         let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
         $tablaDT.draw();
-    });
+    }); */
 
     // Extensión de Búsqueda Personalizada en DataTables
     $.fn.dataTable.ext.search.push(
+        function (settings, data, dataIndex) {
+
+            // 1. Filtrar por Rango de Fechas o Mes
+            if (window.filtroFechaInicio && window.filtroFechaFin) {
+                // let fechaFilaStr = data[5];
+                let fechaFilaStr = data[5] ? data[5].trim() : '';
+                if (!fechaFilaStr) return true;
+
+                // Solo comparamos la parte de la fecha YYYY-MM-DD
+                let soloFecha = fechaFilaStr.substring(0, 10);
+
+                /* if (fechaFilaStr < window.filtroFechaInicio || fechaFilaStr > window.filtroFechaFin) return false; */
+                if (soloFecha < window.filtroFechaInicio || soloFecha > window.filtroFechaFin) {
+                    return false;
+                }
+            }
+
+            // 2. Filtrar por Rango de Folios (Pedidos)
+            if (window.filtroPedidoInicio && window.filtroPedidoFin) {
+                let celdaFolio = data[0]; // Capturamos todo el HTML de la primera columna
+                // Extraemos solo el primer bloque de números (ej: "00033-U" se convierte en 33)
+
+                let matchRegex = />(?:TEMP-)?([0-9]+)/.exec(celdaFolio);
+
+                if (!matchRegex || !matchRegex[1]) {
+                    // Fallback: si no encuentra el patrón HTML, intenta buscar cualquier número
+                    let matchNumero = celdaFolio.match(/([0-9]+)/);
+                    if (!matchNumero) return false;
+
+                    let folioEnteroFallback = parseInt(matchNumero[0], 10);
+                    if (folioEnteroFallback < window.filtroPedidoInicio || folioEnteroFallback > window.filtroPedidoFin) {
+                        return false;
+                    }
+                    return true;
+                }
+
+                let folioEntero = parseInt(matchRegex[1], 10);
+
+                if (folioEntero < window.filtroPedidoInicio || folioEntero > window.filtroPedidoFin) {
+                    return false;
+                }
+
+                /* let matchNumero = celdaFolio.match(/([0-9]+)/); 
+                if (!matchNumero) return false;
+                
+                let folioEntero = parseInt(matchNumero[0]);
+                
+                if (folioEntero < window.filtroPedidoInicio || folioEntero > window.filtroPedidoFin) {
+                    return false;
+                } */
+            }
+
+            return true;
+        }
+    );
+    /* $.fn.dataTable.ext.search.push(
         function (settings, data, dataIndex) {
             if (!window.filtroFechaInicio || !window.filtroFechaFin) return true;
 
@@ -1650,7 +1849,7 @@ $(document).ready(function () {
 
             return (fechaFilaStr >= window.filtroFechaInicio && fechaFilaStr <= window.filtroFechaFin);
         }
-    );
+    ); */
 
     // Estatus
     $(document).off('change', '#filtro_estatus_tabla').on('change', '#filtro_estatus_tabla', function () {
@@ -1674,6 +1873,157 @@ $(document).ready(function () {
             }
         } else {
             $tablaDT.column(3).search('', true, false).draw();
+        }
+    });
+
+    // >>>============================================== 
+    // >>>  VISOR RÁPIDO DE DIRECCIONES SEPARADAS (MODAL)
+    // >>>============================================== 
+    $(document).on('click', '.btn-ver-sucursal, .btn-ver-envio', function(e) {
+        e.preventDefault();
+        let id_cot = $(this).data('id');
+        let folio = $(this).data('folio');
+        let tipoVista = $(this).hasClass('btn-ver-sucursal') ? 'sucursal' : 'envio';
+
+        // Títulos dinámicos según el botón presionado
+        let tituloIcono = tipoVista === 'sucursal' ? 'feather-home text-warning' : 'feather-navigation text-success';
+        let tituloTexto = tipoVista === 'sucursal' ? 'Dirección de Sucursal' : 'Dirección de Envío';
+        
+        $('#ver_dir_folio').text('#' + folio);
+        $('#contenido_ver_direcciones').html(`
+            <div class="text-center py-4">
+                <span class="spinner-border text-primary"></span>
+                <p class="mt-2 text-muted fw-bold">Cargando información...</p>
+            </div>
+        `);
+        
+        // Ajustamos el título del modal dinámicamente
+        $('#modalVerDirecciones .modal-title').html(`<i class="${tituloIcono} me-2"></i>${tituloTexto} <span id="ver_dir_folio" class="badge bg-white text-primary ms-2 shadow-sm">#${folio}</span>`);
+
+        $('#modalVerDirecciones').modal('show');
+
+        $.ajax({
+            url: 'api/api_finalizar_venta.php?action=get&id_cotizacion=' + id_cot,
+            method: 'GET',
+            dataType: 'json',
+            success: function(res) {
+                if(res.status === 'success' && res.data) {
+                    let d = res.data;
+                    let html = '';
+
+                    if(!d.fiscal || !d.fiscal.calle_numero_fiscal) {
+                        html = `
+                            <div class="alert alert-warning border-0 border-start border-5 border-warning shadow-sm">
+                                <i class="feather-info me-2 text-warning fs-5 align-middle"></i>
+                                <span class="fw-bold text-dark">Aún no se han enlazado direcciones para esta cotización.</span>
+                                <br><small class="text-muted ms-4">Haz clic en el ícono del "Mapa" para configurarlas.</small>
+                            </div>
+                        `;
+                    } else {
+                        // Flujo Sucursal Única vs Multisucursal
+                        if (d.es_multisucursal === false) {
+                            let eq = d.detalles[0] || {};
+                            
+                            if (tipoVista === 'sucursal') {
+                                let c_calle = eq.c_calle ? `${eq.c_calle}, Col. ${eq.c_colonia || ''}, ${eq.c_municipio || ''}, ${eq.c_estado || ''}. CP: ${eq.c_cp || ''}` : '<span class="text-danger fw-bold">No asignada</span>';
+                                html += `
+                                    <div class="card border-warning shadow-sm mb-0">
+                                        <div class="card-header bg-soft-warning text-warning fw-bold py-2"><i class="feather-award me-2"></i>Sucursal</div>
+                                        <div class="card-body py-3 px-4 fs-13 text-dark bg-white">${c_calle}</div>
+                                    </div>
+                                `;
+                            } else {
+                                let e_calle = eq.e_calle ? `${eq.e_calle}, Col. ${eq.e_colonia || ''}, ${eq.e_municipio || ''}, ${eq.e_estado || ''}. CP: ${eq.e_cp || ''}` : '<span class="text-danger fw-bold">No asignada</span>';
+                                html += `
+                                    <div class="card border-success shadow-sm mb-0">
+                                        <div class="card-header bg-soft-success text-success fw-bold py-2"><i class="feather-truck me-2"></i>Envío</div>
+                                        <div class="card-body py-3 px-4 fs-13 text-dark bg-white">${e_calle}</div>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            // Multisucursal: Mostramos tabla pero ocultando la columna que no corresponde
+                            let tituloDesglose = tipoVista === 'sucursal' ? 'Desglose de Multisucursal' : 'Desglose de Envíos (Multisucursal)';
+                            let headerColumna = tipoVista === 'sucursal' ? 'Sucursal' : 'Envío';
+
+                            html += `
+                                <h6 class="fw-bold text-dark border-bottom border-secondary pb-2 mb-3">
+                                    <i class="feather-list text-primary me-2"></i>${tituloDesglose}
+                                </h6>
+                                <div class="table-responsive bg-white rounded shadow-sm border border-gray-200">
+                                    <table class="table table-sm table-hover mb-0 fs-12 text-dark">
+                                        <thead class="bg-light text-muted text-uppercase fs-10">
+                                            <tr>
+                                                <th class="ps-3">Producto</th>
+                                                <th>${headerColumna}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                            `;
+                            
+                            d.detalles.forEach(eq => {
+                                let datoCelda = '';
+                                if (tipoVista === 'sucursal') {
+                                    datoCelda = eq.c_calle ? `${eq.c_calle}, Col. ${eq.c_colonia || ''}, ${eq.c_municipio || ''}. CP: ${eq.c_cp || ''}` : '<span class="badge bg-soft-danger text-danger">Pendiente</span>';
+                                } else {
+                                    datoCelda = eq.e_calle ? `${eq.e_calle}, Col. ${eq.e_colonia || ''}, ${eq.e_municipio || ''}. CP: ${eq.e_cp || ''}` : '<span class="badge bg-soft-danger text-danger">Pendiente</span>';
+                                }
+                                
+                                html += `
+                                    <tr>
+                                        <td class="ps-3" style="width:40%;"><strong class="text-primary">[${eq.clave_product}]</strong><br>${eq.descripcion_product}</td>
+                                        <td class="align-middle">${datoCelda}</td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            html += `</tbody></table></div>`;
+                        }
+                    }
+                    $('#contenido_ver_direcciones').html(html);
+                } else {
+                    $('#contenido_ver_direcciones').html('<div class="alert alert-danger shadow-sm"><i class="feather-x-circle me-2"></i>Error al cargar la información.</div>');
+                }
+            },
+            error: function() {
+                $('#contenido_ver_direcciones').html('<div class="alert alert-danger shadow-sm"><i class="feather-wifi-off me-2"></i>Error de red. Intenta nuevamente.</div>');
+            }
+        });
+    });
+
+    // ✨ EVENTO: CAMBIAR TIPO DE SUCURSAL AL EDITAR
+    $(document).on('change', 'input[name="tipo_sucursal_radio"]', function() {
+        let val = $(this).val();
+        isEditMultiSucursal = (val === '1');
+        
+        // Actualizamos el hidden input que enviamos a BD
+        $('#edit_is_multisucursal').val(val);
+
+        if (isEditMultiSucursal) {
+            // Estilos
+            $('#edit_radio_multi').next('label').removeClass('text-muted').addClass('text-dark');
+            $('#edit_radio_unica').next('label').removeClass('text-dark').addClass('text-muted');
+            
+            // Comportamiento de tabla
+            $('#wrapper_selector_sucursal_edit').slideUp('fast');
+            $('#edit_select_sucursal').prop('required', false);
+            $('.col-edit-multisucursal').show(); 
+            
+            // Inicializar Select2 en las filas si fueron agregadas mientras estaba oculto
+            $('.select-sucursal-fila-edit').each(function() {
+                if (!$(this).hasClass('select2-hidden-accessible')) {
+                    $(this).select2({ theme: 'bootstrap-5', dropdownParent: $('#modalEditarCotizacion'), width: '100%', placeholder: "Selecciona Sucursal..." });
+                }
+            });
+        } else {
+            // Estilos
+            $('#edit_radio_unica').next('label').removeClass('text-muted').addClass('text-dark');
+            $('#edit_radio_multi').next('label').removeClass('text-dark').addClass('text-muted');
+            
+            // Comportamiento de tabla
+            $('#wrapper_selector_sucursal_edit').slideDown('fast');
+            $('#edit_select_sucursal').prop('required', true);
+            $('.col-edit-multisucursal').hide(); 
         }
     });
 
