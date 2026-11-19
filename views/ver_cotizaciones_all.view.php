@@ -199,9 +199,10 @@
                                                 </div>
 
                                                 <div class="d-flex align-items-center justify-content-between mb-4 pe-md-2 gap-2">
-                                                    <input type="number" min="1" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="pedido_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;" placeholder="Del folio...">
+                                                    <!-- ✨ CAMBIO: type="text" para permitir letras -->
+                                                    <input type="text" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="pedido_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;" placeholder="Ej. 10-U o 10-N">
                                                     <span class="text-muted fw-bold text-center">a</span>
-                                                    <input type="number" min="1" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="pedido_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;" placeholder="Al folio...">
+                                                    <input type="text" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="pedido_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;" placeholder="Ej. 20-U o 20-N">
                                                 </div>
 
                                                 <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
@@ -382,7 +383,7 @@
                                         </select>
                                         <input type="hidden" name="division" id="division" value="LA NETWORKS & TECHNOLOGIES">
                                     </div>
-                                    
+
                                     <div class="mb-4">
                                         <label class="form-label text-dark fw-bold"><i class="feather-user-check me-1 text-primary"></i>Solicitante <span class="text-danger">*</span></label>
                                         <select class="form-control border-primary" id="edit_select_solicitante" name="Usuario_id" data-select2-selector="status" required>
@@ -661,7 +662,7 @@
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title fw-bold text-white">
-                        <i class="feather-map-pin me-2"></i>Direcciones de la Cotización 
+                        <i class="feather-map-pin me-2"></i>Direcciones de la Cotización
                         <span id="ver_dir_folio" class="badge bg-white text-primary ms-2 shadow-sm"></span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1225,9 +1226,30 @@
     </script> -->
 
     <!-- CIBERSEGURIDAD UI: Declaramos los permisos globales para esta vista de Administradores -->
+    <!-- CIBERSEGURIDAD UI: Declaramos los permisos globales -->
+    <?php
+    require_once 'api/config.php';
+    
+    $permiso_autorizar = 'Desactivado';
+    $permiso_editar_cerradas = 'Desactivado';
+    
+    if (isset($_SESSION['id_user_admin']) && isset($pdo)) {
+        // ✨ CAMBIO: Extraemos ambas columnas de seguridad
+        $stmtPerm = $pdo->prepare("SELECT mp_autorizar_cotiz, mp_editar_cerradas FROM usuarios_admin WHERE id_user_admin = ?");
+        $stmtPerm->execute([$_SESSION['id_user_admin']]);
+        $resPerm = $stmtPerm->fetch(PDO::FETCH_ASSOC);
+        
+        if ($resPerm) {
+            $permiso_autorizar = $resPerm['mp_autorizar_cotiz'] ?? 'Desactivado';
+            $permiso_editar_cerradas = $resPerm['mp_editar_cerradas'] ?? 'Desactivado';
+        }
+    }
+    ?>
     <script>
         const ES_CLIENTE_PORTAL = false;
         const USER_PERFIL = "<?php echo $_SESSION['perfil'] ?? 'admin'; ?>";
+        const PERMISO_AUTORIZAR = "<?php echo $permiso_autorizar; ?>";
+        const PERMISO_EDITAR_CERRADAS = "<?php echo $permiso_editar_cerradas; ?>"; // ✨ NUEVO
     </script>
 </body>
 
