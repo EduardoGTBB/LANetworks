@@ -12,6 +12,9 @@ $(document).ready(function () {
             width: '100%'
         });
     });
+    $('#pedido_inicio_filtro, #pedido_fin_filtro').on('input', function () {
+        this.value = this.value.toUpperCase();
+    });
 
     const formatoMoneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
     const formatoInput = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -154,13 +157,6 @@ $(document).ready(function () {
                             btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-success text-success border border-success border-opacity-25 btn-logistica-modal" data-id="${cot.id_cotizacion}" data-paqueteria="${cot.paqueteria}" data-guia="${cot.numero_guia}" data-fecha="${cot.fecha_envio}" data-fecha-est="${fechaEstimadaVal}"><abbr title="Ver/Actualizar Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
                         }
                     }
-                    /* if (estatusTexto === 'Autorizada (información completa)') {
-                        if (!cot.numero_guia || cot.numero_guia.trim() === '') {
-                            btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-danger text-danger border border-danger btn-logistica-modal" style="animation: pulse 1.5s infinite;" data-id="${cot.id_cotizacion}" data-paqueteria="" data-guia="" data-fecha=""><abbr title="¡URGENTE! Añadir Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
-                        } else {
-                            btnLogisticaRapida = `<a href="#" class="avatar-text avatar-md bg-soft-success text-success border border-success border-opacity-25 btn-logistica-modal" data-id="${cot.id_cotizacion}" data-paqueteria="${cot.paqueteria}" data-guia="${cot.numero_guia}" data-fecha="${cot.fecha_envio}"><abbr title="Ver/Actualizar Guía" style="text-decoration:none;"><i class="feather-truck"></i></abbr></a>`;
-                        }
-                    } */
 
                     // 3. BOTÓN EQUIPO ENTREGADO / ESTATUS DE OC (Fase 1)
 
@@ -182,23 +178,25 @@ $(document).ready(function () {
                     }
 
                     // 4. EDITAR, ELIMINAR Y PDFs
+                    let perfilActual = (typeof USER_PERFIL !== 'undefined') ? USER_PERFIL : 'cliente';
+                    let esCerrada = (estatusTexto.includes('Autorizada') || estatusTexto === 'No autorizada' || estatusTexto === 'Ganada' || estatusTexto === 'Perdida');
 
-                    //  UX: Cambiamos el icono a un "Ojo" si está rechazada
-                    let tooltipEdicion = (estatusTexto === 'No autorizada' || estatusTexto === 'Autorizada (información completa)') ? 'Ver detalles' : 'Editar información';
-                    
-                    let btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="${tooltipEdicion}" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`;
-                    
-                    /* let btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="Editar información" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`; */
+                    let btnEditar = '';
+                    let btnEliminar = '';
 
-                    // let btnEliminar = '';
-                    // El botón eliminar siempre está disponible
-                    let btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-danger text-danger btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr></a>`;
+                    // 🛡️ CIBERSEGURIDAD: Verificamos si es admin o tiene el permiso especial para editar cerradas
+                    let puedeEditarCerradas = (perfilActual === 'admin' || (typeof PERMISO_EDITAR_CERRADAS !== 'undefined' && PERMISO_EDITAR_CERRADAS === 'Activado'));
 
-                    if (!estatusTexto.includes('Autorizada') && estatusTexto !== 'No autorizada' && estatusTexto !== 'Ganada' && estatusTexto !== 'Perdida') {
+                    if (!esCerrada || puedeEditarCerradas) {
+                        let tooltipEdicion = esCerrada ? 'Ver detalles (Autorizado)' : 'Editar información';
+                        btnEditar = `<a href="#" class="avatar-text avatar-md bg-soft-primary text-primary btn-editar-modal" data-id="${cot.id_cotizacion}" data-folio="${folioVisual}"><abbr title="${tooltipEdicion}" style="text-decoration:none;"><i class="feather-edit"></i></abbr></a>`;
+                        
+                        // Botón de eliminar habilitado para Admins y Operativos autorizados
                         btnEliminar = `<a href="javascript:void(0);" class="avatar-text avatar-md bg-soft-danger text-danger btn-borrar-cot" data-id="${cot.id_cotizacion}"><abbr title="Eliminar" style="text-decoration:none;"><i class="feather-trash-2"></i></abbr></a>`;
                     }
 
-                    let btnPdfLab = `<a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}&tipo=lab" target="_blank" class="avatar-text avatar-md bg-soft-info text-info"><abbr title="PDF Laboratorio" style="text-decoration:none;"><i class="feather-thermometer"></i></abbr></a>`;
+                    // Ocultamos el PDF de Laboratorio si es Cliente
+                    let btnPdfLab = (!ES_CLIENTE_PORTAL) ? `<a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}&tipo=lab" target="_blank" class="avatar-text avatar-md bg-soft-info text-info"><abbr title="PDF Laboratorio" style="text-decoration:none;"><i class="feather-thermometer"></i></abbr></a>` : '';
                     let btnPdfComercial = `<a href="imprimir_cotizacion.php?id=${cot.id_cotizacion}" target="_blank" class="avatar-text avatar-md bg-soft-dark text-dark"><abbr title="PDF Comercial" style="text-decoration:none;"><i class="feather-printer"></i></abbr></a>`;
 
                     /* //& Pruebas */
@@ -252,8 +250,12 @@ $(document).ready(function () {
                     let colEstatusHTML = `<span class="badge ${badgeColor}">${estatusTexto}</span>`;
 
                     let esClienteSeguro = (typeof ES_CLIENTE_PORTAL !== 'undefined' && ES_CLIENTE_PORTAL);
+                    
+                    // 🛡️ FRONTEND SECURITY: Verificamos si es admin o si el operativo tiene el poder
+                    let puedeAutorizar = (typeof USER_PERFIL !== 'undefined' && USER_PERFIL === 'admin') || 
+                                         (typeof PERMISO_AUTORIZAR !== 'undefined' && PERMISO_AUTORIZAR === 'Activado');
 
-                    if (estatusTexto === 'Guardado para aprobación' && !esClienteSeguro) {
+                    if (estatusTexto === 'Guardado para aprobación' && !esClienteSeguro && puedeAutorizar) {
                         colEstatusHTML = `
                             <div class="d-flex align-items-center justify-content-center gap-2">
                                 <span class="badge ${badgeColor}">${estatusTexto}</span>
@@ -270,7 +272,6 @@ $(document).ready(function () {
                             </div>
                         `;
                     }
-
                     let fechaFiltro = cot.fecha_cot ? cot.fecha_cot : '';
 
                     // 6. CONSTRUCCIÓN DE LA FILA FINAL (El orden importa para los filtros)
@@ -796,16 +797,20 @@ $(document).ready(function () {
                     $('#edit_radio_multi').next('label').removeClass('text-dark').addClass('text-muted');
                 }
                 
+                /* let isReadOnly = false;
+                let perfilActual = (typeof USER_PERFIL !== 'undefined') ? USER_PERFIL : 'cliente'; */
                 let isReadOnly = false;
                 let perfilActual = (typeof USER_PERFIL !== 'undefined') ? USER_PERFIL : 'cliente';
+                let esCerrada = (cot.estatus === 'No autorizada' || cot.estatus.includes('Autorizada') || cot.estatus === 'Ganada' || cot.estatus === 'Perdida');
+                let puedeEditarCerradas = (perfilActual === 'admin' || (typeof PERMISO_EDITAR_CERRADAS !== 'undefined' && PERMISO_EDITAR_CERRADAS === 'Activado'));
 
-                if (cot.estatus === 'No autorizada') {
-                    // 🔒 REGLA 1: Rechazadas = Bloqueo total para todos (Inmutables)
+                if (esCerrada && !puedeEditarCerradas) {
+                    // 🔒 Solo bloqueamos si está cerrada Y NO tiene el privilegio (Operativo sin permiso)
                     isReadOnly = true;
-                } else if (cot.estatus.includes('Autorizada') && perfilActual !== 'admin') {
+                }/* else if (cot.estatus.includes('Autorizada') && perfilActual !== 'admin') {
                     // 🔒 REGLA 2: Autorizadas = Bloqueadas solo si NO eres admin
                     isReadOnly = true;
-                }
+                } */
                 $('#formEditarCotizacion input, #formEditarCotizacion select').prop('disabled', false);
                 $('#edit_add_row').show();
                 $('#formEditarCotizacion button[type="submit"]').prop('disabled', false).text('Actualizar Cambios').show();
@@ -1521,8 +1526,8 @@ $(document).ready(function () {
     // 1. Variables globales para retener el filtro
     window.filtroFechaInicio = '';
     window.filtroFechaFin = '';
-    window.filtroPedidoInicio = 0;
-    window.filtroPedidoFin = 0;
+    window.filtroPedidoInicio = '';
+    window.filtroPedidoFin = '';
 
     // 2. Lógica interactiva del Menú Dropdown
     function toggleFechas() {
@@ -1573,8 +1578,8 @@ $(document).ready(function () {
         // 1. Limpiamos variables globales
         window.filtroFechaInicio = '';
         window.filtroFechaFin = '';
-        window.filtroPedidoInicio = 0;
-        window.filtroPedidoFin = 0;
+        window.filtroPedidoInicio = '';
+        window.filtroPedidoFin = '';
 
         // 2. Vaciamos las cajas de texto y fechas
         $('#pedido_inicio_filtro').val('');
@@ -1598,15 +1603,6 @@ $(document).ready(function () {
         let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
         $tablaDT.draw();
     });
-    /* $('#btn_limpiar_periodo').on('click', function() {
-        window.filtroFechaInicio = '';
-        window.filtroFechaFin = '';
-        $('#texto_periodo').text('Periodo: Todos');
-        $('#btnFiltroPeriodo').dropdown('toggle');
-        
-        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
-        $tablaDT.draw();
-    }); */
 
     $('#btn_aceptar_periodo').on('click', function () {
         let tipo = $('input[name="tipo_filtro_fecha"]:checked').val();
@@ -1615,8 +1611,8 @@ $(document).ready(function () {
         // Reseteamos las variables globales antes de evaluar
         window.filtroFechaInicio = '';
         window.filtroFechaFin = '';
-        window.filtroPedidoInicio = 0;
-        window.filtroPedidoFin = 0;
+        window.filtroPedidoInicio = '';
+        window.filtroPedidoFin = '';
 
         if (tipo === 'mes') {
             let valMes = $('#input_mes_filtro').val();
@@ -1655,19 +1651,23 @@ $(document).ready(function () {
                 return;
             }
         } else if (tipo === 'pedido') {
-            let p_inicio = parseInt($('#pedido_inicio_filtro').val(), 10);
-            let p_fin = parseInt($('#pedido_fin_filtro').val(), 10);
+            let p_inicio_raw = $('#pedido_inicio_filtro').val().trim().toUpperCase();
+            let p_fin_raw = $('#pedido_fin_filtro').val().trim().toUpperCase();
             
-            if (p_inicio && p_fin) {
-                if (p_inicio > p_fin) { 
+            if (p_inicio_raw !== '' && p_fin_raw !== '') {
+                // Extraemos solo el número para validar el rango matemático (Ej: 10 no debe ser mayor a 20)
+                let num_inicio = parseInt(p_inicio_raw.replace(/[^0-9]/g, ''), 10);
+                let num_fin = parseInt(p_fin_raw.replace(/[^0-9]/g, ''), 10);
+                
+                if (num_inicio > num_fin) { 
                     alert("El folio inicial no puede ser mayor al final."); 
                     return; 
                 }
-                window.filtroPedidoInicio = p_inicio;
-                window.filtroPedidoFin = p_fin;
-                textoFiltro = `FOLIOS: ${p_inicio} AL ${p_fin}`;
+                window.filtroPedidoInicio = p_inicio_raw;
+                window.filtroPedidoFin = p_fin_raw;
+                textoFiltro = `FOLIOS: ${p_inicio_raw} AL ${p_fin_raw}`;
             } else {
-                alert("Por favor ingresa ambos folios (números)."); 
+                alert("Por favor ingresa ambos folios (Ej. 10-N a 20-N)."); 
                 return;
             }
         }
@@ -1680,56 +1680,8 @@ $(document).ready(function () {
         let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
         $tablaDT.draw();
     });
-    /* $('#btn_aceptar_periodo').on('click', function() {
-        let tipo = $('input[name="tipo_filtro_fecha"]:checked').val();
-        let textoFiltro = 'Periodo: Todos';
-        
-        if (tipo === 'mes') {
-            let valMes = $('#input_mes_filtro').val(); 
-            
-            if (valMes) {
-                let parts = valMes.split('-');
-                let y = parseInt(parts[0]);
-                let m = parseInt(parts[1]); 
-                
-                window.filtroFechaInicio = `${y}-${String(m).padStart(2, '0')}-01`;
-                
-                let ultimoDia = new Date(y, m, 0).getDate();
-                window.filtroFechaFin = `${y}-${String(m).padStart(2, '0')}-${ultimoDia}`;
-                
-                let dateObj = new Date(y, m - 1, 1);
-                let mesTexto = dateObj.toLocaleString('es-ES', {month:'short'}).toUpperCase();
-                textoFiltro = `MES: ${mesTexto} ${y}`;
-            } else {
-                window.filtroFechaInicio = '';
-                window.filtroFechaFin = '';
-            }
-        } else {
-            let inicio = $('#fecha_inicio_filtro').val();
-            let fin = $('#fecha_fin_filtro').val();
-            
-            if (inicio && fin) {
-                if(inicio > fin) { alert("La fecha de inicio no puede ser mayor a la fecha final."); return; }
-                window.filtroFechaInicio = inicio;
-                window.filtroFechaFin = fin;
-                
-                let iniArr = inicio.split('-');
-                let finArr = fin.split('-');
-                textoFiltro = `RANGO: ${iniArr[2]}/${iniArr[1]}/${iniArr[0].slice(2)} AL ${finArr[2]}/${finArr[1]}/${finArr[0].slice(2)}`;
-            } else {
-                alert("Por favor selecciona ambas fechas.");
-                return;
-            }
-        }
-        
-        $('#texto_periodo').text(textoFiltro);
-        $('#btnFiltroPeriodo').dropdown('toggle');
-        
-        let $tablaDT = $('#tableMisCotizaciones').length ? $('#tableMisCotizaciones').DataTable() : $('#tableAllCotizaciones').DataTable();
-        $tablaDT.draw();
-    }); */
 
-    // ✨ EXTENSIÓN DE BÚSQUEDA PERSONALIZADA DATA-TABLES (Fechas y Folios)
+    // EXTENSIÓN DE BÚSQUEDA PERSONALIZADA DATA-TABLES (Fechas y Folios)
     $.fn.dataTable.ext.search.push(
         function (settings, data, dataIndex) {
             
@@ -1747,42 +1699,49 @@ $(document).ready(function () {
                 }
             }
 
-            // 2. Filtrar por Rango de Folios (Pedidos)
-            if (window.filtroPedidoInicio && window.filtroPedidoFin) {
+            // 2. Filtrar por Rango de Folios (Pedidos con Sufijo N o U)
+            if (window.filtroPedidoInicio !== '' && window.filtroPedidoFin !== '') {
                 let celdaFolio = data[0] || ""; 
                 
-                // Paso A: Quitamos cualquier etiqueta HTML que DataTables pudiera enviar
+                // Paso A: Quitamos cualquier etiqueta HTML
                 let textoPlano = celdaFolio.replace(/<[^>]*>?/gm, '').trim(); 
                 
-                // Paso B: Tomamos SOLO la primera palabra (ej: "00062-N") ignorando la fecha
+                // Paso B: Tomamos SOLO la primera palabra (ej: "00062-N") ignorando la fecha inferior
                 let bloqueFolio = textoPlano.split(/\s+/)[0]; 
                 
-                // Paso C: Extraemos únicamente los números de ese bloque
-                let numeroLimpio = bloqueFolio.replace(/[^0-9]/g, ''); 
-                
-                if (numeroLimpio === "") return false;
+                // Extraemos número y posible sufijo (-N o -U)
+                let matchRegex = /(?:TEMP-)?([0-9]+)(-[a-zA-Z]+)?/.exec(bloqueFolio);
 
-                // Convertimos a entero (ej: "00062" -> 62)
-                let folioEntero = parseInt(numeroLimpio, 10);
+                if (!matchRegex || !matchRegex[1]) return true;
+
+                let folioEntero = parseInt(matchRegex[1], 10);
+                let sufijoFila = matchRegex[2] ? matchRegex[2].toUpperCase() : ''; 
+
+                // Procesamos los valores que el usuario escribió en el filtro
+                let numFiltroInicio = parseInt(String(window.filtroPedidoInicio).replace(/[^0-9]/g, ''), 10);
+                let sufFiltroInicio = String(window.filtroPedidoInicio).replace(/[0-9]/g, '').toUpperCase(); 
                 
-                if (folioEntero < window.filtroPedidoInicio || folioEntero > window.filtroPedidoFin) {
+                if (sufFiltroInicio !== '' && !sufFiltroInicio.startsWith('-')) {
+                    sufFiltroInicio = '-' + sufFiltroInicio;
+                }
+
+                let numFiltroFin = parseInt(String(window.filtroPedidoFin).replace(/[^0-9]/g, ''), 10);
+
+                // 1. Validamos que esté dentro del rango numérico
+                if (folioEntero < numFiltroInicio || folioEntero > numFiltroFin) {
                     return false;
                 }
-            }
 
+                // 2. Validamos el sufijo si el usuario lo especificó
+                if (sufFiltroInicio !== '') {
+                    if (sufijoFila !== sufFiltroInicio) {
+                        return false;
+                    }
+                }
+            }
             return true;
         }
     );
-    /* $.fn.dataTable.ext.search.push(
-        function( settings, data, dataIndex ) {
-            if (!window.filtroFechaInicio || !window.filtroFechaFin) return true; 
-            
-            let fechaFilaStr = data[5]; 
-            if(!fechaFilaStr) return true;
-            
-            return (fechaFilaStr >= window.filtroFechaInicio && fechaFilaStr <= window.filtroFechaFin);
-        }
-    ); */
 
     // Estatus
     $(document).off('change', '#filtro_estatus_tabla').on('change', '#filtro_estatus_tabla', function () {

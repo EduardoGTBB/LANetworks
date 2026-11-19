@@ -130,9 +130,10 @@
                                                 </div>
 
                                                 <div class="d-flex align-items-center justify-content-between mb-4 pe-md-2 gap-2">
-                                                    <input type="number" min="1" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="pedido_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;" placeholder="Del folio...">
+                                                    <!-- ✨ CAMBIO: type="text" para permitir letras como "10-N" -->
+                                                    <input type="text" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="pedido_inicio_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;" placeholder="Ej. 10 o 10-N">
                                                     <span class="text-muted fw-bold text-center">a</span>
-                                                    <input type="number" min="1" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="pedido_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;" placeholder="Al folio...">
+                                                    <input type="text" class="form-control form-control-sm bg-light border-0 fw-bold text-center px-2 flex-fill" id="pedido_fin_filtro" disabled style="cursor:not-allowed; color: #6c757d; height: 38px;" placeholder="Ej. 20 o 20-N">
                                                 </div>
 
                                                 <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
@@ -696,14 +697,20 @@
     <script src="assets/js/widgets-tables-init.min.js"></script>
 
     <?php
-    // 🛡️ REQUERIMOS LA CONEXIÓN A LA BD PARA PODER CONSULTAR EL PERMISO
+    // 🛡️ REQUERIMOS LA CONEXIÓN A LA BD PARA PODER CONSULTAR LOS PERMISOS
     require_once 'api/config.php';
-    
+
     $permiso_autorizar = 'Desactivado';
+    $permiso_editar_cerradas = 'Desactivado';
+    
     if (isset($_SESSION['id_user_admin']) && isset($pdo)) {
-        $stmtPerm = $pdo->prepare("SELECT mp_autorizar_cotiz FROM usuarios_admin WHERE id_user_admin = ?");
+        $stmtPerm = $pdo->prepare("SELECT mp_autorizar_cotiz, mp_editar_cerradas FROM usuarios_admin WHERE id_user_admin = ?");
         $stmtPerm->execute([$_SESSION['id_user_admin']]);
-        $permiso_autorizar = $stmtPerm->fetchColumn() ?: 'Desactivado';
+        $resPerm = $stmtPerm->fetch(PDO::FETCH_ASSOC);
+        if ($resPerm) {
+            $permiso_autorizar = $resPerm['mp_autorizar_cotiz'] ?? 'Desactivado';
+            $permiso_editar_cerradas = $resPerm['mp_editar_cerradas'] ?? 'Desactivado';
+        }
     }
     ?>
     <script>
@@ -711,6 +718,7 @@
         const USER_PERFIL = "<?php echo $_SESSION['perfil'] ?? 'cliente'; ?>";
 
         const PERMISO_AUTORIZAR = "<?php echo $permiso_autorizar; ?>";
+        const PERMISO_EDITAR_CERRADAS = "<?php echo $permiso_editar_cerradas; ?>";
     </script>
     <script src="js/ver_cotizaciones.js"></script>
 </body>

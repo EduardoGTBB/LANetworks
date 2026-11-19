@@ -6,7 +6,8 @@ $permisos = [
     'mp_ver_clientes' => 'Desactivado',
     'mp_ver_productos' => 'Desactivado',
     'mp_ver_usuarios' => 'Desactivado',
-    'mp_ver_all_cotiz' => 'Desactivado',
+    'mp_ver_todas_cotiz' => 'Desactivado',
+    /* 'mp_ver_all_cotiz' => 'Desactivado', */
     'mp_ver_reportes' => 'Desactivado'
 ];
 
@@ -24,17 +25,25 @@ if ($es_cliente) {
         include_once 'api/config.php';
 
         if (isset($pdo) && isset($_SESSION['id_user_admin'])) {
-            $stmt_permisos = $pdo->prepare("SELECT mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios FROM usuarios_admin WHERE id_user_admin = :id");
+            // ✨ CAMBIO: Agregamos mp_ver_todas_cotiz a la consulta
+            $stmt_permisos = $pdo->prepare("SELECT mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios, mp_ver_todas_cotiz FROM usuarios_admin WHERE id_user_admin = :id");
             $stmt_permisos->execute([':id' => $_SESSION['id_user_admin']]);
             $resultado = $stmt_permisos->fetch(PDO::FETCH_ASSOC);
 
             if ($resultado) {
-                // $permisos = $resultado;
+                // Combina los permisos de la BD con el arreglo base
                 $permisos = array_merge($permisos, $resultado);
             }
 
-            $permisos['mp_ver_all_cotiz'] = $es_admin_maestro ? 'Activado' : 'Desactivado';
-            $permisos['mp_ver_reportes'] = $es_admin_maestro ? 'Activado' : 'Desactivado';
+            // ✨ CAMBIO: Si es admin maestro, forzamos a que vea todo. 
+            // Si es operativo, respetará lo que trajimos de la BD en el array_merge de arriba.
+            if ($es_admin_maestro) {
+                $permisos['mp_ver_todas_cotiz'] = 'Activado';
+                $permisos['mp_ver_reportes'] = 'Activado';
+            } else {
+                $permisos['mp_ver_reportes'] = 'Desactivado'; // Puedes crearle su propio permiso después si lo deseas
+            }
+            
             $ver_whatsapp = 'Desactivado';
         }
     } catch (Exception $e) {
@@ -72,7 +81,7 @@ if ($es_cliente) {
                     </a>
                 </li>
 
-                <?php if ($permisos['mp_cotizador'] === 'Activado' || $permisos['mp_ver_cotiz'] === 'Activado'): ?>
+                <?php if ($permisos['mp_cotizador'] === 'Activado' || $permisos['mp_ver_cotiz'] === 'Activado' || $permisos['mp_ver_todas_cotiz'] === 'Activado'): ?>
                     <li class="nxl-item nxl-hasmenu">
                         <a href="javascript:void(0);" class="nxl-link">
                             <span class="nxl-micon"><i class="feather-dollar-sign"></i></span>
@@ -87,13 +96,13 @@ if ($es_cliente) {
                                 <li class="nxl-item"><a class="nxl-link" href="ver_cotizaciones.php">Mis cotizaciones</a></li>
                             <?php endif; ?>
 
-                            <?php if ($permisos['mp_ver_all_cotiz'] === 'Activado'): ?>
+                            <?php if ($permisos['mp_ver_todas_cotiz'] === 'Activado'): ?>
                                 <li class="nxl-item"><a class="nxl-link" href="ver_cotizaciones_all.php">Todas las cotizaciones</a></li>
                             <?php endif; ?>
 
                             <!-- //*Cotizaciones Temporales "Temporal" -->
                             <?php if (defined('HABILITAR_COTS_TEMPORALES') && HABILITAR_COTS_TEMPORALES && !$es_cliente): ?>
-                                <?php if ($permisos['mp_ver_cotiz'] === 'Activado' || $permisos['mp_ver_all_cotiz'] === 'Activado'): ?>
+                                <?php if ($permisos['mp_ver_cotiz'] === 'Activado' || $permisos['mp_ver_todas_cotiz'] === 'Activado'): ?>
                                     <li class="nxl-item"><a class="nxl-link" href="ver_cotizaciones_temporales.php">Cotizaciones Provisionales</a></li>
                                 <?php endif; ?>
                             <?php endif; ?>

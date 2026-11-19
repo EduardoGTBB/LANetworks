@@ -648,45 +648,6 @@ function obtenerAllempresas(PDO $pdo): array
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-/* function insertarEmpresa(PDO $pdo, array $datos): bool
-{
-    try {
-        $sqlEMP = "INSERT INTO empresa (nombre_empresa, razon_social, rfc, dias_credito, estatus) 
-            VALUES (:nombre, :razon, :rfc, :dias, 'Y')";
-
-        $stmtEMP = $pdo->prepare($sqlEMP);
-        return $stmtEMP->execute([
-            ':nombre'   => $datos['nombre_empresa'],
-            ':razon'    => $datos['razon_social'],
-            ':rfc'      => $datos['rfc'],
-            ':dias' => $datos['dias_credito']
-        ]);
-
-        $id_empresa = (int)$pdo->lastInsertId();
-
-        $sqlDOM = "INSERT INTO domicilio_empresa (Empresa_id, calle_numero, colonia, localidad, codigo_postal, municipio, estado, pais)
-            VALUES (:emp_id, :calle, :colonia, :localidad, :cp, :municipio, :estado, :pais)";
-
-        $stmtDOM = $pdo->prepare($sqlDOM);
-        $stmtDOM->execute([
-            ':emp_id'    => $id_empresa,
-            ':calle'     => $datos['calle_numero'],
-            ':colonia'   => $datos['colonia'],
-            ':localidad' => $datos['localidad'],
-            ':cp'        => $datos['codigo_postal'],
-            ':municipio' => $datos['municipio'],
-            ':estado'    => $datos['estado'],
-            ':pais'      => $datos['pais']
-        ]);
-
-        $pdo->commit();
-        return true;
-        
-    } catch (Exception $e) {
-        $pdo->rollBack(); // Revertimos si hay error
-        throw $e;
-    }
-} */
 function insertarEmpresa(PDO $pdo, array $datos): bool
 {
     try {
@@ -727,52 +688,6 @@ function insertarEmpresa(PDO $pdo, array $datos): bool
         throw $e;
     }
 }
-
-/* function actualizarEmpresa(PDO $pdo, array $datos): bool
-{
-    try {
-        //° $pdo->beginTransaction();
-
-        // 1. Actualizar empresa
-        $sqlEmp = "UPDATE empresa SET nombre_empresa = :nombre, razon_social = :razon, rfc = :rfc, dias_credito = :dias WHERE id_empresa = :id";
-        $stmtEmp = $pdo->prepare($sqlEmp);
-        return $stmtEmp->execute([
-            ':nombre'   => $datos['nombre_empresa'],
-            ':razon'    => $datos['razon_social'],
-            ':rfc'      => $datos['rfc'],
-            ':dias'     => $datos['dias_credito'],
-            ':id'       => $datos['id_empresa']
-        ]);
-
-        /* //° 2. Verificar si ya tenía domicilio registrado para actualizarlo o insertarlo
-        $stmtCheck = $pdo->prepare("SELECT id_domicilio_empresa FROM domicilio_empresa WHERE Empresa_id = :id");
-        $stmtCheck->execute([':id' => $datos['id_empresa']]);
-
-        if ($stmtCheck->rowCount() > 0) {
-            $sqlDom = "UPDATE domicilio_empresa SET calle_numero = :calle, colonia = :colonia, localidad = :localidad, codigo_postal = :cp, municipio = :municipio, estado = :estado, pais = :pais WHERE Empresa_id = :id";
-        } else {
-            $sqlDom = "INSERT INTO domicilio_empresa (calle_numero, colonia, localidad, codigo_postal, municipio, estado, pais, Empresa_id) VALUES (:calle, :colonia, :localidad, :cp, :municipio, :estado, :pais, :id)";
-        }
-
-        $stmtDom = $pdo->prepare($sqlDom);
-        $stmtDom->execute([
-            ':calle'     => $datos['calle_numero'],
-            ':colonia'   => $datos['colonia'],
-            ':localidad' => $datos['localidad'],
-            ':cp'        => $datos['codigo_postal'],
-            ':municipio' => $datos['municipio'],
-            ':estado'    => $datos['estado'],
-            ':pais'      => $datos['pais'],
-            ':id'        => $datos['id_empresa']
-        ]);
-
-        $pdo->commit();
-        return true; *
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        throw $e;
-    }
-} */
 
 function actualizarEmpresa(PDO $pdo, array $datos): bool
 {
@@ -1497,21 +1412,9 @@ function verificarProductoExistente(PDO $pdo, string $descripcion, string $clave
 // >>> ============================================== 
 
 // [fn] Obtener los usuarios Admin
-/* function obtenerusuarios(PDO $pdo, int $id_user_admin): array
-{
-    // Traemos el ID, el nombre, correo(Usuario) y su estatus
-    $sql = "SELECT id_user_admin, usuario_lan, admin_nombre, admin_apell_pat, perfil, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios, estatus
-            FROM usuarios_admin
-            ORDER BY admin_nombre ASC";
-
-    $stmt = $pdo->prepare($sql);
-
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-} */
 function obtenerusuarios(PDO $pdo, int $id_user_admin): array
 {
-    $sql = "SELECT id_user_admin, usuario_lan, admin_nombre, admin_apell_pat, perfil, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios, mp_autorizar_cotiz, estatus
+    $sql = "SELECT id_user_admin, usuario_lan, admin_nombre, admin_apell_pat, perfil, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios, mp_autorizar_cotiz, mp_ver_todas_cotiz, mp_editar_cerradas, estatus
             FROM usuarios_admin
             ORDER BY admin_nombre ASC";
     $stmt = $pdo->prepare($sql);
@@ -1519,35 +1422,12 @@ function obtenerusuarios(PDO $pdo, int $id_user_admin): array
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-
 // [fn] Insertar nuevo usuario Admin
-/* function insertarUsuarioAdmin(PDO $pdo, array $datos): bool
-{
-    $foto = !empty($datos['foto_perfil']) ? $datos['foto_perfil'] : 'user.png';
-    $sql = "INSERT INTO usuarios_admin (usuario_lan, password, admin_nombre, admin_apell_pat, perfil, estatus, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios) 
-            VALUES (:usr, :pass, :nom, :ape, :perfil, :est , :foto, :p1, :p2, :p3, :p4, :p5)";
-    $stmt = $pdo->prepare($sql);
-    return $stmt->execute([
-        ':usr'    => $datos['usuario_lan'],
-        ':pass'   => $datos['password'],
-        ':nom'    => $datos['admin_nombre'],
-        ':ape'    => $datos['admin_apell_pat'],
-        ':perfil' => $datos['perfil'],
-        ':est'    => $datos['estatus'],
-        ':foto'   => $foto,
-        ':p1'     => $datos['mp_cotizador'],
-        ':p2'     => $datos['mp_ver_cotiz'],
-        ':p3'     => $datos['mp_ver_clientes'],
-        ':p4'     => $datos['mp_ver_productos'],
-        ':p5'     => $datos['mp_ver_usuarios']
-
-    ]);
-}*/
 function insertarUsuarioAdmin(PDO $pdo, array $datos): bool
 {
     $foto = !empty($datos['foto_perfil']) ? $datos['foto_perfil'] : 'user.png';
-    $sql = "INSERT INTO usuarios_admin (usuario_lan, password, admin_nombre, admin_apell_pat, perfil, estatus, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios, mp_autorizar_cotiz) 
-            VALUES (:usr, :pass, :nom, :ape, :perfil, :est , :foto, :p1, :p2, :p3, :p4, :p5, :p6)";
+    $sql = "INSERT INTO usuarios_admin (usuario_lan, password, admin_nombre, admin_apell_pat, perfil, estatus, foto_perfil, mp_cotizador, mp_ver_cotiz, mp_ver_clientes, mp_ver_productos, mp_ver_usuarios, mp_autorizar_cotiz, mp_ver_todas_cotiz, mp_editar_cerradas) 
+            VALUES (:usr, :pass, :nom, :ape, :perfil, :est , :foto, :p1, :p2, :p3, :p4, :p5, :p6, :p7, :p8)";
     $stmt = $pdo->prepare($sql);
     return $stmt->execute([
         ':usr'    => $datos['usuario_lan'], ':pass'   => $datos['password'],
@@ -1555,103 +1435,12 @@ function insertarUsuarioAdmin(PDO $pdo, array $datos): bool
         ':perfil' => $datos['perfil'], ':est'    => $datos['estatus'], ':foto'   => $foto,
         ':p1'     => $datos['mp_cotizador'], ':p2'     => $datos['mp_ver_cotiz'],
         ':p3'     => $datos['mp_ver_clientes'], ':p4'     => $datos['mp_ver_productos'],
-        ':p5'     => $datos['mp_ver_usuarios'], ':p6'     => $datos['mp_autorizar_cotiz']
+        ':p5'     => $datos['mp_ver_usuarios'], ':p6'     => $datos['mp_autorizar_cotiz'],
+        ':p7'     => $datos['mp_ver_todas_cotiz'], ':p8'     => $datos['mp_editar_cerradas']
     ]);
 }
 
 // [fn] Actualizar usuario Admin
-/* function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
-{
-    if (!empty($datos['foto_perfil'])) {
-        $stmtFoto = $pdo->prepare("SELECT foto_perfil FROM usuarios_admin WHERE id_user_admin = :id");
-        $stmtFoto->execute([':id' => $datos['id_user_admin']]);
-        $oldUser = $stmtFoto->fetch(PDO::FETCH_ASSOC);
-
-        // Verificamos que tenga foto y que no sea la imagen por defecto ('user.png')
-        if ($oldUser && !empty($oldUser['foto_perfil']) && $oldUser['foto_perfil'] !== 'user.png') {
-            $ruta_vieja = '../assets/images/avatar/' . $oldUser['foto_perfil'];
-            // Si el archivo existe físicamente en el servidor, lo destruimos
-            if (file_exists($ruta_vieja)) {
-                unlink($ruta_vieja);
-            }
-        }
-    }
-
-    $permisosSql = "mp_cotizador = :p1, mp_ver_cotiz = :p2, mp_ver_clientes = :p3, mp_ver_productos = :p4, mp_ver_usuarios = :p5";
-    $fotoSql = !empty($datos['foto_perfil']) ? ", foto_perfil = :foto" : ""; // Solo actualiza si subió foto
-
-    // 3. Armamos la consulta base
-    $sql = "UPDATE usuarios_admin 
-            SET usuario_lan = :usr, admin_nombre = :nom, admin_apell_pat = :ape, perfil = :perfil, estatus = :est " . $fotoSql . ", " . $permisosSql . " 
-            WHERE id_user_admin = :id";
-
-    // Si mandó contraseña, ajustamos el SQL para incluirla
-    if (!empty($datos['password'])) {
-        $sql = "UPDATE usuarios_admin 
-                SET usuario_lan = :usr, password = :pass, admin_nombre = :nom, admin_apell_pat = :ape, perfil = :perfil, estatus = :est " . $fotoSql . ", " . $permisosSql . " 
-                WHERE id_user_admin = :id";
-    }
-
-    $stmt = $pdo->prepare($sql);
-
-    // 4. Asignamos los parámetros obligatorios
-    $params = [
-        ':usr'    => $datos['usuario_lan'],
-        ':nom'    => $datos['admin_nombre'],
-        ':ape'    => $datos['admin_apell_pat'],
-        ':perfil' => $datos['perfil'],
-        ':est'    => $datos['estatus'],
-        ':p1'     => $datos['mp_cotizador'],
-        ':p2'     => $datos['mp_ver_cotiz'],
-        ':p3'     => $datos['mp_ver_clientes'],
-        ':p4'     => $datos['mp_ver_productos'],
-        ':p5'     => $datos['mp_ver_usuarios'],
-        ':id'     => $datos['id_user_admin']
-    ];
-
-    // 5. Asignamos los parámetros opcionales
-    if (!empty($datos['password'])) {
-        $params[':pass'] = $datos['password'];
-    }
-    if (!empty($datos['foto_perfil'])) {
-        $params[':foto'] = $datos['foto_perfil'];
-    }
-
-    return $stmt->execute($params);
-
-    /* $permisosSql = "mp_cotizador = :p1, mp_ver_cotiz = :p2, mp_ver_clientes = :p3, mp_ver_productos = :p4, mp_ver_usuarios = :p5";
-    
-    if (!empty($datos['password'])) {
-        $sql = "UPDATE usuarios_admin 
-                SET usuario_lan = :usr, password = :pass, admin_nombre = :nom, admin_apell_pat = :ape, perfil = :perfil, estatus = :est, " . $permisosSql . " 
-                WHERE id_user_admin = :id";
-        $stmt = $pdo->prepare($sql);
-        $params = [':pass' => $datos['password']];
-    } else {
-        $sql = "UPDATE usuarios_admin 
-                SET usuario_lan = :usr, admin_nombre = :nom, admin_apell_pat = :ape, perfil = :perfil, estatus = :est, " . $permisosSql . " 
-                WHERE id_user_admin = :id";
-        $stmt = $pdo->prepare($sql);
-        $params = [];
-    }
-
-    $params = array_merge($params, [
-        ':usr'    => $datos['usuario_lan'],
-        ':nom'    => $datos['admin_nombre'],
-        ':ape'    => $datos['admin_apell_pat'],
-        ':perfil' => $datos['perfil'],
-        ':est'    => $datos['estatus'],
-        ':p1'     => $datos['mp_cotizador'],
-        ':p2'     => $datos['mp_ver_cotiz'],
-        ':p3'     => $datos['mp_ver_clientes'],
-        ':p4'     => $datos['mp_ver_productos'],
-        ':p5'     => $datos['mp_ver_usuarios'],
-        ':id'     => $datos['id_user_admin']
-    ]);
-
-    $stmt->execute($params); 
-    !return true;*
-}*/
 function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
 {
     if (!empty($datos['foto_perfil'])) {
@@ -1664,7 +1453,7 @@ function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
         }
     }
 
-    $permisosSql = "mp_cotizador = :p1, mp_ver_cotiz = :p2, mp_ver_clientes = :p3, mp_ver_productos = :p4, mp_ver_usuarios = :p5, mp_autorizar_cotiz = :p6";
+    $permisosSql = "mp_cotizador = :p1, mp_ver_cotiz = :p2, mp_ver_clientes = :p3, mp_ver_productos = :p4, mp_ver_usuarios = :p5, mp_autorizar_cotiz = :p6, mp_ver_todas_cotiz = :p7, mp_editar_cerradas = :p8";
     $fotoSql = !empty($datos['foto_perfil']) ? ", foto_perfil = :foto" : ""; 
 
     $sql = "UPDATE usuarios_admin SET usuario_lan = :usr, admin_nombre = :nom, admin_apell_pat = :ape, perfil = :perfil, estatus = :est " . $fotoSql . ", " . $permisosSql . " WHERE id_user_admin = :id";
@@ -1678,7 +1467,8 @@ function actualizarUsuarioAdmin(PDO $pdo, array $datos): bool
         ':usr' => $datos['usuario_lan'], ':nom' => $datos['admin_nombre'], ':ape' => $datos['admin_apell_pat'],
         ':perfil' => $datos['perfil'], ':est' => $datos['estatus'], ':p1' => $datos['mp_cotizador'],
         ':p2' => $datos['mp_ver_cotiz'], ':p3' => $datos['mp_ver_clientes'], ':p4' => $datos['mp_ver_productos'],
-        ':p5' => $datos['mp_ver_usuarios'], ':p6' => $datos['mp_autorizar_cotiz'], ':id' => $datos['id_user_admin']
+        ':p5' => $datos['mp_ver_usuarios'], ':p6' => $datos['mp_autorizar_cotiz'], 
+        ':p7' => $datos['mp_ver_todas_cotiz'], ':p8' => $datos['mp_editar_cerradas'], ':id' => $datos['id_user_admin']
     ];
     if (!empty($datos['password'])) { $params[':pass'] = $datos['password']; }
     if (!empty($datos['foto_perfil'])) { $params[':foto'] = $datos['foto_perfil']; }
@@ -2217,7 +2007,7 @@ function obtenerDatosClientePorCotizacion(PDO $pdo, int $id_cotizacion): array|f
 // <<< ==============================================
 
 // [fn] Obtener datos aplanados para Exportación a Excel (Dinámico)
-function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0,string $fecha_inicio = '', string $fecha_fin = '', int $pedido_inicio = 0, int $pedido_fin = 0): array {
+function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categoria = '', string $busqueda = '', string $scope = 'todas', int $id_admin = 0, int $id_cliente = 0,string $fecha_inicio = '', string $fecha_fin = '', string|int $pedido_inicio = '', string|int $pedido_fin = ''): array {
 
     $whereClause = "c.es_temporal = 'N'";
     $params = [];
@@ -2290,7 +2080,7 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
     $resultados_crudos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // ✨ LÓGICA DE FILTRADO DE FOLIOS EN PHP (Compatible 100% con MySQL 5.7)
-    if ($pedido_inicio > 0 && $pedido_fin > 0) {
+    /* if ($pedido_inicio > 0 && $pedido_fin > 0) {
         $resultados_filtrados = [];
         
         foreach ($resultados_crudos as $fila) {
@@ -2303,6 +2093,46 @@ function obtenerReporteExportacion(PDO $pdo, string $estatus = '', string $categ
                 // Si está dentro del rango, lo guardamos
                 if ($numero_folio >= $pedido_inicio && $numero_folio <= $pedido_fin) {
                     $resultados_filtrados[] = $fila;
+                }
+            }
+        }
+        return $resultados_filtrados;
+    } */
+    if ($pedido_inicio !== '' && $pedido_inicio !== 0 && $pedido_fin !== '' && $pedido_fin !== 0) {
+        $resultados_filtrados = [];
+        
+        // Formateamos para seguridad y homogeneidad
+        $p_inicio_str = strtoupper((string)$pedido_inicio);
+        $p_fin_str = strtoupper((string)$pedido_fin);
+        
+        // Extraemos número y posible letra del filtro inicial
+        preg_match('/([0-9]+)(-[A-Z]+)?/', $p_inicio_str, $matchIni);
+        $numIni = isset($matchIni[1]) ? (int)$matchIni[1] : 0;
+        $sufIni = isset($matchIni[2]) ? $matchIni[2] : ''; // Incluye guion, Ej: "-N"
+
+        preg_match('/([0-9]+)/', $p_fin_str, $matchFin);
+        $numFin = isset($matchFin[1]) ? (int)$matchFin[1] : 0;
+        
+        foreach ($resultados_crudos as $fila) {
+            $folio = (string)$fila['folio_especial'];
+            
+            // Extraer número y letra del folio (Ej: "TEMP-00033-U" o "00010-N")
+            if (preg_match('/([0-9]+)(-[A-Z]+)?/', $folio, $coincidencias)) {
+                $numero_folio = (int)$coincidencias[1];
+                $sufijo_folio = isset($coincidencias[2]) ? strtoupper($coincidencias[2]) : '';
+                
+                // 1. Evaluar si está dentro del rango numérico
+                if ($numero_folio >= $numIni && $numero_folio <= $numFin) {
+                    
+                    // 2. Si el filtro llevaba letra (ej: -N), se obliga a que el folio también la tenga
+                    if ($sufIni !== '') {
+                        if ($sufijo_folio === $sufIni) {
+                            $resultados_filtrados[] = $fila;
+                        }
+                    } else {
+                        // Si no escribieron letra en el filtro, permitimos todos los que coincidan en número
+                        $resultados_filtrados[] = $fila;
+                    }
                 }
             }
         }

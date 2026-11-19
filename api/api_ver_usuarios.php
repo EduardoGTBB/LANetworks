@@ -71,6 +71,8 @@ try {
                 'mp_ver_productos' => $_POST['mp_ver_productos'] ?? 'Desactivado',
                 'mp_ver_usuarios' => $_POST['mp_ver_usuarios'] ?? 'Desactivado',
                 'mp_autorizar_cotiz' => $_POST['mp_autorizar_cotiz'] ?? 'Desactivado',
+                'mp_ver_todas_cotiz' => $_POST['mp_ver_todas_cotiz'] ?? 'Desactivado',
+                'mp_editar_cerradas' => $_POST['mp_editar_cerradas'] ?? 'Desactivado',
             ];
 
             if ($action === 'editar') {

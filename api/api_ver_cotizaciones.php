@@ -33,12 +33,28 @@ try {
                 echo json_encode(obtenerCotizaciones($pdo, $admin_id));
             }
         } elseif ($action === 'leer_todas') {
-            if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin') {
+            $es_admin = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin');
+            $tiene_permiso = false;
+            
+            if (!$es_admin && isset($_SESSION['id_user_admin'])) {
+                // ✨ CAMBIO: Ahora consultamos mp_ver_todas_cotiz
+                $stmtPerm = $pdo->prepare("SELECT mp_ver_todas_cotiz FROM usuarios_admin WHERE id_user_admin = ?");
+                $stmtPerm->execute([$_SESSION['id_user_admin']]);
+                $tiene_permiso = ($stmtPerm->fetchColumn() === 'Activado');
+            }
+
+            // 🛡️ API SEGURA: Solo devuelve datos si es admin o tiene permiso
+            if ($es_admin || $tiene_permiso) {
+                echo json_encode(obtenerTodasLasCotizaciones($pdo));
+            } else {
+                echo json_encode([]);
+            }
+            /* if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin') {
                 echo json_encode(obtenerTodasLasCotizaciones($pdo));
 
             } else {
                 echo json_encode([]);
-            }
+            } */
         } elseif ($action === 'get_cotizacion') {
             $id = (int)($_GET['id'] ?? 0);
             $cotizacion = editarCotizacionporID($pdo, $id);
@@ -96,26 +112,26 @@ try {
 
             // Verificamos si es Administrador
             $es_admin = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'admin');
+            
+            // 🛡️ Verificamos si tiene el permiso especial
+            $tiene_permiso_editar = false;
+            if (!$es_admin && isset($_SESSION['id_user_admin'])) {
+                $stmtPerm = $pdo->prepare("SELECT mp_editar_cerradas FROM usuarios_admin WHERE id_user_admin = ?");
+                $stmtPerm->execute([$_SESSION['id_user_admin']]);
+                $tiene_permiso_editar = ($stmtPerm->fetchColumn() === 'Activado');
+            }
 
             $cotizacion_actual = editarCotizacionporID($pdo, $id_cotizacion);
 
             if ($cotizacion_actual) {
                 $estatus_actual = $cotizacion_actual['estatus'];
+                $es_cerrada = (strpos($estatus_actual, 'Autorizada') !== false || $estatus_actual === 'No autorizada' || $estatus_actual === 'Ganada' || $estatus_actual === 'Perdida');
                 
-                // 🔒 REGLA 1: NADIE (ni el admin) puede editar una cotización rechazada
-                if ($estatus_actual === 'No autorizada') {
+                // 🔒 REGLA: Si está cerrada, denegamos a menos que sea Admin o tenga el permiso
+                if ($es_cerrada && !$es_admin && !$tiene_permiso_editar) {
                     echo json_encode([
                         'status' => 'error',
-                        'message' => 'Operación denegada. Las cotizaciones Rechazadas son inmutables y no pueden ser modificadas.'
-                    ]);
-                    exit;
-                }
-
-                // 🔒 REGLA 2: Solo el Admin puede editar cotizaciones Autorizadas
-                if (!$es_admin && strpos($estatus_actual, 'Autorizada') !== false) {
-                    echo json_encode([
-                        'status' => 'error',
-                        'message' => 'Operación denegada. Solo un Administrador puede modificar cotizaciones Autorizadas.'
+                        'message' => 'Operación denegada. No tienes permisos para modificar o eliminar cotizaciones cerradas.'
                     ]);
                     exit;
                 }
@@ -335,6 +351,32 @@ try {
                 echo json_encode(['status' => 'error', 'message' => 'ACCESO DENEGADO: No tienes los privilegios para autorizar o rechazar cotizaciones. Consulta a tu administrador.']);
                 exit;
             }
+
+            // 🔒 CANDADO CIBERSEGURIDAD ESTRICTO EN EL ONE-CLICK
+            if (strpos($nuevo_estatus, 'Autorizada') !== false) {
+                $stmtCheckDir = $pdo->prepare("SELECT COUNT(*) FROM domicilio_fiscal WHERE Cotizacion_id = ?");
+                $stmtCheckDir->execute([$id_cotizacion]);
+                $tieneFiscal = $stmtCheckDir->fetchColumn();
+
+                $stmtCheckEquipos = $pdo->prepare("SELECT COUNT(*) FROM detalle_cotizacion WHERE Cotizacion_id = ? AND (id_dom_cert IS NULL OR id_dom_envio IS NULL)");
+                $stmtCheckEquipos->execute([$id_cotizacion]);
+                $equiposIncompletos = $stmtCheckEquipos->fetchColumn();
+
+                if ($tieneFiscal == 0 || $equiposIncompletos > 0) {
+                    echo json_encode([
+                        'status' => 'error', 
+                        'message' => 'ACCESO DENEGADO SERVIDOR: La cotización tiene equipos sin dirección o le falta la dirección fiscal. Usa el botón del mapa para completarla.'
+                    ]);
+                    exit;
+                }
+            }
+
+            // ✨ ESTO ESTABA COMENTADO: Se ejecuta la actualización real en BD
+            $stmtUpdate = $pdo->prepare("UPDATE cotizacion SET estatus = ? WHERE id_cotizacion = ?");
+            $stmtUpdate->execute([$nuevo_estatus, $id_cotizacion]);
+
+            echo json_encode(['status' => 'success', 'message' => 'El estatus se ha actualizado correctamente.']);
+            exit;
             /*  $id_cotizacion = (int)($_POST['id_cotizacion'] ?? 0);
             $nuevo_estatus = trim($_POST['estatus'] ?? '');
             
@@ -536,7 +578,4 @@ try {
         'status' => 'error', 
         'message' => 'Falla en el servidor: ' . $e->getMessage() . ' (Línea ' . $e->getLine() . ')'
     ]);
-}/* catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => 'Error BD: ' . $e->getMessage()]);
-} */
+}
