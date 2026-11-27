@@ -6,8 +6,8 @@ declare(strict_types=1);
 //Datos Servidor
 define('DB_HOST','localhost');
 define('DB_NAME','lan_cotizador');
-define('DB_USER', 'lan_cotizador');
-define('DB_PASS','@13jNzj27');
+define('DB_USER', 'lan');
+define('DB_PASS','');
 define('DB_CHARSET','utf8mb4');
 define('SUCURSAL_MATRIZ_NOMBRE', 'SIN SUCURSAL');
 
@@ -20,7 +20,7 @@ define('HABILITAR_COTS_TEMPORALES', true); // Cambiar a false para apagar toda l
 // Credenciales validadas del servidor Cotizador - Lupware
 define('SMTP_HOST', 'cotizador.la-analitical-mx.net');
 define('SMTP_USER', 'notificaciones@cotizador.la-analitical-mx.net');
-define('SMTP_PASS', '51!03ojoP');
+define('SMTP_PASS', '');
 
 // Configuración de PDO
 $CPDO = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET ;
