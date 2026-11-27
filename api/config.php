@@ -23,9 +23,9 @@ define('HABILITAR_COTS_TEMPORALES', true); // Cambiar a false para apagar toda l
 
 // 🛡️ Datos Servidor SMTP (Correos B2B y Empleados)
 // Credenciales validadas del servidor Lykos - Lupware
-define('SMTP_HOST', 'mail.avisos.lupware.com');
-define('SMTP_USER', 'hola@avisos.lupware.com');
-define('SMTP_PASS', '*x6kp6HLxBCz');
+define('SMTP_HOST', 'cotizador.la-analitical-mx.net');
+define('SMTP_USER', 'notificaciones@cotizador.la-analitical-mx.net');
+define('SMTP_PASS', '');
 
 // Configuración de PDO
 $CPDO = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET ;

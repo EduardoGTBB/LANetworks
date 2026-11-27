@@ -6,8 +6,8 @@ try {
 
 	$world_dumper = Shuttle_Dumper::create(array(
 		'host' => 'localhost',
-		'username' => 'lan_cotizador',//
-		'password' => '@13jNzj27',//
+		'username' => '',//
+		'password' => '',//
 		'db_name' => 'lan_cotizador',//
 	));
 
